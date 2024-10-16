@@ -1,5 +1,3 @@
-function App() {
-  return <div>TeleGrammy</div>;
+export default function App() {
+  return <h1 className="text-3xl font-bold underline">Hello TeleGrammy!</h1>;
 }
-
-export default App;
