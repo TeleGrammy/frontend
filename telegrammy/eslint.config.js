@@ -34,6 +34,18 @@ export default [
         { allowConstantExport: true },
       ],
       "no-unused-vars": "warn", // Set warning for unused variables
+      "react/prop-types": [
+        "warn",
+        {
+          ignore: [],
+          customValidators: [],
+          skipUndeclared: false,
+          requireDefaultProps: false,
+          checkContextTypes: false,
+          requirePragma: false,
+          skipPropsWithoutPropTypes: false,
+        },
+      ],
     },
   },
 ];
