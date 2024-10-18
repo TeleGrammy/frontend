@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import SignUp from "./pages/SignUp";
 
@@ -17,3 +18,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+

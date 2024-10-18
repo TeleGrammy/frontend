@@ -1,6 +1,6 @@
 import React from "react";
-import SignUpForm from "../components/registration/SignUpForm";
-import WelcomeMessage from "../components/registration/WelcomeMessage";
+import SignUpForm from "../Components/registration/SignUpForm";
+import WelcomeMessage from "../Components/registration/WelcomeMessage";
 
 const SignUp = () => {
   return (
