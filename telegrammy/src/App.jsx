@@ -1,4 +1,4 @@
-
+import EmailVerification from "./pages/EmailVerification";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import SignUp from "./pages/SignUp";
 
@@ -13,6 +13,7 @@ export default function App() {
             <h1 className="text-3xl font-bold underline">Hello TeleGrammy!</h1>
           }
         />
+        <Route path='/email-verify' element={<EmailVerification/>} />
         <Route path="/register" element={<SignUp />} />
       </Routes>
     </BrowserRouter>
