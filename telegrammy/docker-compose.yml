@@ -1,14 +1,12 @@
-version: '3.8'
 services:
   backend:
     image: telegrammy/backend:registration # telegrammy/backend:[module_name] (check with the backend repo)
     ports: 
       - "${PORT}:${PORT}"
-    environment:
-      HOSTNAME: ${HOSTNAME}
-      DB_HOST: ${DB_HOST}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      SEND_API_KEY: ${SEND_API_KEY}
-      PORT: ${PORT}
+    env_file:
+      - .env
+    networks:
+      my-network:
 
+networks:
+  my-network:
