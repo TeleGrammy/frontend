@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react';
 
 const EmailIcon = () => {
   return (
     <svg
-      className="w-5 h-5 mx-2"
-      width="21"
-      height="16"
+      className="mx-2"
+      width="20"
+      height="20"
       viewBox="0 0 21 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
