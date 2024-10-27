@@ -1,17 +1,24 @@
-import React from "react";
-import logo from "../../assets/logo.png";
+import React from 'react';
+import logo from '../../assets/logo.png';
+import { useNavigate } from 'react-router-dom';
 
-const WelcomeMessage = () => {
+const WelcomeMessage = ({ signIn = true }) => {
+  const navigate = useNavigate();
   return (
-    <div className="w-full md:w-1/2 bg-sky-950 p-6 md:p-8 text-white flex flex-col justify-center items-center rounded-none md:rounded-lg">
-      <img src={logo} alt="Telegram" className="w-32 md:w-36 mb-4" />
-      <h2 className="text-2xl md:text-3xl font-semibold mb-2 md:mb-4">
+    <div className="flex w-full flex-col items-center justify-center rounded-none bg-sky-950 p-6 text-white md:w-1/2 md:rounded-lg md:p-8">
+      <img src={logo} alt="Telegram" className="mb-4 w-32 md:w-36" />
+      <h2 className="mb-2 text-2xl font-semibold md:mb-4 md:text-3xl">
         Welcome to
       </h2>
-      <h1 className="text-3xl md:text-4xl font-bold">TELEGRAMMY</h1>
-      <p className="mt-4">Already have an account?</p>
-      <button className="mt-4 border border-white py-2 px-4 rounded-md hover:bg-white hover:text-sky-950 transition-colors duration-300 ease-in-out">
-        Sign In
+      <h1 className="text-3xl font-bold md:text-4xl">TELEGRAMMY</h1>
+      <p className="mt-4">
+        {signIn ? 'Already have an account?' : "You don't have an account!"}
+      </p>
+      <button
+        className="mt-4 rounded-md border border-white px-4 py-2 transition-colors duration-300 ease-in-out hover:bg-white hover:text-sky-950"
+        onClick={() => navigate(signIn ? '/login' : '/signup')}
+      >
+        {signIn ? 'Sign In' : 'Sign Up'}
       </button>
     </div>
   );
