@@ -8,6 +8,7 @@ import ShowPasswordIcon from '../icons/ShowPasswordIcon';
 import HidePasswordIcon from '../icons/HidePasswordIcon';
 import { ClipLoader } from 'react-spinners';
 import { useNavigate } from 'react-router-dom';
+import RobotVerification from './RobotVerification';
 
 const initialState = {
   showPassword: false,
@@ -25,6 +26,8 @@ const initialState = {
   errorPasswordMatch: '',
   loading: false,
   error: '',
+  captchaVerified: false,
+  captchaToken: null,
 };
 
 function reducer(state, action) {
@@ -59,6 +62,10 @@ function reducer(state, action) {
       return { ...state, loading: action.payload };
     case 'error':
       return { ...state, error: action.payload };
+    case 'captchaVerified':
+      return { ...state, captchaVerified: action.payload };
+    case 'captchaToken':
+      return { ...state, captchaToken: action.payload };
     default:
       throw new Error('Unknown');
   }
@@ -84,6 +91,10 @@ const SignUpForm = ({ setVerificationEmail }) => {
     // const { HOSTNAME, PORT } = process.env;
     dispatch({ type: 'error', payload: '' });
     if (state.password !== state.confirmPassword) return;
+    if (!state.captchaVerified) {
+      dispatch({ type: 'error', payload: 'Please verify you are not a robot' });
+      return;
+    }
     const phoneNumberWithCode = `+2${state.phoneNumber}`;
 
     try {
@@ -282,12 +293,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
         </div>
         {/* Checkbox */}
         <div className="mb-4 flex items-center">
-          <input
-            id="not-a-robot"
-            type="checkbox"
-            className="h-4 w-4 rounded border-blue-300 text-blue-500"
-          />
-          <label className="ml-2 text-gray-600">I am not a robot</label>
+          <RobotVerification dispatch={dispatch} />
         </div>
         {/* Sign Up Button */}
         <button

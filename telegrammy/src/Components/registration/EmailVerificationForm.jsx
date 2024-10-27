@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 const EmailVerificationForm = ({ email }) => {
   const [code, setCode] = useState(new Array(6).fill(''));
   const [isResendDisabled, setIsResendDisabled] = useState(false);
@@ -7,6 +7,7 @@ const EmailVerificationForm = ({ email }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
+  const navigate = useNavigate();
 
   // Function to handle changes in each code input field
   const handleCodeChange = (element, index) => {
@@ -71,7 +72,7 @@ const EmailVerificationForm = ({ email }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth/verfiy', {
+      const response = await fetch('http://localhost:8080/api/v1/auth/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,6 +85,7 @@ const EmailVerificationForm = ({ email }) => {
         setSuccess(true);
         setError('');
         console.log('Verification successful:', data);
+        navigate('/login');
       } else {
         handleVerifyError(response);
         setSuccess(false);
@@ -104,13 +106,16 @@ const EmailVerificationForm = ({ email }) => {
     setTimer(30);
 
     try {
-      const response = await fetch('/api/v1/auth/resend-verification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        'http://localhost:8080/api/v1/auth/resend-verification',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
         },
-        body: JSON.stringify({ email }),
-      });
+      );
 
       if (response.ok) {
         setResendMessage('Verification code resent successfully.');
