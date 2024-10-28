@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import SocialLogin from './SocialLogin';
 import UserNameIcon from '../icons/UserNameIcon';
 import EmailIcon from '../icons/EmailIcon';
@@ -8,6 +8,8 @@ import ShowPasswordIcon from '../icons/ShowPasswordIcon';
 import HidePasswordIcon from '../icons/HidePasswordIcon';
 import { ClipLoader } from 'react-spinners';
 import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../../slices/authSlice'; // Import the loginUser thunk
 
 const initialState = {
   showPassword: false,
@@ -15,8 +17,6 @@ const initialState = {
   focusOnEmail: -1,
   password: '',
   focusOnPassword: -1,
-  loading: false,
-  error: '',
 };
 
 function reducer(state, action) {
@@ -43,49 +43,22 @@ function reducer(state, action) {
 const SignInForm = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
-
+  const reduxDispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth.user);
   const handleSubmitForm = async (e) => {
     e.preventDefault();
-    // const { HOSTNAME, PORT } = process.env;
-    dispatch({ type: 'error', payload: '' });
-    try {
-      dispatch({ type: 'loading', payload: true });
-      // const response = await fetch(
-      //   `http://localhost:8080/api/v1/auth/register`,
-      //   {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //     },
-      //     body: JSON.stringify({
-      //       username: state.userName,
-      //       email: state.email,
-      //       phone: phoneNumberWithCode,
-      //       password: state.password,
-      //       passwordConfirm: state.confirmPassword,
-      //     }),
-      //   },
-      // );
-      // if (!response.ok) {
-      //   throw new Error(`HTTP error! status: ${response.status}`);
-      // }
-      // // await new Promise((resolve) => setTimeout(resolve, 5000));
-      // console.log(response.status);
-      // console.log('User registered successfully');
-      // setVerificationEmail(state.email);
-      // navigate('/signup/verify');
-    } catch (error) {
-      dispatch({ type: 'error', payload: error.message });
-    } finally {
-      dispatch({ type: 'loading', payload: false });
-    }
+    reduxDispatch(loginUser({ UUID: state.email, password: state.password }));
   };
+  useEffect(() => {
+    if (user) navigate('/');
+  }, [user, navigate]);
   return (
     <div className="w-full p-6 md:w-1/2 md:p-7">
       <h2 className="mb-6 text-2xl font-semibold text-gray-700 md:mb-8">
         Sign In
       </h2>
-      {state.error && <div className="mb-4 text-red-500">{state.error}</div>}
+      {error && <div className="mb-4 text-red-500">{error}</div>}
       <form onSubmit={handleSubmitForm}>
         {/* Email */}
         <div className="mb-4">
@@ -162,10 +135,10 @@ const SignInForm = () => {
         <button
           type="submit"
           id="sign-up"
-          disabled={state.loading}
-          className={`w-full rounded-md ${state.loading ? 'bg-sky-800' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
+          disabled={loading}
+          className={`w-full rounded-md ${loading ? 'bg-sky-800' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
         >
-          {state.loading ? (
+          {loading ? (
             <ClipLoader color="#ffffff" size={20} /> // Render the spinner when loading
           ) : (
             'Sign In'

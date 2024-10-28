@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import googleIcon from '../../assets/google.png';
 import facebookIcon from '../../assets/facebook.png';
 import githubIcon from '../../assets/github.png';
@@ -8,20 +8,18 @@ const images = [
   {
     icon: googleIcon,
     alt: 'Google',
-    onClick: async () => {
-      try {
-        const response = await fetch(
-          'http://localhost:8080/api/v1/auth/google',
-          {
-            credentials: 'include',
-          },
-        );
-      } catch (error) {
-        console.error('Error:', error);
-      }
-      // fetch('http://localhost:8080/api/v1/auth/google').then((res) => {
-      //   console.log('Google login response:', res);
-      // });
+    onClick: async (setData) => {
+      const GOOGLE_URL = 'http://localhost:8080/api/v1/auth/google';
+      const popup = window.open(GOOGLE_URL, '_blank', 'width=500,height=600');
+      window.addEventListener('message', (event) => {
+        if (event.origin === 'http://localhost:8080') {
+          const { data } = event;
+          if (data && data.status === 'Logged in successfully with Google') {
+            console.log(data);
+            setData(data);
+          }
+        }
+      });
     },
   },
   { icon: facebookIcon, alt: 'Facebook', onClick: () => {} },
@@ -29,6 +27,7 @@ const images = [
 ];
 
 const SocialLogin = () => {
+  const [data, setData] = useState(null);
   return (
     <>
       {/* Social Login */}
@@ -43,7 +42,7 @@ const SocialLogin = () => {
             icon={el.icon}
             alt={el.alt}
             key={idx}
-            onClick={el.onClick}
+            onClick={() => el.onClick(setData)}
           />
         ))}
       </div>
