@@ -4,8 +4,11 @@ import { useSelector } from 'react-redux';
 import Sidebar from '../components/home/leftSidebar/Sidebar';
 import Chat from '../components/home/chat/Chat';
 import RightSidebar from '../components/home/rightSidebar/RightSidebar';
+import MediaShower from '../Components/home/imageShower/MediaShower';
 
 function Home() {
+  const { myStories, showedStoryIndex } = useSelector((state) => state.stories);
+
   const { isDarkTheme } = useSelector((state) => state.darkMode);
 
   const { isRightSidebarOpen } = useSelector((state) => state.sidebar);
@@ -23,6 +26,9 @@ function Home() {
       <Sidebar />
       <Chat />
       {isRightSidebarOpen && <RightSidebar />}
+      {showedStoryIndex !== null && (
+        <MediaShower media={myStories[showedStoryIndex]} />
+      )}
     </div>
   );
 }

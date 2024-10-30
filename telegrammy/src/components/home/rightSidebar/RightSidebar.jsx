@@ -1,4 +1,4 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Header from '../leftSidebar/Header';
 import CloseButton from './CloseButton';
@@ -6,11 +6,19 @@ import SelectedInfo from './SelectedInfo';
 import MyStory from './MyStory';
 
 import { IoAdd } from 'react-icons/io5';
+import { closeRightSidebar } from '../../../slices/sidebarSlice';
+import { setShowedStoryIndex } from '../../../slices/storiesSlice';
 
 function RightSidebar() {
   const { myStories } = useSelector((state) => state.stories);
 
   const handleAddStory = () => {};
+
+  const handleOpenStory = (index) => {
+    dispatch(setShowedStoryIndex(index));
+  };
+
+  const dispatch = useDispatch();
 
   return (
     <div
@@ -18,7 +26,7 @@ function RightSidebar() {
       style={{ width: `25vw` }}
     >
       <Header className={'h-[3.4rem]'}>
-        <CloseButton />
+        <CloseButton handleClick={() => dispatch(closeRightSidebar())} />
         <SelectedInfo />
       </Header>
 
@@ -26,7 +34,12 @@ function RightSidebar() {
         {myStories
           .filter((story) => Date.now() < new Date(story.expiresAt))
           .map((story, index) => (
-            <MyStory key={index} story={story} index={index} />
+            <MyStory
+              key={index}
+              story={story}
+              index={index}
+              handleClick={() => handleOpenStory(index)}
+            />
           ))}
       </div>
 

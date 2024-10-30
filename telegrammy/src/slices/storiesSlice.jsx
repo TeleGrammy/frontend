@@ -22,6 +22,7 @@ const initialState = {
     },
   ],
   otherStories: [],
+  showedStoryIndex: null,
 };
 
 const storiesSlice = createSlice({
@@ -35,9 +36,14 @@ const storiesSlice = createSlice({
     setOtherStories(state, action) {
       state.otherStories = action.payload;
     },
+
+    setShowedStoryIndex(state, action) {
+      state.showedStoryIndex = action.payload;
+    },
   },
 });
 
-export const { setMyStories, setOtherStories } = storiesSlice.actions;
+export const { setMyStories, setOtherStories, setShowedStoryIndex } =
+  storiesSlice.actions;
 
 export default storiesSlice.reducer;
