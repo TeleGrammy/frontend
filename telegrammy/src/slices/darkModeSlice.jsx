@@ -4,7 +4,7 @@ const initialState = {
     isDarkTheme: JSON.parse(localStorage.getItem('isDarkTheme')) || false,
 };
 
-export const darkModeSlice = createSlice({
+const darkModeSlice = createSlice({
   name: "darkMode",
   initialState,
   reducers: {

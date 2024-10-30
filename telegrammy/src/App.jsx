@@ -7,11 +7,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} >
-          <Route index element={<Navigate to="chatlist" />} />
-          <Route path="chatlist" element={<h1>chatlist</h1>} />
-          <Route path="setting" element={<h1>setting</h1>} />
-        </Route>
+        <Route path="/" element={<Home />} />
         <Route path="/register" element={<SignUp />} />
       </Routes>
     </BrowserRouter>
