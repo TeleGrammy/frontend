@@ -7,7 +7,7 @@ function MenuItem({ isRightSidebar, setIsMenuOpen, newMenu, children }) {
 
     const dispatch = useDispatch();
 
-    const handleClick = () => {
+    const handleSelectItem = () => {
         setIsMenuOpen(false);
 
         if(isRightSidebar) {
@@ -20,7 +20,7 @@ function MenuItem({ isRightSidebar, setIsMenuOpen, newMenu, children }) {
 
     return (
         <li className="hover:bg-bg-hover w-full mx-2 px-2 rounded-2xl">
-          <button onClick={handleClick} className="text-text-primary flex flex-row items-center">
+          <button onClick={handleSelectItem} className="text-text-primary flex flex-row items-center">
             {children}
           </button>
         </li>

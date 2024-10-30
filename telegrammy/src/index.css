@@ -13,7 +13,9 @@
     --bg-search: rgb(250, 250, 250);
     --border-search: rgb(223, 225, 229);
     --bg-hover:rgba(245,245,245,0.8);
-    --bg-line:rgba(85,85,85,255);
+    --bg-line:rgba(85,85,85,1);
+    --bg-button:rgba(78,142,255,1);
+    --bg-button-hover:rgba(58, 122, 209, 1);
     --bg-image: url("./assets/home-bg-light.jpg");
     --bg-image-color:rgba(238, 239, 239, 0.2);
   
@@ -32,7 +34,9 @@
       --bg-search: rgb(66, 66, 66);
       --border-search: rgb(77, 77, 77);
       --bg-hover:rgba(10,10,10,0.8);
-      --bg-line:rgba(170,170,170,255);
+      --bg-line:rgba(170,170,170,1);
+      --bg-button:rgba(121,113,192,1);
+      --bg-button-hover:rgba(101, 93, 172, 1);
       --bg-image: url("./assets/home-bg-dark.jpg");
       --bg-image-color:rgba(17, 16, 16, 0.61);
 

@@ -5,6 +5,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice";
 import darkReducer from "./slices/darkModeSlice";
 import sidebarReducer from "./slices/sidebarSlice";
+import storiesReducer from "./slices/storiesSlice";
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     auth: authReducer,
     darkMode: darkReducer,
     sidebar: sidebarReducer,
+    stories: storiesReducer,
   },
 });
 
