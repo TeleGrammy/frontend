@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
+import EmailVerification from './Components/registration/EmailVerification';
+import ForgetPassword from './Components/registration/ForgetPassword';
 
 export default function App() {
   return (
@@ -15,6 +17,8 @@ export default function App() {
 
         <Route path="/signup/*" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/verify" element={<EmailVerification/>} />
+        <Route path="/forget-password" element={<ForgetPassword/>}/>
       </Routes>
     </BrowserRouter>
   );

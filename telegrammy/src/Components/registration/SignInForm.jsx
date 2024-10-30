@@ -125,7 +125,7 @@ const SignInForm = () => {
         {/* Checkbox */}
         <div className="mb-4 flex items-center justify-end">
           <Link
-            to="/forgot-password"
+            to="/forget-password"
             className="text-sm text-blue-500 hover:underline"
           >
             Forgot your password?

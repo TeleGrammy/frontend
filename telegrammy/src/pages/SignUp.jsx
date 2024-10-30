@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import SignUpForm from '../Components/registration/SignUpForm';
 import WelcomeMessage from '../Components/registration/WelcomeMessage';
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
-import EmailVerificationForm from '../components/registration/EmailVerificationForm';
+import EmailVerification from '../Components/registration/EmailVerification';
 
 const SignUp = () => {
   const [verificationEmail, setVerificationEmail] = useState('');
@@ -27,7 +27,7 @@ const SignUp = () => {
           />
           <Route
             path="verify"
-            element={<EmailVerificationForm email={verificationEmail} />}
+            element={<EmailVerification email={verificationEmail}  />}
           />
         </Routes>
       </div>
