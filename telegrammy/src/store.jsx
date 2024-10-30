@@ -2,12 +2,14 @@ import { configureStore } from "@reduxjs/toolkit";
 
 //import slices from './slices';
 
-import loginReducer from "./slices/loginSlice";
+import authReducer from "./slices/authSlice";
+import darkReducer from "./slices/darkModeSlice";
 
 const store = configureStore({
   reducer: {
     //slices
-    login: loginReducer,
+    auth: authReducer,
+    darkMode: darkReducer,
   },
 });
 
