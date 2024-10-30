@@ -1,9 +1,10 @@
-
 function Header({ className, children }) {
   return (
-    <header className={` h-[4rem] w-full flex flex-row px-4 items-center ${className} `}>
+    <header
+      className={`flex h-[4rem] w-full flex-row items-center px-4 ${className} `}
+    >
       {children}
-      </header>
+    </header>
   );
 }
 

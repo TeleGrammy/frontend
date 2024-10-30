@@ -1,13 +1,13 @@
-import { useSelector } from "react-redux";
+import { useSelector } from 'react-redux';
 
 function SelectedInfo() {
-    const { currentRightSidebar } = useSelector((state) => state.sidebar);
+  const { currentRightSidebar } = useSelector((state) => state.sidebar);
 
-    return (
-        <h1 className="text-text-primary mx-4 mb-1 text-xl leading-none">
-            {currentRightSidebar}
-        </h1>
-    )
+  return (
+    <h1 className="mx-4 mb-1 text-xl leading-none text-text-primary">
+      {currentRightSidebar}
+    </h1>
+  );
 }
 
 export default SelectedInfo;

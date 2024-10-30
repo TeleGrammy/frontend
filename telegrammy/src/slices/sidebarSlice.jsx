@@ -1,31 +1,32 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    currentMenu: "ChatList",
-    isRightSidebarOpen: false,
-    currentRightSidebar: "",
+  currentMenu: 'ChatList',
+  isRightSidebarOpen: false,
+  currentRightSidebar: '',
 };
 
 const sidebarSlice = createSlice({
-  name: "sidebar",
+  name: 'sidebar',
   initialState,
   reducers: {
-    setcurrentMenu (state, action) {
+    setcurrentMenu(state, action) {
       state.currentMenu = action.payload;
     },
 
-    setRightSidebar (state, action) {
+    setRightSidebar(state, action) {
       state.isRightSidebarOpen = true;
       state.currentRightSidebar = action.payload;
     },
 
-    closeRightSidebar (state) {
+    closeRightSidebar(state) {
       state.isRightSidebarOpen = false;
-      state.currentRightSidebar = "";
+      state.currentRightSidebar = '';
     },
   },
 });
 
-export const { setcurrentMenu, setRightSidebar, closeRightSidebar } = sidebarSlice.actions;
+export const { setcurrentMenu, setRightSidebar, closeRightSidebar } =
+  sidebarSlice.actions;
 
 export default sidebarSlice.reducer;

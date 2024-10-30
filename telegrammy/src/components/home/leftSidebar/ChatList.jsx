@@ -3,17 +3,17 @@ import Menu from './Menu';
 import Header from './Header';
 
 function ChatList() {
-    return (
-        <>
-         {/* Sidebar */}
-         <Header>
-                <Menu />
-                <Searchbar/>
-            </Header>
-           {/* chats */}
-            {/* component of users */}
-        </>
-    )
+  return (
+    <>
+      {/* Sidebar */}
+      <Header>
+        <Menu />
+        <Searchbar />
+      </Header>
+      {/* chats */}
+      {/* component of users */}
+    </>
+  );
 }
 
-export default ChatList
+export default ChatList;

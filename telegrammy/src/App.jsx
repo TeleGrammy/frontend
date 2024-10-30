@@ -1,7 +1,6 @@
-
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import SignUp from "./pages/SignUp";
-import Home from "./pages/Home";
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import SignUp from './pages/SignUp';
+import Home from './pages/Home';
 
 export default function App() {
   return (
@@ -13,4 +12,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
