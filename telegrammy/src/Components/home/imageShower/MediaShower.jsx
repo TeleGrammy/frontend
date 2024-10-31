@@ -48,6 +48,7 @@ function MediaShower({ medias, initialStoryIndex }) {
         <img
           className="mt-1 h-[89%] w-full rounded-xl"
           src={medias[currentStoryIndex].media}
+          alt={medias[currentStoryIndex].content}
         />
         <p className="mb-5 ml-4 self-start text-lg font-bold text-text-secondary">
           {medias[currentStoryIndex].views} views
