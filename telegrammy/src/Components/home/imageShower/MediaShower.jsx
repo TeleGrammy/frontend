@@ -28,7 +28,10 @@ function MediaShower({ medias, initialStoryIndex }) {
     >
       <div
         className="relative z-20 flex h-full w-[23%] flex-col items-center justify-around"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleFinishTimer();
+        }}
       >
         <div className="relative top-6 flex h-1 w-[90%] justify-around">
           {medias.map((media, index) => (
