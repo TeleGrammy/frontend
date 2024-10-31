@@ -9,6 +9,7 @@ const initialState = {
       views: 10,
       expiresAt: '2030-12-1',
       Name: 'John Doe',
+      duration: 5,
       userId: 1,
     },
     {
@@ -18,6 +19,7 @@ const initialState = {
       views: 5,
       expiresAt: '2030-12-2',
       Name: 'John M4 Doe',
+      duration: 7,
       userId: 2,
     },
   ],

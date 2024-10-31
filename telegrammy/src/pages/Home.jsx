@@ -27,7 +27,7 @@ function Home() {
       <Chat />
       {isRightSidebarOpen && <RightSidebar />}
       {showedStoryIndex !== null && (
-        <MediaShower media={myStories[showedStoryIndex]} />
+        <MediaShower medias={myStories} initialStoryIndex={showedStoryIndex} />
       )}
     </div>
   );
