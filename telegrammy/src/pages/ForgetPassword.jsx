@@ -1,9 +1,12 @@
-import React, { useState, useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 
 const initialState = {
   email: '',
   error: '',
+  message: '',
   loading: false,
+  disable: false,
+  timer: 0,
 };
 
 function reducer(state, action) {
@@ -14,13 +17,20 @@ function reducer(state, action) {
       return { ...state, error: action.payload };
     case 'loading':
       return { ...state, loading: action.payload };
+    case 'decrementTimer':
+      return { ...state, timer: state.timer - 1 };
+    case 'timerReset':
+      return { ...state, timer: 60 };
+    case 'disable':
+      return { ...state, disable: action.payload };
+    case 'message':
+      return { ...state, message: action.payload };
   }
 }
 const ResetPassword = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const handleEmailChange = (e) => {
-
     dispatch({ type: 'email', payload: e.target.value });
   };
   const handleSubmit = async (e) => {
@@ -43,11 +53,16 @@ const ResetPassword = () => {
         },
       );
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        dispatch({
+          type: 'error',
+          payload: 'Internal server error, please try again later.',
+        });
+      } else {
+        dispatch({ type: 'message', payload: 'Please check your email.' });
       }
-      console.log(response.status);
-    //   setVerificationEmail(state.email);
-    //   navigate('/signup/verify');
+
+      dispatch({ type: 'disable', payload: true });
+      dispatch({ type: 'timerReset' });
     } catch (error) {
       dispatch({ type: 'error', payload: error.message });
     } finally {
@@ -55,14 +70,32 @@ const ResetPassword = () => {
     }
   };
 
+  useEffect(() => {
+    if (state.disable && state.timer > 0) {
+      const countdown = setInterval(() => {
+        dispatch({ type: 'decrementTimer' });
+      }, 1000);
+
+      if (state.timer === 1) {
+        dispatch({ type: 'disable', payload: false });
+        dispatch({ type: 'error', payload: '' });
+        dispatch({ type: 'message', payload: '' });
+        clearInterval(countdown);
+      }
+
+      return () => clearInterval(countdown);
+    }
+    return undefined;
+  }, [state.disable, state.timer]);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md space-y-4 rounded-lg bg-white p-8 shadow-md">
         <h2 className="text-center text-2xl font-semibold text-gray-800">
-          Reset Password
+          Find your account
         </h2>
         <p className="text-center text-sm text-gray-600">
-          Enter your email to receive a verification code
+          Please enter your email to search for your account
         </p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -78,12 +111,28 @@ const ResetPassword = () => {
           </div>
           <button
             type="submit"
-            className={`w-full rounded-md ${state.loading ? 'bg-sky-800' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
+            className={`w-full rounded-md ${state.loading ? 'bg-sky-800' : state.disable ? 'cursor-not-allowed bg-gray-400' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
+            disabled={state.disable}
           >
-            Send Verification Code
+            Search
           </button>
+
+          {state.disable ? (
+            <p className="text-center text-sm text-gray-600">
+              You can search again in {state.timer}
+            </p>
+          ) : (
+            ''
+          )}
         </form>
-        {state.message && <p className="mt-4 text-center text-gray-600">{state.message}</p>}
+        {state.error && (
+          <p className="mt-4 text-center text-red-600">{state.error}</p>
+        )}
+        {state.message !== '' ? (
+          <p className="mt-4 text-center text-green-600">{state.message}</p>
+        ) : (
+          ''
+        )}
       </div>
     </div>
   );

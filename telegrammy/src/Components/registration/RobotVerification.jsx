@@ -16,7 +16,7 @@ const ReCaptchaForm = ({ dispatch }) => {
 
   return (
     <ReCAPTCHA
-      sitekey="6LcAaGUqAAAAAPAgFpz5Ua_jnzb3rEuC2qZJBsJv"
+      sitekey="6LcQJGEqAAAAADBuvZhUXn5f8FqnU0Vsto5Um5NF"
       onChange={handleCaptchaChange}
       onExpired={handleCaptchaExpired}
     />

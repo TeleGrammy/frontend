@@ -39,13 +39,11 @@ function reducer(state, action) {
 const EmailVerification = ({ email }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
-  const location = useLocation();
-  const fromLoginPage = location.state?.fromLoginPage;
 
   // Function to handle changes in each code input field
   const handleCodeChange = (element, index) => {
     const value = element.value;
-    if (!/^[0-9]$/.test(value) || value.length > 1) {
+    if (isNaN(value) || value.length > 1) {
       return;
     } else {
       dispatch({
@@ -121,12 +119,16 @@ const EmailVerification = ({ email }) => {
     }
 
     try {
+      console.log(verificationCode);
       const response = await fetch('http://localhost:8080/api/v1/auth/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, verificationCode }),
+        body: JSON.stringify({
+           email,
+           verificationCode,
+        }),
       });
 
       if (response.ok) {
@@ -134,11 +136,8 @@ const EmailVerification = ({ email }) => {
         dispatch({ type: 'success', payload: true });
         dispatch({ type: 'error', payload: '' });
         console.log('Verification successful:', data);
-        if (fromLoginPage) {
-          navigate('/');
-        } else {
-          navigate('/login');
-        }
+
+        navigate('/login');
       } else {
         handleVerifyError(response);
         dispatch({ type: 'success', payload: false });
@@ -215,7 +214,7 @@ const EmailVerification = ({ email }) => {
   }, [state.isResendDisabled, state.timer]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg sm:p-8">
         <h2 className="mb-6 text-center text-xl font-bold text-gray-700 sm:text-2xl">
           Verify Your Email

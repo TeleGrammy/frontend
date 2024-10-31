@@ -112,9 +112,12 @@ const SignUpForm = ({ setVerificationEmail }) => {
             phone: phoneNumberWithCode,
             password: state.password,
             passwordConfirm: state.confirmPassword,
+            token: state.captchaToken,
           }),
         },
       );
+
+      console.log(response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

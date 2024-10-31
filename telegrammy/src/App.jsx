@@ -1,8 +1,8 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
-import EmailVerification from './Components/registration/EmailVerification';
-import ForgetPassword from './Components/registration/ForgetPassword';
+import ForgetPassword from './pages/ForgetPassword';
+import ResetPassword from './pages/ResetPassword';
 
 export default function App() {
   return (
@@ -14,11 +14,10 @@ export default function App() {
             <h1 className="text-3xl font-bold underline">Hello TeleGrammy!</h1>
           }
         />
-
         <Route path="/signup/*" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/verify" element={<EmailVerification/>} />
         <Route path="/forget-password" element={<ForgetPassword/>}/>
+        <Route path="/reset-password" element={<ResetPassword/>}/>
       </Routes>
     </BrowserRouter>
   );
