@@ -1,7 +1,7 @@
 import React, { useReducer } from 'react';
 import ShowPasswordIcon from '../Components/icons/ShowPasswordIcon';
 import HidePasswordIcon from '../Components/icons/HidePasswordIcon';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 const initialState = {
   password: '',
   confirmPassword: '',
@@ -31,15 +31,24 @@ function ResetPassword() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const location = useLocation();
   const navigate = useNavigate();
+  const { token } = useParams();
 
   // Extract token from the URL
-  const token = location.search ? location.search.substring(1) : null;
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       const responses = fetch(
-        `http://localhost:8080/api/v1/auth/reset-password/${token}`,
+        `http://localhost:8080/api/v1/auth/reset-password/${token}`,{
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            password: state.password,
+            passwordConfirm: state.confirmPassword
+          }),
+        }
       );
     } catch (error) {
       dispatch({ type: 'setError', payload: error.message });

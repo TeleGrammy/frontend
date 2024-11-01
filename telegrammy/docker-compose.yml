@@ -1,6 +1,6 @@
 services:
   backend:
-    image: telegrammy/backend:registest # telegrammy/backend:[module_name] (check with the backend repo)
+    image: telegrammy/backend:registration # telegrammy/backend:[module_name] (check with the backend repo)
     ports:
       - '${PORT}:${PORT}'
     env_file:

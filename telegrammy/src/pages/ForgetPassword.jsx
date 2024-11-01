@@ -7,6 +7,7 @@ const initialState = {
   loading: false,
   disable: false,
   timer: 0,
+  resendDisable: true,
 };
 
 function reducer(state, action) {
@@ -25,6 +26,8 @@ function reducer(state, action) {
       return { ...state, disable: action.payload };
     case 'message':
       return { ...state, message: action.payload };
+    case 'resendDisable':
+      return { ...state, resendDisable: action.payload };
   }
 }
 const ResetPassword = () => {
@@ -63,6 +66,50 @@ const ResetPassword = () => {
 
       dispatch({ type: 'disable', payload: true });
       dispatch({ type: 'timerReset' });
+
+    } catch (error) {
+      dispatch({ type: 'error', payload: error.message });
+    } finally {
+      dispatch({ type: 'loading', payload: false });
+    }
+  };
+
+  const handleResendToken = async (e) => {
+    e.preventDefault();
+
+    dispatch({ type: 'error', payload: '' });
+
+    try {
+      dispatch({ type: 'loading', payload: true });
+      const response = await fetch(
+        `http://localhost:8080/api/v1/auth/reset-password/resend`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: state.email,
+          }),
+        },
+      );
+      if (!response.ok) {
+
+        dispatch({
+          type: 'message',
+          payload: '',
+        });
+        
+        dispatch({
+          type: 'error',
+          payload: 'Internal server error, please try again later.',
+        });
+      } else {
+        dispatch({ type: 'message', payload: 'the message is resent.' });
+      }
+
+      dispatch({ type: 'resendDisable', payload: true });
+      dispatch({ type: 'timerReset' });
     } catch (error) {
       dispatch({ type: 'error', payload: error.message });
     } finally {
@@ -71,13 +118,13 @@ const ResetPassword = () => {
   };
 
   useEffect(() => {
-    if (state.disable && state.timer > 0) {
+    if (state.resendDisable && state.timer > 0) {
       const countdown = setInterval(() => {
         dispatch({ type: 'decrementTimer' });
       }, 1000);
 
       if (state.timer === 1) {
-        dispatch({ type: 'disable', payload: false });
+        dispatch({ type: 'resendDisable', payload: false });
         dispatch({ type: 'error', payload: '' });
         dispatch({ type: 'message', payload: '' });
         clearInterval(countdown);
@@ -86,7 +133,7 @@ const ResetPassword = () => {
       return () => clearInterval(countdown);
     }
     return undefined;
-  }, [state.disable, state.timer]);
+  }, [state.resendDisable, state.timer]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -117,9 +164,9 @@ const ResetPassword = () => {
             Search
           </button>
 
-          {state.disable ? (
+          {state.resendDisable && state.disable ? (
             <p className="text-center text-sm text-gray-600">
-              You can search again in {state.timer}
+              You can research for your email again in {state.timer}
             </p>
           ) : (
             ''
@@ -133,6 +180,24 @@ const ResetPassword = () => {
         ) : (
           ''
         )}
+        <div className="flex items-center justify-center space-x-2">
+          <p className="text-center text-sm text-gray-600">
+            Didn&apos;t receive a message?
+          </p>
+          <button
+            className={`text-blue-500 ${
+              state.resendDisable
+                ? 'cursor-not-allowed opacity-50'
+                : 'hover:underline'
+            }`}
+            onClick={handleResendToken}
+            disabled={state.resendDisable}
+          >
+            {state.resendDisable && state.disable
+              ? `Resend Message (${state.timer}s)`
+              : 'Resend Message'}
+          </button>
+        </div>
       </div>
     </div>
   );
