@@ -10,20 +10,18 @@ const images = [
     alt: 'Google',
     onClick: async (setData) => {
       const GOOGLE_URL = 'http://localhost:8080/api/v1/auth/google';
-      const popup = window.open(GOOGLE_URL, '_blank', 'width=500,height=600');
-      window.addEventListener('message', (event) => {
-        if (event.origin === 'http://localhost:8080') {
-          const { data } = event;
-          if (data && data.status === 'Logged in successfully with Google') {
-            console.log(data);
-            setData(data);
-          }
-        }
-      });
+      window.open(GOOGLE_URL, '_self');
     },
   },
   { icon: facebookIcon, alt: 'Facebook', onClick: () => {} },
-  { icon: githubIcon, alt: 'Github', onClick: () => {} },
+  {
+    icon: githubIcon,
+    alt: 'Github',
+    onClick: () => {
+      const GITHUB_URL = 'http://localhost:8080/api/v1/auth/github';
+      window.open(GITHUB_URL, '_self');
+    },
+  },
 ];
 
 const SocialLogin = () => {

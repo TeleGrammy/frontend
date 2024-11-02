@@ -71,6 +71,8 @@ function reducer(state, action) {
   }
 }
 
+export { reducer, initialState };
+
 const SignUpForm = ({ setVerificationEmail }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
@@ -116,10 +118,10 @@ const SignUpForm = ({ setVerificationEmail }) => {
           }),
         },
       );
-
+      const data = await response.json();
       console.log(response);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(data.message || 'Something went wrong!');
       }
       // await new Promise((resolve) => setTimeout(resolve, 5000));
       console.log(response.status);
