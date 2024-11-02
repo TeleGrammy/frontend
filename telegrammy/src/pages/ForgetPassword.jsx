@@ -30,7 +30,7 @@ function reducer(state, action) {
       return { ...state, resendDisable: action.payload };
   }
 }
-const ResetPassword = () => {
+const ForgetPassword = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const handleEmailChange = (e) => {
@@ -56,9 +56,10 @@ const ResetPassword = () => {
         },
       );
       if (!response.ok) {
+        const data = await response.json();
         dispatch({
           type: 'error',
-          payload: 'Internal server error, please try again later.',
+          payload: data.message,
         });
       } else {
         dispatch({ type: 'message', payload: 'Please check your email.' });
@@ -66,7 +67,6 @@ const ResetPassword = () => {
 
       dispatch({ type: 'disable', payload: true });
       dispatch({ type: 'timerReset' });
-
     } catch (error) {
       dispatch({ type: 'error', payload: error.message });
     } finally {
@@ -94,12 +94,11 @@ const ResetPassword = () => {
         },
       );
       if (!response.ok) {
-
         dispatch({
           type: 'message',
           payload: '',
         });
-        
+
         dispatch({
           type: 'error',
           payload: 'Internal server error, please try again later.',
@@ -160,6 +159,7 @@ const ResetPassword = () => {
             type="submit"
             className={`w-full rounded-md ${state.loading ? 'bg-sky-800' : state.disable ? 'cursor-not-allowed bg-gray-400' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
             disabled={state.disable}
+            name="search"
           >
             Search
           </button>
@@ -192,6 +192,7 @@ const ResetPassword = () => {
             }`}
             onClick={handleResendToken}
             disabled={state.resendDisable}
+            name="Resend Message"
           >
             {state.resendDisable && state.disable
               ? `Resend Message (${state.timer}s)`
@@ -203,4 +204,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;
+export default ForgetPassword;

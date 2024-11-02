@@ -51,7 +51,8 @@ function ResetPassword() {
         }
       );
     } catch (error) {
-      dispatch({ type: 'setError', payload: error.message });
+      const data = await response.json();
+      dispatch({ type: 'setError', payload: data.message });
     }
     if (state.password !== state.confirmPassword) {
       dispatch({ type: 'setError', payload: 'Passwords do not match.' });
