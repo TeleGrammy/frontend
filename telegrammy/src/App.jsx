@@ -3,6 +3,8 @@ import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import ForgetPassword from './pages/ForgetPassword';
 import ResetPassword from './pages/ResetPassword';
+import Home from "./pages/Home";
+
 
 export default function App() {
   return (
@@ -18,6 +20,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forget-password" element={<ForgetPassword/>}/>
         <Route path="/reset-password/:token" element={<ResetPassword/>}/>
+        <Route path="/home" element={<Home />} />
+
       </Routes>
     </BrowserRouter>
   );

@@ -51,7 +51,7 @@ const SignInForm = () => {
     reduxDispatch(loginUser({ UUID: state.email, password: state.password }));
   };
   useEffect(() => {
-    if (user) navigate('/');
+    if (user) navigate('/home');
   }, [user, navigate]);
   return (
     <div className="w-full p-6 md:w-1/2 md:p-7">

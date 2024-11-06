@@ -1,7 +1,6 @@
 import React, { useReducer, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-9;
 
 const initialState = {
   code: new Array(6).fill(''),
@@ -39,6 +38,7 @@ function reducer(state, action) {
 const EmailVerification = ({ email }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
+  const Email = email;
 
   // Function to handle changes in each code input field
   const handleCodeChange = (element, index) => {
@@ -126,10 +126,12 @@ const EmailVerification = ({ email }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-           email,
-           verificationCode,
+          email,
+          verificationCode,
         }),
       });
+
+      console.log(email);
 
       if (response.ok) {
         const data = await response.json();
@@ -139,7 +141,8 @@ const EmailVerification = ({ email }) => {
 
         navigate('/login');
       } else {
-        handleVerifyError(response);
+        const data = await response.json();
+        dispatch({ type: 'error', payload: data.message });
         dispatch({ type: 'success', payload: false });
       }
     } catch (error) {
