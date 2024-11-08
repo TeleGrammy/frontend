@@ -7,7 +7,7 @@ import MyStory from './MyStory';
 
 import { IoAdd } from 'react-icons/io5';
 import { closeRightSidebar } from '../../../slices/sidebarSlice';
-import { setShowedStoryIndex } from '../../../slices/storiesSlice';
+import { setShowedMyStoryIndex } from '../../../slices/storiesSlice';
 
 function RightSidebar() {
   const { myStories } = useSelector((state) => state.stories);
@@ -15,7 +15,7 @@ function RightSidebar() {
   const handleAddStory = () => {};
 
   const handleOpenStory = (index) => {
-    dispatch(setShowedStoryIndex(index));
+    dispatch(setShowedMyStoryIndex(index));
   };
 
   const dispatch = useDispatch();

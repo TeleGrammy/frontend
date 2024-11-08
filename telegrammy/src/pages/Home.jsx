@@ -7,7 +7,8 @@ import RightSidebar from '../components/home/rightSidebar/RightSidebar';
 import MediaShower from '../Components/home/imageShower/MediaShower';
 
 function Home() {
-  const { myStories, showedStoryIndex } = useSelector((state) => state.stories);
+  const { myStories, otherStories, showedMyStoryIndex, showedOtherStoryIndex } =
+    useSelector((state) => state.stories);
 
   const { isDarkTheme } = useSelector((state) => state.darkMode);
 
@@ -26,8 +27,17 @@ function Home() {
       <Sidebar />
       <Chat />
       {isRightSidebarOpen && <RightSidebar />}
-      {showedStoryIndex !== null && (
-        <MediaShower medias={myStories} initialStoryIndex={showedStoryIndex} />
+      {showedMyStoryIndex !== null && (
+        <MediaShower
+          medias={myStories}
+          initialStoryIndex={showedMyStoryIndex}
+        />
+      )}
+      {showedOtherStoryIndex !== null && (
+        <MediaShower
+          medias={otherStories}
+          initialStoryIndex={showedOtherStoryIndex}
+        />
       )}
     </div>
   );

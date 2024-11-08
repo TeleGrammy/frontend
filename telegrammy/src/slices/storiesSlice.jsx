@@ -105,7 +105,8 @@ const initialState = {
       userId: 2,
     },
   ],
-  showedStoryIndex: null,
+  showedMyStoryIndex: null,
+  showedOtherStoryIndex: null,
 };
 
 const storiesSlice = createSlice({
@@ -120,13 +121,21 @@ const storiesSlice = createSlice({
       state.otherStories = action.payload;
     },
 
-    setShowedStoryIndex(state, action) {
-      state.showedStoryIndex = action.payload;
+    setShowedMyStoryIndex(state, action) {
+      state.showedMyStoryIndex = action.payload;
+    },
+
+    setShowedOtherStoryIndex(state, action) {
+      state.showedOtherStoryIndex = action.payload;
     },
   },
 });
 
-export const { setMyStories, setOtherStories, setShowedStoryIndex } =
-  storiesSlice.actions;
+export const {
+  setMyStories,
+  setOtherStories,
+  setShowedMyStoryIndex,
+  setShowedOtherStoryIndex,
+} = storiesSlice.actions;
 
 export default storiesSlice.reducer;

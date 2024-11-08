@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { setShowedStoryIndex } from '../../../slices/storiesSlice';
+import { setShowedOtherStoryIndex } from '../../../slices/storiesSlice';
 import { useEffect, useRef } from 'react';
 
 function StoriesList() {
@@ -10,7 +10,7 @@ function StoriesList() {
   const { otherStories } = useSelector((state) => state.stories);
 
   const handleOpenStory = (index) => {
-    dispatch(setShowedStoryIndex(index));
+    dispatch(setShowedOtherStoryIndex(index));
   };
 
   useEffect(() => {

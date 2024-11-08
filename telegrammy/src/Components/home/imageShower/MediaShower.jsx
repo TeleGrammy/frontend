@@ -1,6 +1,9 @@
 import { useDispatch } from 'react-redux';
 import CloseButton from '../rightSidebar/CloseButton';
-import { setShowedStoryIndex } from '../../../slices/storiesSlice';
+import {
+  setShowedMyStoryIndex,
+  setShowedOtherStoryIndex,
+} from '../../../slices/storiesSlice';
 import Progressbar from './Progressbar';
 import { useState } from 'react';
 
@@ -10,7 +13,8 @@ function MediaShower({ medias, initialStoryIndex }) {
   const dispatch = useDispatch();
 
   const handleCloseStory = () => {
-    dispatch(setShowedStoryIndex(null));
+    dispatch(setShowedMyStoryIndex(null));
+    dispatch(setShowedOtherStoryIndex(null));
   };
 
   const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);

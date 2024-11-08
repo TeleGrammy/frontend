@@ -50,7 +50,7 @@ function Menu() {
       </div>
       {isMenuOpen && (
         <div
-          className={`absolute left-4 top-[4rem] min-w-60 rounded-2xl border border-border bg-bg-primary opacity-80 shadow-xl`}
+          className={`border-border absolute left-4 top-[4rem] z-10 min-w-60 rounded-2xl border bg-bg-primary opacity-80 shadow-xl`}
         >
           <ul className="text-l flex flex-col items-start justify-start space-y-2 p-2 px-4">
             {Menuitems.map((item) => (
