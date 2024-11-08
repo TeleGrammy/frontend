@@ -7,8 +7,13 @@ import RightSidebar from '../components/home/rightSidebar/RightSidebar';
 import MediaShower from '../Components/home/imageShower/MediaShower';
 
 function Home() {
-  const { myStories, otherStories, showedMyStoryIndex, showedOtherStoryIndex } =
-    useSelector((state) => state.stories);
+  const {
+    myStories,
+    otherStories,
+    showedMyStoryIndex,
+    showedOtherStoryIndex,
+    showedOtherUserIndex,
+  } = useSelector((state) => state.stories);
 
   const { isDarkTheme } = useSelector((state) => state.darkMode);
 
@@ -35,7 +40,7 @@ function Home() {
       )}
       {showedOtherStoryIndex !== null && (
         <MediaShower
-          medias={otherStories}
+          medias={otherStories[showedOtherUserIndex].stories}
           initialStoryIndex={showedOtherStoryIndex}
         />
       )}

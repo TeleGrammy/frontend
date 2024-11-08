@@ -3,6 +3,7 @@ import CloseButton from '../rightSidebar/CloseButton';
 import {
   setShowedMyStoryIndex,
   setShowedOtherStoryIndex,
+  setShowedOtherUserIndex,
 } from '../../../slices/storiesSlice';
 import Progressbar from './Progressbar';
 import { useState } from 'react';
@@ -15,6 +16,7 @@ function MediaShower({ medias, initialStoryIndex }) {
   const handleCloseStory = () => {
     dispatch(setShowedMyStoryIndex(null));
     dispatch(setShowedOtherStoryIndex(null));
+    dispatch(setShowedOtherUserIndex(null));
   };
 
   const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);

@@ -1,5 +1,8 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { setShowedOtherStoryIndex } from '../../../slices/storiesSlice';
+import {
+  setShowedOtherStoryIndex,
+  setShowedOtherUserIndex,
+} from '../../../slices/storiesSlice';
 import { useEffect, useRef } from 'react';
 
 function StoriesList() {
@@ -10,7 +13,8 @@ function StoriesList() {
   const { otherStories } = useSelector((state) => state.stories);
 
   const handleOpenStory = (index) => {
-    dispatch(setShowedOtherStoryIndex(index));
+    dispatch(setShowedOtherUserIndex(index));
+    dispatch(setShowedOtherStoryIndex(0));
   };
 
   useEffect(() => {
@@ -42,15 +46,15 @@ function StoriesList() {
         className="scrollable flex flex-row-reverse gap-3 overflow-x-scroll px-4 py-2"
       >
         {otherStories
-          .filter((story) => Date.now() < new Date(story.expiresAt))
-          .map((story, index) => (
+          // .filter((story) => Date.now() < new Date(story.expiresAt))
+          .map((collection, index) => (
             <div
               key={index}
               className="shrink-0"
               onClick={() => handleOpenStory(index)}
             >
               <img
-                src={story.media}
+                src={collection.stories[0].media}
                 className="h-14 w-14 rounded-full border-2 border-green-500"
                 alt={`story${index}`}
               />
