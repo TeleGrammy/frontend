@@ -1,8 +1,11 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { setShowedStoryIndex } from '../../../slices/storiesSlice';
+import { useEffect, useRef } from 'react';
 
 function StoriesList() {
   const dispatch = useDispatch();
+
+  const scrollRef = useRef();
 
   const { otherStories } = useSelector((state) => state.stories);
 
@@ -10,9 +13,34 @@ function StoriesList() {
     dispatch(setShowedStoryIndex(index));
   };
 
+  useEffect(() => {
+    const scrollableDiv = scrollRef.current;
+    const handleWheel = (event) => {
+      if (event.deltaY !== 0) {
+        // Prevent the default vertical scroll behavior
+        event.preventDefault();
+        // Scroll horizontally based on the vertical scroll amount
+        scrollableDiv.scrollLeft -= event.deltaY;
+      }
+    };
+
+    if (scrollableDiv) {
+      scrollableDiv.addEventListener('wheel', handleWheel);
+    }
+
+    return () => {
+      if (scrollableDiv) {
+        scrollableDiv.removeEventListener('wheel', handleWheel);
+      }
+    };
+  }, []);
+
   return (
     <div className="relative mt-4 w-full">
-      <div className="scrollable flex flex-row-reverse gap-3 overflow-x-scroll px-4 py-2">
+      <div
+        ref={scrollRef}
+        className="scrollable flex flex-row-reverse gap-3 overflow-x-scroll px-4 py-2"
+      >
         {otherStories
           .filter((story) => Date.now() < new Date(story.expiresAt))
           .map((story, index) => (
