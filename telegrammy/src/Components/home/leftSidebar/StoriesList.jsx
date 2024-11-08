@@ -7,9 +7,7 @@ import { useEffect, useRef } from 'react';
 
 function StoriesList() {
   const dispatch = useDispatch();
-
   const scrollRef = useRef();
-
   const { otherStories } = useSelector((state) => state.stories);
 
   const handleOpenStory = (index) => {
@@ -21,9 +19,7 @@ function StoriesList() {
     const scrollableDiv = scrollRef.current;
     const handleWheel = (event) => {
       if (event.deltaY !== 0) {
-        // Prevent the default vertical scroll behavior
         event.preventDefault();
-        // Scroll horizontally based on the vertical scroll amount
         scrollableDiv.scrollLeft -= event.deltaY;
       }
     };
@@ -45,21 +41,43 @@ function StoriesList() {
         ref={scrollRef}
         className="scrollable flex flex-row-reverse gap-3 overflow-x-scroll px-4 py-2"
       >
-        {otherStories
-          // .filter((story) => Date.now() < new Date(story.expiresAt))
-          .map((collection, index) => (
+        {otherStories.map((collection, index) => {
+          const numStories = collection.stories.length;
+          const dashLength = (2 * Math.PI * 20) / numStories; // circumference divided by number of stories
+          const gapLength = numStories > 1 ? 5 : 0; // Adjust as needed for spacing
+
+          return (
             <div
               key={index}
-              className="shrink-0"
+              className="relative shrink-0"
               onClick={() => handleOpenStory(index)}
             >
+              {/* SVG Border with Dashes */}
+              <svg
+                className="absolute left-0 top-0 overflow-visible"
+                width="60"
+                height="60"
+              >
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="30"
+                  fill="none"
+                  stroke="green"
+                  strokeWidth="3"
+                  strokeDasharray={`${dashLength} ${gapLength}`}
+                />
+              </svg>
+
+              {/* Story Image */}
               <img
                 src={collection.stories[0].media}
-                className="h-14 w-14 rounded-full border-2 border-green-500"
+                className="h-14 w-14 rounded-full"
                 alt={`story${index}`}
               />
             </div>
-          ))}
+          );
+        })}
       </div>
       <div className="pointer-events-none absolute left-0 top-0 h-full w-32 bg-gradient-to-r from-bg-primary to-transparent"></div>
     </div>
