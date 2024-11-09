@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 import Resizer from './Resizer';
 import ChatList from './ChatList';
-
+import Settings from '../../Settings/Settings';
 const minWidth = 300; // Minimum sidebar width
 const maxWidth = 600; // Maximum sidebar width
 
@@ -13,7 +13,7 @@ const SideBar = () => {
     const { currentMenu } = useSelector((state) => state.sidebar);
 
     return (
-        <div className='relative flex h-screen flex-col items-center bg-bg-primary'
+        <div className='relative flex h-screen flex-col items-center bg-bg-primary no-scrollbar'
             style={{ width: `${width}px` }}>
             
             {/* Components to render */}
@@ -21,8 +21,8 @@ const SideBar = () => {
             {currentMenu === 'ChatList' && <ChatList />}
 
             {/** setting component */}
-            {/* {currentMenu === 'setting' && <Setting />} */}
-
+            {currentMenu === 'Setting' && <Settings />}
+            {/* {currentMenu === 'EditSettings' && <EditSettings />}*/ }
            {/* Resizer handle */}
            <Resizer setWidth={setWidth} />
         </div>
