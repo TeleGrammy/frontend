@@ -30,6 +30,14 @@ function MediaShower({ medias, initialStoryIndex }) {
     }
   };
 
+  const handleGoBack = () => {
+    if (currentStoryIndex > 0) {
+      setCurrentStoryIndex(currentStoryIndex - 1);
+    } else {
+      handleCloseStory();
+    }
+  };
+
   return (
     <div
       className="fixed z-10 flex h-screen w-screen items-center justify-around bg-bg-primary opacity-90"
@@ -37,10 +45,7 @@ function MediaShower({ medias, initialStoryIndex }) {
     >
       <div
         className="relative z-20 flex h-full w-[23%] flex-col items-center justify-around"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleFinishTimer();
-        }}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="relative top-6 flex h-1 w-[90%] justify-around">
           {medias.map((media, index) => (
@@ -59,6 +64,18 @@ function MediaShower({ medias, initialStoryIndex }) {
           src={medias[currentStoryIndex].media}
           alt={medias[currentStoryIndex].content}
         />
+        <div
+          className="absolute left-0 top-0 h-full w-[30%]"
+          onClick={(e) => {
+            handleGoBack();
+          }}
+        ></div>
+        <div
+          className="absolute right-0 top-0 h-full w-[30%]"
+          onClick={(e) => {
+            handleFinishTimer();
+          }}
+        ></div>
         <p className="mb-5 ml-4 self-start text-lg font-bold text-text-secondary">
           {medias[currentStoryIndex].views} views
         </p>

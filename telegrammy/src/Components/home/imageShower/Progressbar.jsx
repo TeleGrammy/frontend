@@ -29,6 +29,10 @@ function Progressbar({ duration, handleEnd, isCompleted, isActive, count }) {
     return () => clearInterval(timer);
   }, [duration, isActive, handleEnd, isCompleted]);
 
+  useEffect(() => {
+    if (isActive) setProgress(0);
+  }, [isActive]);
+
   return (
     <div
       className={`relative h-1 bg-gray-600`}

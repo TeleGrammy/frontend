@@ -34,7 +34,7 @@ const initialState = {
           views: 10,
           expiresAt: '2030-12-1',
           Name: 'John Doe',
-          duration: 500,
+          duration: 10,
           userId: 1,
         },
         {
@@ -44,7 +44,7 @@ const initialState = {
           views: 10,
           expiresAt: '2030-12-1',
           Name: 'John Doe',
-          duration: 500,
+          duration: 10,
           userId: 1,
         },
         {
@@ -54,7 +54,7 @@ const initialState = {
           views: 10,
           expiresAt: '2030-12-1',
           Name: 'John Doe',
-          duration: 500,
+          duration: 10,
           userId: 1,
         },
         {
@@ -64,7 +64,7 @@ const initialState = {
           views: 10,
           expiresAt: '2030-12-1',
           Name: 'John Doe',
-          duration: 500,
+          duration: 10,
           userId: 1,
         },
       ],
