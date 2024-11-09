@@ -72,7 +72,7 @@ const Settings = () => {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-            <h2 className="text-xl sm:text-2xl font-semibold ml-6">Settings</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold ml-6 text-text-primary">Settings</h2>
 
             <button
               className="text-[#FF6347] hover:text-[#FF4500] flex items-center"
@@ -99,10 +99,10 @@ const Settings = () => {
                 <span>{initials}</span>
               )}
             </div>
-            <p className="text-base sm:text-lg mt-2">{name}</p>
-            <p className="text-base sm:text-lg mt-1">@{username}</p>
-            <p className="text-base sm:text-lg mt-1">{email}</p>
-            <p className="text-base sm:text-lg mt-1">{phone}</p>
+            <p className="text-base sm:text-lg mt-2 text-text-primary">{name}</p>
+            <p className="text-base sm:text-lg mt-1 text-text-primary">@{username}</p>
+            <p className="text-base sm:text-lg mt-1 text-text-primary">{email}</p>
+            <p className="text-base sm:text-lg mt-1 text-text-primary">{phone}</p>
             <p className="text-[#A9A9A9]">online</p>
           </div>
           <div className="text-center mb-6 sm:mb-8">
@@ -111,7 +111,7 @@ const Settings = () => {
 
           <div className="space-y-3 sm:space-y-4">
             <button
-              className="w-full text-left px-3 py-2 sm:px-4 sm:py-3 bg-[#1c1c1e] rounded-lg flex items-center hover:bg-[#2c2c2e] transition duration-200"
+              className="w-full text-left px-3 py-2 sm:px-4 sm:py-3 bg-bg-secondary text-text-primary rounded-lg flex items-center hover:bg-bg-hover transition duration-200"
               onClick={() => setView('privacy')}
             >
               <svg className="h-5 w-5 sm:h-6 sm:w-6 text-[#A9A9A9] mr-2 sm:mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

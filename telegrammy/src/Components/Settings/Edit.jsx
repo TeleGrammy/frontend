@@ -127,25 +127,25 @@ const Edit = ({
   const initials = deriveInitials(`${firstName} ${lastName}`);
 
   return (
-    <div className="w-full text-white min-h-screen flex flex-col items-center p-4 sm:p-6">
+    <div className="w-full text-text-primary min-h-screen flex flex-col items-center p-4 sm:p-6">
       <div className="w-full bg-bg-primary">
         <div className="w-full flex justify-between items-center mb-4 sm:mb-6">
           <button
             onClick={() => setView('settings')}
-            className="text-[#A9A9A9] hover:text-gray-300"
+            className="text-text-primary hover:text-gray-300"
             aria-label="Go Back"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-xl font-semibold mr-5">Edit Profile</h2>
+          <h2 className="text-xl font-semibold mr-5 text-text-primary">Edit Profile</h2>
           <div></div>
         </div>
 
         <div className="flex flex-col items-center mb-4 sm:mb-6 w-full">
           <div className="relative">
-            <div className="bg-gradient-to-r from-[#FF8C00] to-[#FF6347] rounded-full h-20 w-20 sm:h-24 sm:w-24 flex items-center justify-center text-2xl sm:text-3xl overflow-hidden">
+            <div className="bg-gradient-to-r from-[#FF8C00] to-[#FF6347] rounded-full h-20 w-20 sm:h-24 sm:w-24 flex items-center justify-center text-2xl sm:text-3xl overflow-hidden text-text-primary">
               {preview ? (
                 <img src={preview} alt="Profile Preview" className="h-full w-full object-cover" />
               ) : (
@@ -173,13 +173,13 @@ const Edit = ({
 
         <div className="space-y-3 sm:space-y-4">
           <div>
-            <label className="block text-sm text-[#A9A9A9]" htmlFor="firstName">First Name</label>
+            <label className="block text-sm text-text-primary" htmlFor="firstName">First Name</label>
             <input
               id="firstName"
               type="text"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-[#2c2c2e] rounded-lg text-white"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
               placeholder="Enter your first name"
               aria-label="First Name"
             />
@@ -187,26 +187,26 @@ const Edit = ({
           </div>
 
           <div>
-            <label className="block text-sm text-[#A9A9A9]" htmlFor="lastName">Last Name</label>
+            <label className="block text-sm text-text-primary" htmlFor="lastName">Last Name</label>
             <input
               id="lastName"
               type="text"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-[#2c2c2e] rounded-lg text-white"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
               placeholder="Enter your last name"
               aria-label="Last Name"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-[#A9A9A9]" htmlFor="username">Username</label>
+            <label className="block text-sm text-text-primary" htmlFor="username">Username</label>
             <input
               id="username"
               type="text"
               value={currentUsername}
               onChange={(e) => setCurrentUsername(e.target.value)}
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-[#2c2c2e] rounded-lg text-white"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
               placeholder="Enter your username"
               aria-label="Username"
             />
@@ -214,7 +214,7 @@ const Edit = ({
           </div>
 
           <div>
-            <label className="block text-sm text-[#A9A9A9]" htmlFor="email">Email</label>
+            <label className="block text-sm text-text-primary" htmlFor="email">Email</label>
             <input
               id="email"
               type="email"
@@ -225,7 +225,7 @@ const Edit = ({
                   setEmailError('');
                 }
               }}
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-[#2c2c2e] rounded-lg text-white"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
               placeholder="Enter your email"
               aria-label="Email"
             />
@@ -233,7 +233,7 @@ const Edit = ({
           </div>
 
           <div>
-            <label className="block text-sm text-[#A9A9A9]" htmlFor="phone">Phone Number</label>
+            <label className="block text-sm text-text-primary" htmlFor="phone">Phone Number</label>
             <input
               id="phone"
               type="tel"
@@ -244,7 +244,7 @@ const Edit = ({
                   setPhoneError('');
                 }
               }}
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-[#2c2c2e] rounded-lg text-white"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
               placeholder="+1 (123) 456-7890"
               aria-label="Phone Number"
             />
@@ -252,12 +252,12 @@ const Edit = ({
           </div>
 
           <div>
-            <label className="block text-sm text-[#A9A9A9]" htmlFor="bio">Bio</label>
+            <label className="block text-sm text-text-primary" htmlFor="bio">Bio</label>
             <textarea
               id="bio"
               value={bioText}
               onChange={(e) => setBioText(e.target.value)}
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-[#2c2c2e] rounded-lg text-white"
+              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
               rows="4"
               placeholder="Tell us about yourself..."
               aria-label="Bio"
