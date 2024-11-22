@@ -1,7 +1,7 @@
 import React, { useReducer, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   code: new Array(6).fill(''),
   isResendDisabled: false,
@@ -120,7 +120,7 @@ const EmailVerification = ({ email }) => {
 
     try {
       console.log(verificationCode);
-      const response = await fetch('http://localhost:8080/api/v1/auth/verify', {
+      const response = await fetch(`${apiUrl}/v1/auth/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ const EmailVerification = ({ email }) => {
 
     try {
       const response = await fetch(
-        'http://localhost:8080/api/v1/auth/resend-verification',
+        `${apiUrl}/v1/auth/resend-verification`,
         {
           method: 'POST',
           headers: {

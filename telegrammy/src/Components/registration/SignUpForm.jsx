@@ -9,7 +9,7 @@ import HidePasswordIcon from '../icons/HidePasswordIcon';
 import { ClipLoader } from 'react-spinners';
 import { useNavigate } from 'react-router-dom';
 import RobotVerification from './RobotVerification';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   showPassword: false,
   showConfirmPassword: false,
@@ -102,7 +102,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
     try {
       dispatch({ type: 'loading', payload: true });
       const response = await fetch(
-        `http://localhost:8080/api/v1/auth/register`,
+        `${apiUrl}/v1/auth/register`,
         {
           method: 'POST',
           headers: {

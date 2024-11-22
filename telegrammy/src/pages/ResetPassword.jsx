@@ -2,6 +2,7 @@ import React, { useReducer } from 'react';
 import ShowPasswordIcon from '../Components/icons/ShowPasswordIcon';
 import HidePasswordIcon from '../Components/icons/HidePasswordIcon';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   password: '',
   confirmPassword: '',
@@ -39,7 +40,7 @@ function ResetPassword() {
 
     try {
       const responses = fetch(
-        `http://localhost:8080/api/v1/auth/reset-password/${token}`,{
+        `${apiUrl}/v1/auth/reset-password/${token}`,{
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
