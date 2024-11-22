@@ -16,13 +16,11 @@ function MenuItem({ isRightSidebar, setIsMenuOpen, newMenu, children }) {
   };
 
   return (
-    <li className="mx-2 w-full rounded-2xl px-2 hover:bg-bg-hover">
-      <button
-        onClick={handleSelectItem}
-        className="flex flex-row items-center text-text-primary"
-      >
-        {children}
-      </button>
+    <li
+      onClick={handleSelectItem}
+      className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+    >
+      {children}
     </li>
   );
 }

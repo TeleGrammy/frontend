@@ -10,7 +10,7 @@ import {
   IoTrash,
 } from 'react-icons/io5';
 
-const AddStoryOverlay = ({ file, previewUrl, onClose }) => {
+const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
   const [texts, setTexts] = useState([]);
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState(null);
@@ -103,11 +103,15 @@ const AddStoryOverlay = ({ file, previewUrl, onClose }) => {
 
   // Export the canvas as an image
   const handleExport = async () => {
-    const dataUrl = stageRef.current.toDataURL();
+    let blob;
 
-    // // Convert the data URL to a Blob
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
+    if (fileType === 'image') {
+      const dataUrl = stageRef.current.toDataURL();
+      const response = await fetch(dataUrl);
+      blob = await response.blob();
+    } else if (fileType === 'video') {
+      blob = file; // Directly use the video file
+    }
 
     const formData = new FormData();
     formData.append('content', caption); // 'content' field
@@ -147,6 +151,8 @@ const AddStoryOverlay = ({ file, previewUrl, onClose }) => {
 
   // Update stage dimensions based on the container size
   useEffect(() => {
+    if (fileType === 'video') return;
+
     const updateDimensions = () => {
       const container = stageRef.current.getStage().container();
       setStageDimensions({
@@ -159,17 +165,19 @@ const AddStoryOverlay = ({ file, previewUrl, onClose }) => {
     window.addEventListener('resize', updateDimensions);
 
     return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
+  }, [file]);
 
   // Load the image and resize it to fit the stage dimensions
   useEffect(() => {
-    const img = new window.Image();
-    img.src = previewUrl;
-    img.crossOrigin = 'anonymous'; // Prevents cross-origin issues when exporting
-    img.onload = () => {
-      setImage(img);
-    };
-  }, [previewUrl]);
+    if (fileType === 'image') {
+      const img = new window.Image();
+      img.src = previewUrl;
+      img.crossOrigin = 'anonymous'; // Prevents cross-origin issues when exporting
+      img.onload = () => {
+        setImage(img);
+      };
+    }
+  }, [previewUrl, fileType]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
@@ -184,107 +192,121 @@ const AddStoryOverlay = ({ file, previewUrl, onClose }) => {
 
         {/* Konva Canvas */}
         <div className="relative h-full w-full border-bg-secondary">
-          <Stage
-            width={stageDimensions.width}
-            height={stageDimensions.height}
-            className="br h-full w-full rounded-lg"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            ref={stageRef}
-          >
-            <Layer>
-              {image && (
-                <KonvaImage
-                  image={image}
-                  x={0}
-                  y={0}
-                  width={stageDimensions.width}
-                  height={stageDimensions.height}
+          {fileType === 'video' ? (
+            // Render video if fileType is 'video'
+            <video
+              src={previewUrl}
+              controls
+              className="h-full w-full rounded-lg"
+            />
+          ) : (
+            <Stage
+              width={stageDimensions.width}
+              height={stageDimensions.height}
+              className="br h-full w-full rounded-lg"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              ref={stageRef}
+            >
+              <Layer>
+                {image && (
+                  <KonvaImage
+                    image={image}
+                    x={0}
+                    y={0}
+                    width={stageDimensions.width}
+                    height={stageDimensions.height}
+                  />
+                )}
+                {texts.map((textItem, index) => (
+                  <Text
+                    key={index}
+                    text={textItem.text}
+                    x={textItem.x}
+                    y={textItem.y}
+                    draggable
+                    fontSize={20}
+                    fill={textItem.color}
+                    onClick={() => handleTextClick(index)}
+                    onDragEnd={(e) => handleEndDrag(e, index)}
+                  />
+                ))}
+                {lines.map((line, i) => (
+                  <Line
+                    key={i}
+                    points={line.points}
+                    stroke={line.color}
+                    strokeWidth={2}
+                    tension={0.5}
+                    lineCap="round"
+                  />
+                ))}
+              </Layer>
+            </Stage>
+          )}
+          {/* edit Text Input */}
+          {fileType === 'image' && (
+            <>
+              {activeTextIndex !== null && (
+                <input
+                  type="text"
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  className="absolute rounded-full bg-transparent p-3 text-xl text-white focus:outline-none"
+                  style={{
+                    left: texts[activeTextIndex].x,
+                    top: texts[activeTextIndex].y,
+                  }}
+                  onBlur={handleTextChange}
+                  autoFocus
                 />
               )}
-              {texts.map((textItem, index) => (
-                <Text
-                  key={index}
-                  text={textItem.text}
-                  x={textItem.x}
-                  y={textItem.y}
-                  draggable
-                  fontSize={20}
-                  fill={textItem.color}
-                  onClick={() => handleTextClick(index)}
-                  onDragEnd={(e) => handleEndDrag(e, index)}
-                />
-              ))}
-              {lines.map((line, i) => (
-                <Line
-                  key={i}
-                  points={line.points}
-                  stroke={line.color}
-                  strokeWidth={2}
-                  tension={0.5}
-                  lineCap="round"
-                />
-              ))}
-            </Layer>
-          </Stage>
 
-          {/* edit Text Input */}
-          {activeTextIndex !== null && (
-            <input
-              type="text"
-              value={editingText}
-              onChange={(e) => setEditingText(e.target.value)}
-              className="absolute rounded-full bg-transparent p-3 text-xl text-white focus:outline-none"
-              style={{
-                left: texts[activeTextIndex].x,
-                top: texts[activeTextIndex].y,
-              }}
-              onBlur={handleTextChange}
-              autoFocus
-            />
+              {/* Add Text */}
+              <div className="absolute left-2 top-2 flex items-center space-x-2">
+                <button
+                  onClick={handleAddText}
+                  className="rounded-full bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                >
+                  T
+                </button>
+              </div>
+              <div className="absolute right-2 top-2 space-x-3">
+                <input
+                  ref={colorRef}
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className="hidden p-2"
+                />
+                <button onClick={handleInputColor}>
+                  <IoColorPalette className="text-xl text-white" />
+                </button>
+                <button
+                  onClick={() => setActiveDraw((prev) => !prev)}
+                  className={`rounded-full ${activeDraw ? 'bg-blue-800' : 'bg-blue-500'} px-4 py-2 text-white hover:bg-blue-800`}
+                >
+                  <IoBrush />
+                </button>
+                <button
+                  onClick={() => setLines([])}
+                  className={`rounded-full bg-red-200 px-4 py-2 text-white hover:bg-red-400`}
+                >
+                  <IoTrash />
+                </button>
+              </div>
+            </>
           )}
-
-          {/* Add Text */}
-          <div className="absolute left-2 top-2 flex items-center space-x-2">
-            <button
-              onClick={handleAddText}
-              className="rounded-full bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-            >
-              T
-            </button>
-          </div>
-          <div className="absolute right-2 top-2 space-x-3">
-            <input
-              ref={colorRef}
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              className="hidden p-2"
-            />
-            <button onClick={handleInputColor}>
-              <IoColorPalette className="text-xl text-white" />
-            </button>
-            <button
-              onClick={() => setActiveDraw((prev) => !prev)}
-              className={`rounded-full ${activeDraw ? 'bg-blue-800' : 'bg-blue-500'} px-4 py-2 text-white hover:bg-blue-800`}
-            >
-              <IoBrush />
-            </button>
-            <button
-              onClick={() => setLines([])}
-              className={`rounded-full bg-red-200 px-4 py-2 text-white hover:bg-red-400`}
-            >
-              <IoTrash />
-            </button>
-          </div>
-          <div className="absolute bottom-0 left-0 flex w-full flex-row items-center justify-between">
+          <div
+            className={`absolute ${fileType === 'video' ? 'bottom-[-35px]' : 'bottom-0'} left-0 flex w-full flex-row items-center justify-between p-2`}
+          >
             <input
               type=""
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Add caption"
-              className="w-[50%] rounded-full border border-border bg-bg-secondary px-4 py-2 text-text-primary focus:outline-none"
+              className="w-[80%] rounded-full border border-border bg-bg-secondary px-4 py-2 text-text-primary focus:outline-none"
             />
             <button
               onClick={handleExport}
