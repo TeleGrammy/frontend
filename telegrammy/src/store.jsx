@@ -11,6 +11,7 @@ const store = configureStore({
   reducer: {
     //slices
     auth: authReducer,
+
     darkMode: darkReducer,
     sidebar: sidebarReducer,
     stories: storiesReducer,
