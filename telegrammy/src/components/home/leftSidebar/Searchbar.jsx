@@ -8,6 +8,7 @@ function SearchBar() {
        <div className="flex items-center bg-bg-secondary h-12 text-text-primary px-3 py-2 ml-3 rounded-full w-full">
             <FaSearch className="text-text-primary mr-2 opacity-70" />
             <input
+                data-test-id="search"
                 type="text"
                 className="bg-transparent flex-grow focus:outline-none focus:border-none"
                 placeholder="Search..."

@@ -64,6 +64,7 @@ const Settings = () => {
         <div className="w-full max-w-md sm:max-w-lg">
           <div className="flex items-center justify-between sm:py-4">
           <button
+          data-test-id="settings"
             onClick={() => handleClick()}
             className="text-[#A9A9A9] hover:text-gray-300"
             aria-label="Go Back"
@@ -75,6 +76,7 @@ const Settings = () => {
             <h2 className="text-xl sm:text-2xl font-semibold ml-6 text-text-primary">Settings</h2>
 
             <button
+            data-test-id="edit-settings"
               className="text-[#FF6347] hover:text-[#FF4500] flex items-center"
               onClick={() => setView('edit')}
               title="Edit Profile"
@@ -111,6 +113,7 @@ const Settings = () => {
 
           <div className="space-y-3 sm:space-y-4">
             <button
+            data-test-id="privacy"
               className="w-full text-left px-3 py-2 sm:px-4 sm:py-3 bg-bg-secondary text-text-primary rounded-lg flex items-center hover:bg-bg-hover transition duration-200"
               onClick={() => setView('privacy')}
             >

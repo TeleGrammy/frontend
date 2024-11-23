@@ -15,6 +15,7 @@ const WelcomeMessage = ({ signIn = true }) => {
         {signIn ? 'Already have an account?' : "You don't have an account!"}
       </p>
       <button
+      data-test-id="home"
         className="mt-4 rounded-md border border-white px-4 py-2 transition-colors duration-300 ease-in-out hover:bg-white hover:text-sky-950"
         onClick={() => navigate(signIn ? '/login' : '/signup')}
       >

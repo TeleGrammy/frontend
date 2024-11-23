@@ -241,6 +241,7 @@ const EmailVerification = ({ email }) => {
           <div className="mb-6 flex justify-center space-x-2 sm:space-x-3">
             {state.code.map((digit, index) => (
               <input
+                data-test-id="email"
                 key={index}
                 type="text"
                 maxLength="1"
@@ -252,6 +253,7 @@ const EmailVerification = ({ email }) => {
           </div>
 
           <button
+            data-test-id="verify"
             type="submit"
             className={`w-full rounded-lg px-4 py-2 font-bold text-white transition duration-200 ${
               isCodeComplete()
@@ -267,6 +269,7 @@ const EmailVerification = ({ email }) => {
         <p className="mt-6 text-center text-sm text-gray-600">
           Didn&apos;t receive a code?{' '}
           <button
+          data-test-id="resend"
             className={`text-blue-500 ${
               state.isResendDisabled
                 ? 'cursor-not-allowed opacity-50'

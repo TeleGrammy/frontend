@@ -77,7 +77,7 @@ function ResetPassword() {
             </label>
             <input
               type={state.showPassword ? 'text' : 'password'}
-              id="password"
+              data-test-id="password"
               value={state.password}
               onChange={(e) =>
                 dispatch({ type: 'setPassword', payload: e.target.value })
@@ -86,7 +86,7 @@ function ResetPassword() {
               required
             />
             <button
-              id="show-hide-password"
+              data-test-id="show-hide-password"
               type="button"
               onClick={() => dispatch({ type: 'togglePass' })}
               className="-translate-y-1/8 absolute right-2 top-1/2 transform focus:outline-none"
@@ -103,7 +103,7 @@ function ResetPassword() {
             </label>
             <input
               type={state.showConfirmPassword ? 'text' : 'password'}
-              id="confirmPassword"
+              data-test-id="confirmPassword"
               value={state.confirmPassword}
               onChange={(e) =>
                 dispatch({
@@ -115,7 +115,7 @@ function ResetPassword() {
               required
             />
             <button
-              id="show-hide-confirm-password"
+              data-test-id="show-hide-confirm-password"
               type="button"
               onClick={() => dispatch({ type: 'toggleConfirmPass' })}
               className="-translate-y-1/8 absolute right-2 top-1/2 transform focus:outline-none"
@@ -129,6 +129,7 @@ function ResetPassword() {
           </div>
           {state.error && <p className="mb-4 text-red-500">{state.error}</p>}
           <button
+          data-test-id="reset-password"
             type="submit"
             className="w-full rounded-md bg-sky-950 px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800"
           >

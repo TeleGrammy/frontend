@@ -74,7 +74,7 @@ const SignInForm = () => {
           >
             <EmailIcon />
             <input
-              id="email"
+              data-test-id="email"
               type="email"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Email"
@@ -101,7 +101,7 @@ const SignInForm = () => {
           >
             <PasswordIcon />
             <input
-              id="password"
+              data-test-id="password"
               type={state.showPassword ? 'text' : 'password'}
               className="flex-1 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" // Add padding-right for the icon
               placeholder="Password"
@@ -112,7 +112,7 @@ const SignInForm = () => {
               onBlur={() => dispatch({ type: 'focusPass', payload: 0 })}
             />
             <button
-              id="show-hide-password"
+              data-test-id="show-hide-password"
               type="button"
               onClick={() => dispatch({ type: 'togglePass' })}
               className="absolute right-2 top-1/2 -translate-y-1/2 transform focus:outline-none"
@@ -134,7 +134,7 @@ const SignInForm = () => {
         {/* Sign Up Button */}
         <button
           type="submit"
-          id="sign-up"
+          data-test-id="sign-in"
           disabled={loading}
           className={`w-full rounded-md ${loading ? 'bg-sky-800' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
         >

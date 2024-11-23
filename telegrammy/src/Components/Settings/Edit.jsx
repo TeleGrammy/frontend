@@ -131,6 +131,7 @@ const Edit = ({
       <div className="w-full bg-bg-primary">
         <div className="w-full flex justify-between items-center mb-4 sm:mb-6">
           <button
+          data-test-id="settings-view"
             onClick={() => setView('settings')}
             className="text-text-primary hover:text-gray-300"
             aria-label="Go Back"
@@ -159,7 +160,7 @@ const Edit = ({
             </label>
             <input
               type="file"
-              id="profilePicture"
+              data-test-id="profile-picture"
               accept="image/*"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
@@ -175,7 +176,7 @@ const Edit = ({
           <div>
             <label className="block text-sm text-text-primary" htmlFor="firstName">First Name</label>
             <input
-              id="firstName"
+              data-test-id="first-name"
               type="text"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
@@ -189,7 +190,7 @@ const Edit = ({
           <div>
             <label className="block text-sm text-text-primary" htmlFor="lastName">Last Name</label>
             <input
-              id="lastName"
+              data-test-id="last-name"
               type="text"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
@@ -202,7 +203,7 @@ const Edit = ({
           <div>
             <label className="block text-sm text-text-primary" htmlFor="username">Username</label>
             <input
-              id="username"
+              data-test-id="user-name"
               type="text"
               value={currentUsername}
               onChange={(e) => setCurrentUsername(e.target.value)}
@@ -216,7 +217,7 @@ const Edit = ({
           <div>
             <label className="block text-sm text-text-primary" htmlFor="email">Email</label>
             <input
-              id="email"
+              data-test-id="email"
               type="email"
               value={currentEmail}
               onChange={(e) => {
@@ -266,6 +267,7 @@ const Edit = ({
         </div>
 
         <button
+        data-test-id="save"
           onClick={handleSave}
           className="w-full bg-[#FF6347] hover:bg-[#FF4500] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg mt-4 sm:mt-6"
           aria-label="Save Changes"

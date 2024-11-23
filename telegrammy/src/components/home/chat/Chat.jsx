@@ -118,6 +118,7 @@ function Chat() {
       <div className="absolute bottom-0 left-0 right-0 bg-white p-4 dark:bg-gray-800">
         <div className="flex items-center space-x-2">
           <input
+          data-test-id="message"
             type="text"
             placeholder="Type your message..."
             value={inputValue}
@@ -125,6 +126,7 @@ function Chat() {
             className="flex-grow rounded-lg border border-gray-300 px-4 py-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           />
           <button
+            data-test-id = "send-message"
             onClick={handleSendMessage}
             className="bg-bg-message-sender hover:bg-bg-message-sender-hover rounded-lg px-4 py-2 text-white"
           >
