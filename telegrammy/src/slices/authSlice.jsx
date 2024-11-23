@@ -4,6 +4,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   user: null,
   loading: false,
+  isLogin: false,
   error: '',
 };
 

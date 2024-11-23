@@ -13,7 +13,6 @@ const images = [
       window.open(GOOGLE_URL, '_self');
     },
   },
-  { icon: facebookIcon, alt: 'Facebook', onClick: () => {} },
   {
     icon: githubIcon,
     alt: 'Github',
