@@ -10,6 +10,8 @@ import {
   IoTrash,
 } from 'react-icons/io5';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
   const [texts, setTexts] = useState([]);
   const [caption, setCaption] = useState('');
@@ -118,7 +120,7 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
     formData.append('story', blob, file.name);
 
     try {
-      const res = await fetch('http://localhost:8080/api/v1/user/stories', {
+      const res = await fetch(`${apiUrl}/v1/user/stories`, {
         method: 'POST',
         headers: {
           Accept: 'application/json', // Specify JSON response expected
