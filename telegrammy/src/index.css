@@ -30,7 +30,7 @@
     --border: rgb(223, 225, 229);
     --bg-search: rgb(250, 250, 250);
     --border-search: rgb(223, 225, 229);
-    --bg-hover: rgba(245, 245, 245, 0.8);
+    --bg-hover: rgba(240, 240, 240, 1);
     --bg-line: rgba(85, 85, 85, 1);
     --bg-button: rgba(78, 142, 255, 1);
     --bg-button-hover: rgba(58, 122, 209, 1);

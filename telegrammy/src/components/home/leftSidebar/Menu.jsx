@@ -64,16 +64,14 @@ function Menu() {
                 <span className="ml-4">{item.Name}</span>
               </MenuItem>
             ))}
-            <li className="mx-2 w-full rounded-2xl px-2 hover:bg-bg-hover">
-              <button
-                onClick={() => dispatch(ToggleDarkMode())}
-                className="flex w-full flex-row items-center text-text-primary hover:text-gray-300"
-              >
-                {isDarkTheme ? <FaSun /> : <FaMoon />}
-                <span className="ml-4">
-                  {isDarkTheme ? 'Light Mode' : 'Dark Mode'}
-                </span>
-              </button>
+            <li
+              onClick={() => dispatch(ToggleDarkMode())}
+              className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+            >
+              {isDarkTheme ? <FaSun /> : <FaMoon />}
+              <span className="ml-4">
+                {isDarkTheme ? 'Light Mode' : 'Dark Mode'}
+              </span>
             </li>
           </ul>
           <p className="p-4 text-center text-xxs text-[rgb(172,167,167)]">
