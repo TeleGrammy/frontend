@@ -29,7 +29,16 @@ export const loginUser = createAsyncThunk(
 
       const data = await response.json();
       console.log(data);
-      return data;
+      const setTokenInCookie = (token) => {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days expiration
+
+        document.cookie = `accessToken=${token}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
+      };
+      const token = data.data.accessToken;
+      const user = data.data.updatedUser;
+      setTokenInCookie(token);
+      return user;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -58,7 +67,6 @@ export const authSlice = createSlice({
       });
   },
 });
-
 
 export const { login } = authSlice.actions;
 
