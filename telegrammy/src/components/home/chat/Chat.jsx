@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import VoiceNoteButton from './VoiceNoteButton';
+import VoiceNotePlayer from './VoiceNotePlayer';
 
-// Helper function to format dates
 function formatDate(date) {
   const options = {
     weekday: 'short',
@@ -10,7 +11,8 @@ function formatDate(date) {
   };
   return new Date(date).toLocaleDateString('en-US', options);
 }
-const initalMessages = [
+
+const initialMessages = [
   {
     id: 1,
     content: 'Hello',
@@ -25,35 +27,18 @@ const initalMessages = [
     timestamp: '12:01 AM',
     date: '2024-11-10',
   },
-  {
-    id: 3,
-    content: 'Do you love me',
-    type: 'received',
-    timestamp: '12:02 AM',
-    date: '2024-11-10',
-  },
-  {
-    id: 4,
-    content: 'Do you Do you do',
-    type: 'received',
-    timestamp: '12:03 AM',
-    date: '2024-11-11',
-  },
-  {
-    id: 5,
-    content: 'No',
-    type: 'sent',
-    timestamp: '12:04 AM',
-    date: '2024-11-11',
-  },
 ];
 
 function Chat() {
   const [inputValue, setInputValue] = useState('');
+  const [messages, setMessages] = useState(initialMessages);
+
+  // Handle input change for text messages
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
-  const [messages, setMessages] = useState(initalMessages);
+
+  // Send text messages
   const handleSendMessage = () => {
     if (inputValue.trim() !== '') {
       const newMessage = {
@@ -69,6 +54,22 @@ function Chat() {
       setMessages([...messages, newMessage]);
       setInputValue('');
     }
+  };
+
+  
+  const handleSendVoice = (audioBlob) => {
+    const newMessage = {
+      id: messages.length + 1,
+      content: 'Voice Note Sent',
+      type: 'recieved',
+      timestamp: new Date().toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+      }),
+      date: new Date().toISOString().slice(0, 10),
+      voiceNote: URL.createObjectURL(audioBlob), 
+    };
+    setMessages([...messages, newMessage]);
   };
 
   let lastDate = null;
@@ -90,34 +91,41 @@ function Chat() {
                 </div>
               )}
               <div
-                className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} ${idx === messages.length - 1 ? 'mb-16' : 'mb-5'}`}
+                className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} ${
+                  idx === messages.length - 1 ? 'mb-16' : 'mb-5'
+                }`}
               >
-                <div className="flex flex-col items-end space-y-1">
-                  <div
-                    className={`${
-                      message.type === 'sent'
-                        ? 'bg-bg-message-sender text-text-primary'
-                        : 'bg-gray-300 text-black dark:bg-gray-700 dark:text-white'
-                    } max-w-sm rounded-lg p-2`}
-                  >
-                    <p>{message.content}</p>
-                    <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
-                      <span>{message.timestamp}</span>
-                      {message.type === 'sent' && (
-                        <span className="ml-1">
-                          {/* Unicode for double ticks */}
-                          ✔✔
-                        </span>
-                      )}
+                {message.voiceNote ? (
+                  <VoiceNotePlayer src ={message.voiceNote} time ={message.timestamp} type = {message.type} />
+                ) : (
+                  <div className="flex flex-col items-end space-y-1">
+                    <div
+                      className={`${
+                        message.type === 'sent'
+                          ? 'bg-bg-message-sender text-text-primary'
+                          : 'bg-gray-300 text-black dark:bg-gray-700 dark:text-white'
+                      } max-w-sm rounded-lg p-2`}
+                    >
+                      <p>{message.content}</p>
+
+                      <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
+                        <span>{message.timestamp}</span>
+                        {message.type === 'sent' && (
+                          <span className="ml-1">
+                            {/* Unicode for double ticks */}
+                            ✔✔
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </React.Fragment>
           );
         })}
       </div>
-      {/* Message sender INput*/}
+      {/* Message sender input */}
       <div className="absolute bottom-0 left-0 right-0 bg-white p-4 dark:bg-gray-800">
         <div className="flex items-center space-x-2">
           <input
@@ -133,6 +141,7 @@ function Chat() {
           >
             Send
           </button>
+          <VoiceNoteButton onSendVoice={handleSendVoice} />
         </div>
       </div>
     </div>

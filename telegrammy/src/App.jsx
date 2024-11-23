@@ -4,7 +4,7 @@ import Login from './pages/Login';
 import ForgetPassword from './pages/ForgetPassword';
 import ResetPassword from './pages/ResetPassword';
 import Home from './pages/Home';
-import AuthCallback from './components/registration/AuthCallback';
+import AuthCallback from './Components/registration/AuthCallback';
 
 export default function App() {
   return (
