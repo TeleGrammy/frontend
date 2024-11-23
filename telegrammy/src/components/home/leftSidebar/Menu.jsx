@@ -11,6 +11,7 @@ import {
   FaComments,
   FaBars,
   FaBullseye,
+  FaSignOutAlt,
 } from 'react-icons/fa';
 
 const Menuitems = [
@@ -39,6 +40,20 @@ function Menu() {
 
   const dispatch = useDispatch();
   const { isDarkTheme } = useSelector((state) => state.darkMode);
+
+  const Logout = async () => {
+    // try {
+    //   const response = await fetch(`${apiUrl}/v1/auth/logout`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     credentials: 'include',
+    //   });
+    // } catch (error) {
+    //   console.error('Error:', error);
+    // }
+  };
 
   return (
     <>
@@ -72,6 +87,13 @@ function Menu() {
               <span className="ml-4">
                 {isDarkTheme ? 'Light Mode' : 'Dark Mode'}
               </span>
+            </li>
+            <li
+              onClick={() => dispatch(Logout())}
+              className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+            >
+              <FaSignOutAlt />
+              <span className="ml-4">Log Out</span>
             </li>
           </ul>
           <p className="p-4 text-center text-xxs text-[rgb(172,167,167)]">

@@ -1,5 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 
+import { toast } from 'react-toastify';
+
 import { Stage, Layer, Image as KonvaImage, Text, Line } from 'react-konva';
 
 import { ClipLoader } from 'react-spinners';
@@ -33,6 +35,20 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
 
   const [activeTextIndex, setActiveTextIndex] = useState(null);
   const [editingText, setEditingText] = useState('');
+
+  //toast
+
+  const showToast = (message, success) => {
+    if (success) {
+      toast.success(message, {
+        position: 'top-right',
+      });
+    } else {
+      toast.error(message, {
+        position: 'top-right',
+      });
+    }
+  };
 
   // Handle adding a new text element
   const handleAddText = () => {
@@ -137,14 +153,14 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
 
       if (res.ok) {
         const data = await res.json();
-        console.log('Story uploaded successfully');
         console.log(data);
+        showToast('Story uploaded successfully', true);
         onClose();
       } else {
-        console.error('Error uploading story:', res.statusText);
+        showToast('Error uploaded Story', false);
       }
     } catch (error) {
-      console.error('Fetch error:', error);
+      showToast('Error Fetch', false);
     } finally {
       setIsLoading(false);
     }
@@ -190,7 +206,7 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
   }, [previewUrl, fileType]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
+    <div className="z-100 fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
       <div className="h-[90vh] w-full max-w-lg rounded-lg bg-transparent p-4 shadow-lg">
         {/* Close Button */}
         <button
@@ -320,7 +336,7 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
             />
             <button
               onClick={handleExport}
-              className="rounded-full bg-bg-button px-4 py-2 text-white hover:bg-bg-button-hover"
+              className={`rounded-full px-4 py-2 text-white ${isLoading ? 'bg-black' : 'bg-bg-button hover:bg-bg-button-hover'}`}
               disabled={isLoading}
             >
               {isLoading ? (

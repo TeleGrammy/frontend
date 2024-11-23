@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import Sidebar from '../components/home/leftSidebar/Sidebar';
 import Chat from '../components/home/chat/Chat';
 import RightSidebar from '../components/home/rightSidebar/RightSidebar';
@@ -23,6 +26,7 @@ function Home() {
       <Sidebar />
       <Chat />
       {isRightSidebarOpen && <RightSidebar />}
+      <ToastContainer />
     </div>
   );
 }
