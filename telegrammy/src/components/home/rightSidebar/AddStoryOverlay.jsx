@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 
 import { Stage, Layer, Image as KonvaImage, Text, Line } from 'react-konva';
 
+import { ClipLoader } from 'react-spinners';
+
 import {
   IoColorPalette,
   IoClose,
@@ -13,6 +15,8 @@ import {
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const [texts, setTexts] = useState([]);
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState(null);
@@ -120,6 +124,8 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
     formData.append('story', blob, file.name);
 
     try {
+      setIsLoading(true);
+
       const res = await fetch(`${apiUrl}/v1/user/stories`, {
         method: 'POST',
         headers: {
@@ -139,6 +145,8 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
       }
     } catch (error) {
       console.error('Fetch error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -313,8 +321,13 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
             <button
               onClick={handleExport}
               className="rounded-full bg-bg-button px-4 py-2 text-white hover:bg-bg-button-hover"
+              disabled={isLoading}
             >
-              <IoArrowForward className="text-2xl" />
+              {isLoading ? (
+                <ClipLoader color="#ffffff" size={20} />
+              ) : (
+                <IoArrowForward className="text-2xl" />
+              )}
             </button>
           </div>
         </div>
