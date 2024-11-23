@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import CloseButton from '../rightSidebar/CloseButton';
 import {
   setShowedMyStoryIndex,
@@ -12,6 +12,8 @@ import { FaEllipsisVertical, FaTrash } from 'react-icons/fa6';
 
 function MediaShower({ medias, initialStoryIndex }) {
   const dispatch = useDispatch();
+
+  const { user } = useSelector((state) => state.auth);
 
   const handleCloseStory = () => {
     dispatch(setShowedMyStoryIndex(null));
@@ -51,7 +53,7 @@ function MediaShower({ medias, initialStoryIndex }) {
           {medias.map((media, index) => (
             <Progressbar
               key={index}
-              duration={media.duration}
+              duration={10}
               count={medias.length}
               isActive={currentStoryIndex === index}
               isCompleted={currentStoryIndex > index}
@@ -77,13 +79,15 @@ function MediaShower({ medias, initialStoryIndex }) {
           }}
         ></div>
         <p className="mb-5 ml-4 self-start text-lg font-bold text-text-secondary">
-          {medias[currentStoryIndex].views} views
+          {medias[currentStoryIndex].viewersCount} views
         </p>
         <div className="absolute left-14 top-9 text-base font-semibold text-text-primary">
           <p>
-            Your story{' '}
-            <span className="text-sm font-normal text-text-secondary">
-              • 1/1
+            {/* {user._id === medias[currentStoryIndex].userId
+              ? 'Your story'
+              : medias[currentStoryIndex].username} */}
+            <span className="text-sm font-normal text-text-primary">
+              • {currentStoryIndex + 1} / {medias.length}
             </span>
           </p>
           <p>
