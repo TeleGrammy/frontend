@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-// Helper function to format dates
 function formatDate(date) {
   const options = {
     weekday: 'short',
@@ -10,7 +9,8 @@ function formatDate(date) {
   };
   return new Date(date).toLocaleDateString('en-US', options);
 }
-const initalMessages = [
+
+const initialMessages = [
   {
     id: 1,
     content: 'Hello',
@@ -50,10 +50,18 @@ const initalMessages = [
 
 function Chat() {
   const [inputValue, setInputValue] = useState('');
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
-  };
-  const [messages, setMessages] = useState(initalMessages);
+  const [messages, setMessages] = useState(initialMessages);
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [replyToMessageId, setReplyToMessageId] = useState(null);
+
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleInputChange = (event) => setInputValue(event.target.value);
+
   const handleSendMessage = () => {
     if (inputValue.trim() !== '') {
       const newMessage = {
@@ -65,18 +73,47 @@ function Chat() {
           minute: 'numeric',
         }),
         date: new Date().toISOString().slice(0, 10),
+        replyTo: replyToMessageId || null, // Link the reply if there's any
       };
+
       setMessages([...messages, newMessage]);
+
+      // Clear input and reset reply state after sending
       setInputValue('');
+      setReplyToMessageId(null);
     }
+  };
+
+  const handleEditMessage = (id) => {
+    const messageToEdit = messages.find((msg) => msg.id === id);
+    if (messageToEdit) {
+      setInputValue(messageToEdit.content);
+      setEditingMessageId(id);
+    }
+  };
+
+  const handleDeleteMessage = (id) => {
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this message?',
+    );
+    if (confirmDelete) {
+      setMessages((prevMessages) =>
+        prevMessages.filter((msg) => msg.id !== id),
+      );
+    }
+  };
+
+  const handleReplyToMessage = (id) => {
+    setReplyToMessageId(id);
+    setInputValue(''); // Clear input if replying
   };
 
   let lastDate = null;
 
   return (
-    <div className="relative flex flex-grow flex-col space-y-4 overflow-y-auto p-4 text-black dark:text-white">
-      <div className="flex-grow overflow-y-auto p-4">
-        {messages.map((message, idx) => {
+    <div className="relative flex flex-grow flex-col justify-between space-y-4 overflow-y-auto text-black dark:text-white">
+      <div className="flex-grow overflow-y-auto px-4">
+        {messages.map((message) => {
           const showDateDivider = message.date !== lastDate;
           lastDate = message.date;
 
@@ -90,39 +127,85 @@ function Chat() {
                 </div>
               )}
               <div
-                className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} ${idx === messages.length - 1 ? 'mb-16' : 'mb-5'}`}
+                className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} mb-5 items-center`}
               >
-                <div className="flex flex-col items-end space-y-1">
-                  <div
-                    className={`${
-                      message.type === 'sent'
-                        ? 'bg-bg-message-sender text-text-primary'
-                        : 'bg-gray-300 text-black dark:bg-gray-700 dark:text-white'
-                    } max-w-sm rounded-lg p-2`}
-                  >
-                    <p>{message.content}</p>
-                    <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
-                      <span>{message.timestamp}</span>
-                      {message.type === 'sent' && (
-                        <span className="ml-1">
-                          {/* Unicode for double ticks */}
-                          ✔✔
-                        </span>
-                      )}
+                {message.type === 'sent' && (
+                  <div className="flex flex-row space-x-1 pr-2">
+                    <button
+                      onClick={() => handleEditMessage(message.id)}
+                      className="mr-2 text-xs text-blue-500 hover:underline"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteMessage(message.id)}
+                      className="text-xs text-red-500 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+                <div
+                  className={`${
+                    message.type === 'sent'
+                      ? 'bg-bg-message-sender text-text-primary'
+                      : 'bg-gray-300 text-black dark:bg-gray-700 dark:text-white'
+                  } max-w-sm rounded-lg p-2`}
+                >
+                  {message.replyTo && (
+                    <div className="mb-2 border-l-4 border-blue-500 p-2">
+                      <span className="text-xs text-gray-500">
+                        Replying to:
+                      </span>
+                      <p className="text-sm">
+                        {
+                          messages.find((msg) => msg.id === message.replyTo)
+                            ?.content
+                        }
+                      </p>
                     </div>
+                  )}
+                  <p>{message.content}</p>
+                  <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
+                    <span>{message.timestamp}</span>
+                    {message.type === 'sent' && (
+                      <span className="ml-1">✔✔</span>
+                    )}
                   </div>
                 </div>
+                {message.type === 'received' && (
+                  <button
+                    onClick={() => handleReplyToMessage(message.id)}
+                    className="ml-2 text-xs text-blue-500 hover:underline"
+                  >
+                    Reply
+                  </button>
+                )}
               </div>
             </React.Fragment>
           );
         })}
+        <div ref={messagesEndRef} />
       </div>
-      {/* Message sender INput*/}
-      <div className="absolute bottom-0 left-0 right-0 bg-white p-4 dark:bg-gray-800">
+      <div className="bg-white p-4 dark:bg-gray-800">
         <div className="flex items-center space-x-2">
+          {replyToMessageId && (
+            <div className="rounded-lg bg-gray-200 p-2">
+              <span className="text-xs text-gray-600">Replying to: </span>
+              <p className="text-sm">
+                {messages.find((msg) => msg.id === replyToMessageId)?.content}
+              </p>
+            </div>
+          )}
           <input
             type="text"
-            placeholder="Type your message..."
+            placeholder={
+              editingMessageId
+                ? 'Edit your message...'
+                : replyToMessageId
+                  ? 'Type your reply...'
+                  : 'Type your message...'
+            }
             value={inputValue}
             onChange={handleInputChange}
             className="flex-grow rounded-lg border border-gray-300 px-4 py-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
@@ -131,8 +214,19 @@ function Chat() {
             onClick={handleSendMessage}
             className="hover:bg-bg-message-sender-hover rounded-lg bg-bg-message-sender px-4 py-2 text-white"
           >
-            Send
+            {editingMessageId ? 'Update' : 'Send'}
           </button>
+          {editingMessageId && (
+            <button
+              onClick={() => {
+                setEditingMessageId(null);
+                setInputValue('');
+              }}
+              className="rounded-lg bg-gray-200 px-4 py-2 text-black hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+          )}
         </div>
       </div>
     </div>
