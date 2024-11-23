@@ -18,6 +18,7 @@ export default {
         'bg-button': 'var(--bg-button)',
         'bg-button-hover': 'var(--bg-button-hover)',
         'border-search': 'var(--border-search)',
+        'bg-message-sender': 'var(--bg-message-sender)',
       },
     },
   },

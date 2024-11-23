@@ -36,7 +36,7 @@
     --bg-button-hover: rgba(58, 122, 209, 1);
     --bg-image: url('./assets/home-bg-light.jpg');
     --bg-image-color: rgba(238, 239, 239, 0.2);
-
+    --bg-message-sender: rgb(240, 255, 222);
     /* Text colors */
     --text-primary: #000000;
 

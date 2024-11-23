@@ -4,17 +4,13 @@ import Login from './pages/Login';
 import ForgetPassword from './pages/ForgetPassword';
 import ResetPassword from './pages/ResetPassword';
 import Home from './pages/Home';
+import AuthCallback from './components/registration/AuthCallback';
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          index
-          element={
-            <h1 className="text-3xl font-bold underline">Hello TeleGrammy!</h1>
-          }
-        />
+        <Route index element={<AuthCallback />} />
         <Route path="/signup/*" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
