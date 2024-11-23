@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer } from 'react';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   email: '',
   error: '',
@@ -44,7 +44,7 @@ const ForgetPassword = () => {
     try {
       dispatch({ type: 'loading', payload: true });
       const response = await fetch(
-        `http://localhost:8080/api/v1/auth/forget-password`,
+        `${apiUrl}/v1/auth/forget-password`,
         {
           method: 'POST',
           headers: {
@@ -82,7 +82,7 @@ const ForgetPassword = () => {
     try {
       dispatch({ type: 'loading', payload: true });
       const response = await fetch(
-        `http://localhost:8080/api/v1/auth/reset-password/resend`,
+        `${apiUrl}/v1/auth/reset-password/resend`,
         {
           method: 'POST',
           headers: {
