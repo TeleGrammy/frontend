@@ -34,8 +34,9 @@ function Home() {
     <div className="chat-bg flex h-screen w-screen flex-row">
       <Sidebar />
       <Chat />
+
       {isRightSidebarOpen && <RightSidebar />}
-      <ToastContainer />
+
       {showedMyStoryIndex !== null && (
         <MediaShower
           medias={myStories}
@@ -48,6 +49,8 @@ function Home() {
           initialStoryIndex={showedOtherStoryIndex}
         />
       )}
+
+      <ToastContainer />
     </div>
   );
 }

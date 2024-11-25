@@ -206,7 +206,7 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
   }, [previewUrl, fileType]);
 
   return (
-    <div className="z-100 fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80">
       <div className="h-[90vh] w-full max-w-lg rounded-lg bg-transparent p-4 shadow-lg">
         {/* Close Button */}
         <button
@@ -332,7 +332,7 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Add caption"
-              className="w-[80%] rounded-full border border-border bg-bg-secondary px-4 py-2 text-text-primary focus:outline-none"
+              className="border-border w-[80%] rounded-full border bg-bg-secondary px-4 py-2 text-text-primary focus:outline-none"
             />
             <button
               onClick={handleExport}
