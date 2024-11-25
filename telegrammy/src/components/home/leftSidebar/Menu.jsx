@@ -60,6 +60,7 @@ function Menu() {
       <div
         className="flex min-h-8 min-w-8 cursor-pointer items-center justify-center rounded-full hover:bg-bg-secondary"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
+        data-test-id="menu-button"
       >
         <FaBars className="text-text-primary opacity-70" />
       </div>
@@ -82,6 +83,7 @@ function Menu() {
             <li
               onClick={() => dispatch(ToggleDarkMode())}
               className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+              data-test-id="dark-mode-button"
             >
               {isDarkTheme ? <FaSun /> : <FaMoon />}
               <span className="ml-4">
@@ -91,6 +93,7 @@ function Menu() {
             <li
               onClick={() => dispatch(Logout())}
               className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+              data-test-id="logout-button"
             >
               <FaSignOutAlt />
               <span className="ml-4">Log Out</span>
