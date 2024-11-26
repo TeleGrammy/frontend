@@ -1,30 +1,28 @@
-import { useDispatch } from "react-redux";
+import { useDispatch } from 'react-redux';
 
-import { setcurrentMenu, setRightSidebar } from "../../../slices/sidebarSlice";
-
+import { setcurrentMenu, setRightSidebar } from '../../../slices/sidebarSlice';
 
 function MenuItem({ isRightSidebar, setIsMenuOpen, newMenu, children }) {
+  const dispatch = useDispatch();
 
-    const dispatch = useDispatch();
+  const handleSelectItem = () => {
+    setIsMenuOpen(false);
 
-    const handleClick = () => {
-        setIsMenuOpen(false);
-
-        if(isRightSidebar) {
-            dispatch(setRightSidebar(newMenu));
-        }
-        else {
-          dispatch(setcurrentMenu(newMenu));
-        }
+    if (isRightSidebar) {
+      dispatch(setRightSidebar(newMenu));
+    } else {
+      dispatch(setcurrentMenu(newMenu));
     }
+  };
 
-    return (
-        <li className="hover:bg-bg-hover w-full mx-2 px-2 rounded-2xl">
-          <button onClick={handleClick} className="text-text-primary flex flex-row items-center">
-            {children}
-          </button>
-        </li>
-    )
+  return (
+    <li
+      onClick={handleSelectItem}
+      className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+    >
+      {children}
+    </li>
+  );
 }
 
 export default MenuItem;

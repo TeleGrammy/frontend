@@ -14,6 +14,8 @@ export default {
         'bg-hover': 'var(--bg-hover)',
         'bg-line': 'var(--bg-line)',
         'bg-search': 'var(--bg-search)',
+        'bg-button': 'var(--bg-button)',
+        'bg-button-hover': 'var(--bg-button-hover)',
         'border-search': 'var(--border-search)',
         'bg-message-sender': 'var(--bg-message-sender)',
         'bg-message-receiver': 'var(--bg-message-receiver)',

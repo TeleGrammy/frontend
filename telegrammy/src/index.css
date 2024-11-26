@@ -30,8 +30,10 @@
     --border: rgb(223, 225, 229);
     --bg-search: rgb(250, 250, 250);
     --border-search: rgb(223, 225, 229);
-    --bg-hover: rgba(245, 245, 245, 0.8);
-    --bg-line: rgba(85, 85, 85, 255);
+    --bg-hover: rgba(240, 240, 240, 1);
+    --bg-line: rgba(85, 85, 85, 1);
+    --bg-button: rgba(78, 142, 255, 1);
+    --bg-button-hover: rgba(58, 122, 209, 1);
     --bg-image: url('./assets/home-bg-light.jpg');
     --bg-image-color: rgba(238, 239, 239, 0.2);
     --bg-message-sender: rgb(240, 255, 222);
