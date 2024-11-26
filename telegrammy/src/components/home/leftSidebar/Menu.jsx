@@ -11,6 +11,7 @@ import {
   FaComments,
   FaBars,
   FaBullseye,
+  FaSignOutAlt,
 } from 'react-icons/fa';
 
 const Menuitems = [
@@ -40,11 +41,26 @@ function Menu() {
   const dispatch = useDispatch();
   const { isDarkTheme } = useSelector((state) => state.darkMode);
 
+  const Logout = async () => {
+    // try {
+    //   const response = await fetch(`${apiUrl}/v1/auth/logout`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     credentials: 'include',
+    //   });
+    // } catch (error) {
+    //   console.error('Error:', error);
+    // }
+  };
+
   return (
     <>
       <div
         className="flex min-h-8 min-w-8 cursor-pointer items-center justify-center rounded-full hover:bg-bg-secondary"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
+        data-test-id="menu-button"
       >
         <FaBars className="text-text-primary opacity-70" />
       </div>
@@ -67,11 +83,20 @@ function Menu() {
             <li
               onClick={() => dispatch(ToggleDarkMode())}
               className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+              data-test-id="dark-mode-button"
             >
               {isDarkTheme ? <FaSun /> : <FaMoon />}
               <span className="ml-4">
                 {isDarkTheme ? 'Light Mode' : 'Dark Mode'}
               </span>
+            </li>
+            <li
+              onClick={() => dispatch(Logout())}
+              className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+              data-test-id="logout-button"
+            >
+              <FaSignOutAlt />
+              <span className="ml-4">Log Out</span>
             </li>
           </ul>
           <p className="p-4 text-center text-xxs text-[rgb(172,167,167)]">

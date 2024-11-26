@@ -71,7 +71,7 @@
   background-position: center;
   background-repeat: repeat;
   background-size: 23%;
-  z-index: 1;
+  z-index: 0;
 }
 
 .chat-bg::before {

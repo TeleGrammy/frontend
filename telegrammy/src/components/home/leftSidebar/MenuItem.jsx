@@ -19,6 +19,7 @@ function MenuItem({ isRightSidebar, setIsMenuOpen, newMenu, children }) {
     <li
       onClick={handleSelectItem}
       className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+      data-test-id={`menu-${newMenu}-item`}
     >
       {children}
     </li>
