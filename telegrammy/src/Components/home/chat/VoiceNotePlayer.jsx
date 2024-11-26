@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import PauseIcon from '../../../Components/icons/PauseIcon';
-import PlayIcon from '../../../Components/icons/PlayIcon';
+import PauseIcon from '../../icons/PauseIcon';
+import PlayIcon from '../../icons/PlayIcon';
 
 const VoiceNotePlayer = ({ src, time, type }) => {
   const [isPlaying, setIsPlaying] = useState(false);
