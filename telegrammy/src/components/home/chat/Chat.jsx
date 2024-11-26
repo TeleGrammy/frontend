@@ -27,27 +27,6 @@ const initialMessages = [
     timestamp: '12:01 AM',
     date: '2024-11-10',
   },
-  {
-    id: 3,
-    content: 'Do you love me',
-    type: 'received',
-    timestamp: '12:02 AM',
-    date: '2024-11-10',
-  },
-  {
-    id: 4,
-    content: 'Do you Do you do',
-    type: 'received',
-    timestamp: '12:03 AM',
-    date: '2024-11-11',
-  },
-  {
-    id: 5,
-    content: 'No',
-    type: 'sent',
-    timestamp: '12:04 AM',
-    date: '2024-11-11',
-  },
 ];
 
 function Chat() {
