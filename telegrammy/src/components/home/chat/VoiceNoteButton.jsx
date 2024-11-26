@@ -32,16 +32,16 @@ const VoiceNoteButton = ({ onSendVoice }) => {
   };
 
   const handleRecord = () => {
-    if(recording) {
-        handleRecordStop();
+    if (recording) {
+      handleRecordStop();
     } else {
-        handleRecordStart();
+      handleRecordStart();
     }
-  }
+  };
 
   return (
     <button
-    onClick ={handleRecord}
+      onClick={handleRecord}
       className={`voice-note-button ${recording ? 'recording' : ''}`}
     >
       {recording ? 'Recording...' : 'Press to Record'}

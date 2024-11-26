@@ -51,7 +51,7 @@ const VoiceNotePlayer = ({ src, time, type }) => {
 
   return (
     <div
-      className={`flex flex-col items-start rounded-3xl ${type === 'sent' ? 'bg-bg-message-sender' : 'bg-bg-message-receiver'} mb-2 max-w-sm p-4 text-white shadow-md`}
+      className={`flex flex-col items-start rounded-3xl ${type === 'sent' ? 'bg-bg-message-sender' : 'bg-gray-700'} max-w-sm p-4 text-white shadow-md`}
     >
       <div className="flex w-full items-center space-x-4">
         {/* Play/Pause Button */}
