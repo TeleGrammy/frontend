@@ -164,6 +164,7 @@ const PrivacySettings = ({ setView }) => {
       <div className="w-full max-w-md sm:max-w-lg bg-bg-primary">
         <div className="w-full flex justify-between items-center mb-4 sm:mb-6">
           <button
+            data-test-id="settings"
             onClick={() => setView('settings')}
             className="text-text-primary hover:text-gray-300"
             aria-label="Go Back"
@@ -221,26 +222,22 @@ const PrivacySettings = ({ setView }) => {
         {/* Blocked Users */}
         <div className="mb-3 sm:mb-4">
           <label className="block text-sm text-text-primary">Blocked Users</label>
-          <div className="bg-bg-secondary rounded-lg p-3">
-            {blockedUsers.length > 0 ? (
-              <ul className="space-y-2">
-                {blockedUsers.map((user, index) => (
-                  <li key={index} className="flex justify-between items-center bg-bg-primary p-2 rounded-md">
-                    <span>{user}</span>
-                    <button
-                      onClick={() => handleUnblockUser(user)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      Unblock
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-500">No blocked users</p>
-            )}
-          </div>
+          <ul className="list-disc pl-5 text-text-primary">
+            {blockedUsers.map((user, index) => (
+              <li key={index} className="flex justify-between">
+                {user}
+                <button
+                data-test-id="unblocking-user"
+                  onClick={() => handleUnblockUser(user)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  Unblock
+                </button>
+              </li>
+            ))}
+          </ul>
           <input
+          data-test-id="blocking-user"
             type="text"
             placeholder="Enter username to block"
             className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary mt-2"
@@ -258,6 +255,7 @@ const PrivacySettings = ({ setView }) => {
           <label className="block text-sm text-text-primary">Read Receipts</label>
           <div className="flex items-center text-text-primary">
             <input
+            data-test-id="read-receipts"
               type="checkbox"
               checked={readReceiptsEnabled}
               onChange={handleReadReceiptsChange}

@@ -244,7 +244,7 @@ const Edit = ({
       <div className="w-full bg-bg-primary">
         <div className="w-full flex justify-between items-center mb-4 sm:mb-6">
           <button
-            data-test-id="settings-view"
+          data-test-id="settings-view"
             onClick={() => setView('settings')}
             className="text-text-primary hover:text-gray-300"
             aria-label="Go Back"
@@ -367,7 +367,7 @@ const Edit = ({
         </div>
 
         <button
-          data-test-id="save"
+        data-test-id="save"
           onClick={handleSave}
           className="w-full bg-[#FF6347] hover:bg-[#FF4500] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg mt-4 sm:mt-6"
           aria-label="Save Changes"

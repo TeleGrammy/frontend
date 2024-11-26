@@ -3,13 +3,13 @@ import googleIcon from '../../assets/google.png';
 import facebookIcon from '../../assets/facebook.png';
 import githubIcon from '../../assets/github.png';
 import ImagedButton from '../Shared/ImagedButton';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const images = [
   {
     icon: googleIcon,
     alt: 'Google',
     onClick: async (setData) => {
-      const GOOGLE_URL = 'http://localhost:8080/api/v1/auth/google';
+      const GOOGLE_URL = `${apiUrl}/v1/auth/google`;
       window.open(GOOGLE_URL, '_self');
     },
   },
@@ -18,7 +18,7 @@ const images = [
     icon: githubIcon,
     alt: 'Github',
     onClick: () => {
-      const GITHUB_URL = 'http://localhost:8080/api/v1/auth/github';
+      const GITHUB_URL = `${apiUrl}/v1/auth/github`;
       window.open(GITHUB_URL, '_self');
     },
   },

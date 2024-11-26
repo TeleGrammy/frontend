@@ -9,7 +9,7 @@ import HidePasswordIcon from '../icons/HidePasswordIcon';
 import { ClipLoader } from 'react-spinners';
 import { useNavigate } from 'react-router-dom';
 import RobotVerification from './RobotVerification';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   showPassword: false,
   showConfirmPassword: false,
@@ -102,7 +102,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
     try {
       dispatch({ type: 'loading', payload: true });
       const response = await fetch(
-        `http://localhost:8080/api/v1/auth/register`,
+        `${apiUrl}/v1/auth/register`,
         {
           method: 'POST',
           headers: {
@@ -155,7 +155,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
           >
             <UserNameIcon />
             <input
-              id="username"
+              data-test-id="username"
               type="text"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Username"
@@ -181,7 +181,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
           >
             <EmailIcon />
             <input
-              id="email"
+              data-test-id="email"
               type="email"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Email"
@@ -207,7 +207,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
           >
             <PhoneNumberIcon />
             <input
-              id="phone"
+              data-test-id="phone"
               type="tel"
               pattern="01\d{9}"
               title="Phone number should be in the format 01XXXXXXXXX"
@@ -235,7 +235,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
           >
             <PasswordIcon />
             <input
-              id="password"
+              data-test-id="password"
               type={state.showPassword ? 'text' : 'password'}
               className="flex-1 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" // Add padding-right for the icon
               placeholder="Password"
@@ -246,7 +246,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
               onBlur={() => dispatch({ type: 'focusPass', payload: 0 })}
             />
             <button
-              id="show-hide-password"
+              data-test-id="show-hide-password"
               type="button"
               onClick={() => dispatch({ type: 'togglePass' })}
               className="absolute right-2 top-1/2 -translate-y-1/2 transform focus:outline-none"
@@ -269,7 +269,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
           >
             <PasswordIcon />
             <input
-              id="confirm-password"
+              data-test-id="confirm-password"
               type={state.showConfirmPassword ? 'text' : 'password'}
               className="flex-1 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" // Add padding-right for the icon
               placeholder="Confirm Password"
@@ -280,7 +280,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
               onBlur={handlePasswordMatch}
             />
             <button
-              id="show-hide-confirm-password"
+              data-test-id="show-hide-confirm-password"
               type="button"
               onClick={() => dispatch({ type: 'toggleConfirmPass' })}
               className="absolute right-2 top-1/2 -translate-y-1/2 transform focus:outline-none"
@@ -303,7 +303,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
         {/* Sign Up Button */}
         <button
           type="submit"
-          id="sign-up"
+          data-test-id="sign-up"
           disabled={state.loading}
           className={`w-full rounded-md ${state.loading ? 'bg-sky-800' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
         >

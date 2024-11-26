@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer } from 'react';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   email: '',
   error: '',
@@ -44,7 +44,7 @@ const ForgetPassword = () => {
     try {
       dispatch({ type: 'loading', payload: true });
       const response = await fetch(
-        `http://localhost:8080/api/v1/auth/forget-password`,
+        `${apiUrl}/v1/auth/forget-password`,
         {
           method: 'POST',
           headers: {
@@ -82,7 +82,7 @@ const ForgetPassword = () => {
     try {
       dispatch({ type: 'loading', payload: true });
       const response = await fetch(
-        `http://localhost:8080/api/v1/auth/reset-password/resend`,
+        `${apiUrl}/v1/auth/reset-password/resend`,
         {
           method: 'POST',
           headers: {
@@ -147,7 +147,7 @@ const ForgetPassword = () => {
           <div>
             <input
               type="email"
-              id="email"
+              data-test-id="email"
               value={state.email}
               onChange={handleEmailChange}
               required
@@ -156,6 +156,7 @@ const ForgetPassword = () => {
             />
           </div>
           <button
+          data-test-id="forget-password"
             type="submit"
             className={`w-full rounded-md ${state.loading ? 'bg-sky-800' : state.disable ? 'cursor-not-allowed bg-gray-400' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
             disabled={state.disable}
@@ -184,7 +185,9 @@ const ForgetPassword = () => {
           <p className="text-center text-sm text-gray-600">
             Didn&apos;t receive a message?
           </p>
+
           <button
+          data-test-id="resend-token"
             className={`text-blue-500 ${
               state.resendDisable
                 ? 'cursor-not-allowed opacity-50'

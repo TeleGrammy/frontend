@@ -1,7 +1,7 @@
 import React, { useReducer, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   code: new Array(6).fill(''),
   isResendDisabled: false,
@@ -120,7 +120,7 @@ const EmailVerification = ({ email }) => {
 
     try {
       console.log(verificationCode);
-      const response = await fetch('http://localhost:8080/api/v1/auth/verify', {
+      const response = await fetch(`${apiUrl}/v1/auth/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ const EmailVerification = ({ email }) => {
 
     try {
       const response = await fetch(
-        'http://localhost:8080/api/v1/auth/resend-verification',
+        `${apiUrl}/v1/auth/resend-verification`,
         {
           method: 'POST',
           headers: {
@@ -241,6 +241,7 @@ const EmailVerification = ({ email }) => {
           <div className="mb-6 flex justify-center space-x-2 sm:space-x-3">
             {state.code.map((digit, index) => (
               <input
+                data-test-id="email"
                 key={index}
                 type="text"
                 maxLength="1"
@@ -252,6 +253,7 @@ const EmailVerification = ({ email }) => {
           </div>
 
           <button
+            data-test-id="verify"
             type="submit"
             className={`w-full rounded-lg px-4 py-2 font-bold text-white transition duration-200 ${
               isCodeComplete()
@@ -267,6 +269,7 @@ const EmailVerification = ({ email }) => {
         <p className="mt-6 text-center text-sm text-gray-600">
           Didn&apos;t receive a code?{' '}
           <button
+          data-test-id="resend"
             className={`text-blue-500 ${
               state.isResendDisabled
                 ? 'cursor-not-allowed opacity-50'

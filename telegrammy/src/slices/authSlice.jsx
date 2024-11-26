@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 // Define the initial state
 const initialState = {
   user: null,
@@ -12,7 +12,7 @@ export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async ({ UUID, password }, { rejectWithValue }) => {
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth/login', {
+      const response = await fetch(`${apiUrl}/v1/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,7 +29,16 @@ export const loginUser = createAsyncThunk(
 
       const data = await response.json();
       console.log(data);
-      return data;
+      const setTokenInCookie = (token) => {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days expiration
+
+        document.cookie = `accessToken=${token}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
+      };
+      const token = data.data.accessToken;
+      const user = data.data.updatedUser;
+      setTokenInCookie(token);
+      return user;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -58,7 +67,6 @@ export const authSlice = createSlice({
       });
   },
 });
-
 
 export const { login } = authSlice.actions;
 

@@ -36,7 +36,7 @@ function Menu() {
           </MenuItem>
         )}
         <li className="hover:bg-bg-hover w-full mx-2 px-2 rounded-2xl">
-              <button onClick={() => dispatch(ToggleDarkMode())} className="text-text-primary hover:text-gray-300 flex flex-row items-center w-full">
+              <button data-test-id ="toggle-mode" onClick={() => dispatch(ToggleDarkMode())} className="text-text-primary hover:text-gray-300 flex flex-row items-center w-full">
                 {isDarkTheme ? <FaSun /> : <FaMoon />}
                 <span className="ml-4">{isDarkTheme ? 'Light Mode' : 'Dark Mode'}</span>
               </button>
