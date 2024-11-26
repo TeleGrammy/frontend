@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const Edit = ({
   name,
@@ -15,8 +16,7 @@ const Edit = ({
   setPhone,
   setView,
 }) => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [bioText, setBioText] = useState('');
   const [currentUsername, setCurrentUsername] = useState('');
   const [currentEmail, setCurrentEmail] = useState('');
@@ -27,13 +27,12 @@ const Edit = ({
   const [phoneError, setPhoneError] = useState('');
   const [selectedFile, setSelectedFile] = useState(null); 
   const [preview, setPreview] = useState(null);
+  const [stay, setStay] = useState(false);
+  const [path, setPath] = useState('');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (name) {
-      const nameParts = name.trim().split(' ');
-      setFirstName(nameParts[0] || '');
-      setLastName(nameParts[1] || '');
-    }
+    setFullName(name || '');
     setBioText(bio || '');
     setCurrentUsername(username || '');
     setCurrentEmail(email || '');
@@ -53,6 +52,12 @@ const Edit = ({
     return () => URL.revokeObjectURL(objectUrl);
   }, [selectedFile, profilePicture]);
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(String(email).toLowerCase());
@@ -63,15 +68,114 @@ const Edit = ({
     return re.test(String(phone));
   };
 
+  //download the image
+  const handleDownload = () => {
+    const dataUrl = URL.createObjectURL(selectedFile);
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = 'story.png';
+    link.click();
+  };
+
+  const handleUpdate = async () => {
+    const hasProfileChanged = currentUsername !== username || bioText !== bio || fullName.trim() !== name || currentPhone !== phone;
+    const hasEmailChanged = currentEmail !== email;
+
+    // Handle profile information update
+    if (hasProfileChanged) {
+      try {
+        const updatedData = {
+          username: currentUsername,
+          bio: bioText,
+          screenName: fullName.trim(),
+          status: 'active',
+          phone: currentPhone,
+        };
+
+        const response = await fetch(`${apiUrl}/v1/user/profile`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(updatedData),
+        });
+
+        if (!response.ok) {
+          setUsernameError('Username already taken.');
+          setStay(true);
+        } else {
+          const result = await response.json();
+          console.log('User info updated successfully:', result);
+        }
+      } catch (error) {
+        console.error('Error updating profile info:', error);
+        setStay(true);
+      }
+    }
+
+    // Handle email update
+    if (hasEmailChanged) {
+      try {
+        const updatedData = {
+          email: currentEmail,
+        };
+        const emailResponse = await fetch(`${apiUrl}/v1/user/profile/email`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(updatedData),
+        });
+
+        if (!emailResponse.ok) {
+          setEmailError('Failed to update email.');
+          setStay(true);
+        } else {
+          const emailResult = await emailResponse.json();
+          console.log('Email updated successfully:', emailResult);
+        }
+      } catch (error) {
+        console.error('Error updating email:', error);
+        setStay(true);
+      }
+    }
+
+    // Handle profile picture update
+    if (selectedFile) {
+      try {
+        const formData = new FormData();
+        const dataUrl = URL.createObjectURL(selectedFile);
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        formData.append('picture', blob);
+
+        const pictureResponse = await fetch(`${apiUrl}/v1/user/profile/picture/`, {
+          method: 'PATCH',
+          credentials: 'include',
+          body: formData,
+        });
+
+        if (!pictureResponse.ok) {
+          console.error('Failed to update profile picture.');
+          setStay(true);
+        } else {
+          const pictureResult = await pictureResponse.json();
+          console.log('Profile picture updated successfully:', pictureResult);
+          setProfilePicture(pictureResult.url); // Assuming the response contains the URL of the uploaded picture
+        }
+      } catch (error) {
+        console.error('Error updating profile picture:', error);
+        setStay(true);
+      }
+    }
+  };
+
   const handleSave = () => {
     let hasError = false;
-
-    if (!firstName.trim()) {
-      setError('First name is required.');
-      hasError = true;
-    } else {
-      setError('');
-    }
 
     if (!currentUsername.trim()) {
       setUsernameError('Username is required.');
@@ -98,21 +202,30 @@ const Edit = ({
       return;
     }
 
-    setName(`${firstName} ${lastName}`.trim());
+    setName(fullName.trim());
     setBio(bioText);
     setUsername(currentUsername);
-    setEmail(currentEmail);
     setPhone(currentPhone);
+    handleUpdate();
 
     if (selectedFile) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfilePicture(reader.result);
-        setView('settings');
+        const photoURL = reader.result; // Get the Data URL
+        console.log('Photo URL:', photoURL);
+
+        setPath(photoURL); // Save it to the `path` state
+        setProfilePicture(photoURL); // Save it to the `profilePicture` state
+
+        if (!stay) {
+          setView('settings');
+        }
       };
-      reader.readAsDataURL(selectedFile);
+      reader.readAsDataURL(selectedFile); // Read file as Data URL
     } else {
-      setView('settings');
+      if (!stay) {
+        setView('settings');
+      }
     }
   };
 
@@ -124,13 +237,14 @@ const Edit = ({
     return firstInitial + secondInitial;
   };
 
-  const initials = deriveInitials(`${firstName} ${lastName}`);
+  const initials = deriveInitials(fullName);
 
   return (
     <div className="w-full text-text-primary min-h-screen flex flex-col items-center p-4 sm:p-6">
       <div className="w-full bg-bg-primary">
         <div className="w-full flex justify-between items-center mb-4 sm:mb-6">
           <button
+            data-test-id="settings-view"
             onClick={() => setView('settings')}
             className="text-text-primary hover:text-gray-300"
             aria-label="Go Back"
@@ -152,57 +266,44 @@ const Edit = ({
                 initials
               )}
             </div>
-            <label htmlFor="profilePicture" className="absolute bottom-0 right-0 bg-white text-black rounded-full p-1 cursor-pointer">
+            <button
+              onClick={() => fileInputRef.current.click()}
+              className="absolute bottom-0 right-0 bg-white text-black rounded-full p-1 cursor-pointer"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 19l6.364-6.364a1 1 0 011.414 0l2.121 2.121a1 1 0 01-1.414 1.414L11 16l-4 1 1-4z" />
               </svg>
-            </label>
+            </button>
             <input
               type="file"
-              id="profilePicture"
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  setSelectedFile(e.target.files[0]);
-                }
-              }}
-              className="hidden"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+              accept="image/*,video/*"
+              data-test-id="add-story-file-input"
             />
           </div>
         </div>
 
         <div className="space-y-3 sm:space-y-4">
           <div>
-            <label className="block text-sm text-text-primary" htmlFor="firstName">First Name</label>
+            <label className="block text-sm text-text-primary" htmlFor="fullName">Full Name</label>
             <input
-              id="firstName"
+              data-test-id="full-name"
               type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
-              placeholder="Enter your first name"
-              aria-label="First Name"
+              placeholder="Enter your full name"
+              aria-label="Full Name"
             />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
           </div>
 
           <div>
-            <label className="block text-sm text-text-primary" htmlFor="lastName">Last Name</label>
-            <input
-              id="lastName"
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
-              placeholder="Enter your last name"
-              aria-label="Last Name"
-            />
-          </div>
-
-          <div>
             <label className="block text-sm text-text-primary" htmlFor="username">Username</label>
             <input
-              id="username"
+              data-test-id="user-name"
               type="text"
               value={currentUsername}
               onChange={(e) => setCurrentUsername(e.target.value)}
@@ -216,7 +317,7 @@ const Edit = ({
           <div>
             <label className="block text-sm text-text-primary" htmlFor="email">Email</label>
             <input
-              id="email"
+              data-test-id="email"
               type="email"
               value={currentEmail}
               onChange={(e) => {
@@ -266,6 +367,7 @@ const Edit = ({
         </div>
 
         <button
+          data-test-id="save"
           onClick={handleSave}
           className="w-full bg-[#FF6347] hover:bg-[#FF4500] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg mt-4 sm:mt-6"
           aria-label="Save Changes"

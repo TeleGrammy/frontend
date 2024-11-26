@@ -8,12 +8,155 @@ const PrivacySettings = ({ setView }) => {
   const [readReceiptsEnabled, setReadReceiptsEnabled] = useState(true);
   const [groupAddPermission, setGroupAddPermission] = useState('Everyone');
 
+  const updateVisibilitySettings = async (newSettings) => {
+    try {
+      const response = await fetch('http://localhost:8080/privacy/settings/profile-visibility', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newSettings),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to update visibility settings.');
+      } else {
+        console.log('Visibility settings updated successfully.');
+      }
+    } catch (error) {
+      console.error('Error updating visibility settings:', error);
+    }
+  };
+
+  const updateReadReceipts = async (isEnabled) => {
+    const updatedData = {
+      isEnabled: isEnabled,
+    };
+    try {
+      const response = await fetch('http://localhost:8080/privacy/settings/read-receipts', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to update read receipts.');
+      } else {
+        console.log('Read receipts updated successfully.');
+      }
+    } catch (error) {
+      console.error('Error updating read receipts:', error);
+    }
+  };
+
+  const updateGroupControl = async (addToGroups) => {
+    try {
+      const response = await fetch('http://localhost:8080/privacy/settings/group-control', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ addToGroups }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to update group control.');
+      } else {
+        console.log('Group control updated successfully.');
+      }
+    } catch (error) {
+      console.error('Error updating group control:', error);
+    }
+  };
+
+  const handleProfilePictureVisibilityChange = (value) => {
+    setProfilePictureVisibility(value);
+    updateVisibilitySettings({
+      profilePicture: value,
+      stories: storiesVisibility,
+      lastSeen: lastSeenVisibility,
+    });
+  };
+
+  const handleStoriesVisibilityChange = (value) => {
+    setStoriesVisibility(value);
+    updateVisibilitySettings({
+      profilePicture: profilePictureVisibility,
+      stories: value,
+      lastSeen: lastSeenVisibility,
+    });
+  };
+
+  const handleLastSeenVisibilityChange = (value) => {
+    setLastSeenVisibility(value);
+    updateVisibilitySettings({
+      profilePicture: profilePictureVisibility,
+      stories: storiesVisibility,
+      lastSeen: value,
+    });
+  };
+
   const handleBlockUser = (username) => {
-    setBlockedUsers([...blockedUsers, username]);
+    blockUser(username);
   };
 
   const handleUnblockUser = (username) => {
-    setBlockedUsers(blockedUsers.filter(user => user !== username));
+    unblockUser(username);
+  };
+
+  const blockUser = async (username) => {
+    try {
+      const response = await fetch('http://localhost:8080/privacy/settings/blocked-users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userName: username }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to block user.');
+      } else {
+        setBlockedUsers([...blockedUsers, username]);
+        console.log('User blocked successfully.');
+      }
+    } catch (error) {
+      console.error('Error blocking user:', error);
+    }
+  };
+
+  const unblockUser = async (username) => {
+    try {
+      const response = await fetch('http://localhost:8080/privacy/settings/blocked-users', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userName: username }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to unblock user.');
+      } else {
+        setBlockedUsers(blockedUsers.filter(user => user !== username));
+        console.log('User unblocked successfully.');
+      }
+    } catch (error) {
+      console.error('Error unblocking user:', error);
+    }
+  };
+
+  const handleReadReceiptsChange = () => {
+    const newValue = !readReceiptsEnabled;
+    setReadReceiptsEnabled(newValue);
+    updateReadReceipts(newValue);
+  };
+
+  const handleGroupAddPermissionChange = (value) => {
+    setGroupAddPermission(value);
+    updateGroupControl(value);
   };
 
   return (
@@ -38,7 +181,7 @@ const PrivacySettings = ({ setView }) => {
           <label className="block text-sm text-text-primary">Profile Picture Visibility</label>
           <select
             value={profilePictureVisibility}
-            onChange={(e) => setProfilePictureVisibility(e.target.value)}
+            onChange={(e) => handleProfilePictureVisibilityChange(e.target.value)}
             className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
           >
             <option value="Everyone">Everyone</option>
@@ -52,7 +195,7 @@ const PrivacySettings = ({ setView }) => {
           <label className="block text-sm text-text-primary">Stories Visibility</label>
           <select
             value={storiesVisibility}
-            onChange={(e) => setStoriesVisibility(e.target.value)}
+            onChange={(e) => handleStoriesVisibilityChange(e.target.value)}
             className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
           >
             <option value="Everyone">Everyone</option>
@@ -66,7 +209,7 @@ const PrivacySettings = ({ setView }) => {
           <label className="block text-sm text-text-primary">Last Seen Visibility</label>
           <select
             value={lastSeenVisibility}
-            onChange={(e) => setLastSeenVisibility(e.target.value)}
+            onChange={(e) => handleLastSeenVisibilityChange(e.target.value)}
             className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
           >
             <option value="Everyone">Everyone</option>
@@ -78,19 +221,25 @@ const PrivacySettings = ({ setView }) => {
         {/* Blocked Users */}
         <div className="mb-3 sm:mb-4">
           <label className="block text-sm text-text-primary">Blocked Users</label>
-          <ul className="list-disc pl-5 text-text-primary">
-            {blockedUsers.map((user, index) => (
-              <li key={index} className="flex justify-between">
-                {user}
-                <button
-                  onClick={() => handleUnblockUser(user)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  Unblock
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="bg-bg-secondary rounded-lg p-3">
+            {blockedUsers.length > 0 ? (
+              <ul className="space-y-2">
+                {blockedUsers.map((user, index) => (
+                  <li key={index} className="flex justify-between items-center bg-bg-primary p-2 rounded-md">
+                    <span>{user}</span>
+                    <button
+                      onClick={() => handleUnblockUser(user)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Unblock
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">No blocked users</p>
+            )}
+          </div>
           <input
             type="text"
             placeholder="Enter username to block"
@@ -111,7 +260,7 @@ const PrivacySettings = ({ setView }) => {
             <input
               type="checkbox"
               checked={readReceiptsEnabled}
-              onChange={() => setReadReceiptsEnabled(!readReceiptsEnabled)}
+              onChange={handleReadReceiptsChange}
               className="mr-2"
             />
             <span>{readReceiptsEnabled ? 'Enabled' : 'Disabled'}</span>
@@ -123,7 +272,7 @@ const PrivacySettings = ({ setView }) => {
           <label className="block text-sm text-text-primary">Who Can Add Me to Groups/Channels</label>
           <select
             value={groupAddPermission}
-            onChange={(e) => setGroupAddPermission(e.target.value)}
+            onChange={(e) => handleGroupAddPermissionChange(e.target.value)}
             className="w-full px-3 py-2 sm:px-4 sm:py-2 bg-bg-secondary rounded-lg text-text-primary"
           >
             <option value="Everyone">Everyone</option>
