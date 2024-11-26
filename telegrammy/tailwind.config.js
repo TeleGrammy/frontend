@@ -16,6 +16,7 @@ export default {
         'bg-search': 'var(--bg-search)',
         'border-search': 'var(--border-search)',
         'bg-message-sender': 'var(--bg-message-sender)',
+        'bg-message-receiver': 'var(--bg-message-receiver)',
       },
     },
   },

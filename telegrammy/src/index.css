@@ -35,6 +35,7 @@
     --bg-image: url('./assets/home-bg-light.jpg');
     --bg-image-color: rgba(238, 239, 239, 0.2);
     --bg-message-sender: rgb(240, 255, 222);
+    --bg-message-receiver: rgb(255, 255, 255);
 
     /* Text colors */
     --text-primary: #000000;
@@ -55,6 +56,7 @@
     --bg-image: url('./assets/home-bg-dark.jpg');
     --bg-image-color: rgba(17, 16, 16, 0.61);
     --bg-message-sender: rgba(121, 113, 192, 1);
+    --bg-message-receiver: rgba(33, 33, 33, 1);
 
     /* Text colors */
     --text-primary: rgb(255, 255, 255);

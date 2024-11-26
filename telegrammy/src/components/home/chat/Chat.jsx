@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import VoiceNoteButton from './VoiceNoteButton';
+import VoiceNotePlayer from './VoiceNotePlayer';
 
 function formatDate(date) {
   const options = {
@@ -65,9 +67,7 @@ function Chat() {
   const handleSendMessage = () => {
     if (inputValue.trim() !== '') {
       const newMessage = {
-        id: messages.length + 1,
         content: inputValue,
-        type: 'sent',
         timestamp: new Date().toLocaleTimeString('en-US', {
           hour: 'numeric',
           minute: 'numeric',
@@ -76,7 +76,26 @@ function Chat() {
         replyTo: replyToMessageId || null, // Link the reply if there's any
       };
 
-      setMessages([...messages, newMessage]);
+      if (editingMessageId) {
+        // Edit the existing message
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === editingMessageId ? { ...msg, ...newMessage } : msg,
+          ),
+        );
+        // Reset after editing
+        setEditingMessageId(null);
+      } else {
+        // Add a new message
+        setMessages([
+          ...messages,
+          {
+            id: messages.length + 1,
+            ...newMessage,
+            type: 'sent',
+          },
+        ]);
+      }
 
       // Clear input and reset reply state after sending
       setInputValue('');
@@ -108,6 +127,21 @@ function Chat() {
     setInputValue(''); // Clear input if replying
   };
 
+  const handleSendVoice = (audioBlob) => {
+    const newMessage = {
+      id: messages.length + 1,
+      content: 'Voice Note Sent',
+      type: 'recieved',
+      timestamp: new Date().toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+      }),
+      date: new Date().toISOString().slice(0, 10),
+      voiceNote: URL.createObjectURL(audioBlob),
+    };
+    setMessages([...messages, newMessage]);
+  };
+
   let lastDate = null;
 
   return (
@@ -126,77 +160,93 @@ function Chat() {
                   </span>
                 </div>
               )}
-              <div
-                className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} mb-5 items-center`}
-              >
-                {message.type === 'sent' && (
-                  <div className="flex flex-row space-x-1 pr-2">
-                    <button
-                      onClick={() => handleEditMessage(message.id)}
-                      className="mr-2 text-xs text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteMessage(message.id)}
-                      className="text-xs text-red-500 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
+              {message.voiceNote ? (
+                <VoiceNotePlayer
+                  src={message.voiceNote}
+                  time={message.timestamp}
+                  type={message.type}
+                />
+              ) : (
                 <div
-                  className={`${
-                    message.type === 'sent'
-                      ? 'bg-bg-message-sender text-text-primary'
-                      : 'bg-gray-300 text-black dark:bg-gray-700 dark:text-white'
-                  } max-w-sm rounded-lg p-2`}
+                  className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} mb-5 items-center`}
                 >
-                  {message.replyTo && (
-                    <div className="mb-2 border-l-4 border-blue-500 p-2">
-                      <span className="text-xs text-gray-500">
-                        Replying to:
-                      </span>
-                      <p className="text-sm">
-                        {
-                          messages.find((msg) => msg.id === message.replyTo)
-                            ?.content
-                        }
-                      </p>
+                  {message.type === 'sent' && (
+                    <div className="flex flex-row space-x-1 pr-2">
+                      <button
+                        onClick={() => handleEditMessage(message.id)}
+                        className="mr-2 text-xs text-blue-500 hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteMessage(message.id)}
+                        className="text-xs text-red-500 hover:underline"
+                      >
+                        Delete
+                      </button>
                     </div>
                   )}
-                  <p>{message.content}</p>
-                  <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
-                    <span>{message.timestamp}</span>
-                    {message.type === 'sent' && (
-                      <span className="ml-1">✔✔</span>
-                    )}
-                  </div>
-                </div>
-                {message.type === 'received' && (
-                  <button
-                    onClick={() => handleReplyToMessage(message.id)}
-                    className="ml-2 text-xs text-blue-500 hover:underline"
+                  <div
+                    className={`${
+                      message.type === 'sent'
+                        ? 'bg-bg-message-sender'
+                        : 'bg-bg-message-receiver'
+                    } max-w-sm rounded-lg p-2 text-text-primary`}
                   >
-                    Reply
-                  </button>
-                )}
-              </div>
+                    {message.replyTo && (
+                      <div className="mb-2 border-l-4 border-blue-500 p-2">
+                        <span className="text-xs text-gray-500">
+                          Replying to:
+                        </span>
+                        <p className="text-sm">
+                          {
+                            messages.find((msg) => msg.id === message.replyTo)
+                              ?.content
+                          }
+                        </p>
+                      </div>
+                    )}
+                    <p>{message.content}</p>
+                    <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
+                      <span>{message.timestamp}</span>
+                      {message.type === 'sent' && (
+                        <span className="ml-1">✔✔</span>
+                      )}
+                    </div>
+                  </div>
+                  {message.type === 'received' && (
+                    <button
+                      onClick={() => handleReplyToMessage(message.id)}
+                      className="ml-2 text-xs text-blue-500 hover:underline"
+                    >
+                      Reply
+                    </button>
+                  )}
+                </div>
+              )}
             </React.Fragment>
           );
         })}
         <div ref={messagesEndRef} />
       </div>
-      <div className="bg-white p-4 dark:bg-gray-800">
-        <div className="flex items-center space-x-2">
-          {replyToMessageId && (
-            <div className="rounded-lg bg-gray-200 p-2">
+      <div className="bg-bg-message-receiver p-4">
+        {replyToMessageId && (
+          <div className="flex flex-row">
+            <div className="mb-2 flex-grow rounded-lg border-l-[#d56e78] bg-[#fbf0f1] p-2">
               <span className="text-xs text-gray-600">Replying to: </span>
               <p className="text-sm">
                 {messages.find((msg) => msg.id === replyToMessageId)?.content}
               </p>
             </div>
-          )}
+            <button
+              className="p-2 text-text-primary"
+              onClick={() => setReplyToMessageId(null)}
+            >
+              X
+            </button>
+          </div>
+        )}
+        <div className="flex items-center space-x-2">
           <input
             type="text"
             placeholder={
@@ -210,6 +260,7 @@ function Chat() {
             onChange={handleInputChange}
             className="flex-grow rounded-lg border border-gray-300 px-4 py-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           />
+          <VoiceNoteButton onSendVoice={handleSendVoice} />
           <button
             onClick={handleSendMessage}
             className="hover:bg-bg-message-sender-hover rounded-lg bg-bg-message-sender px-4 py-2 text-white"
