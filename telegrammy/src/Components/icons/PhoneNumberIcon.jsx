@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react';
 
 const PhoneNumberIcon = () => {
   return (
     <svg
-      className="w-5 h-5 mx-2"
-      width="16"
-      height="25"
+      className="mx-2"
+      width="20"
+      height="20"
       viewBox="0 0 16 25"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

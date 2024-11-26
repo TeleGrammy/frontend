@@ -1,9 +1,7 @@
-import React from "react";
-
 const UserNameIcon = () => {
   return (
     <svg
-      className="w-5 h-6 mx-2"
+      className="mx-2"
       width="20"
       height="20"
       viewBox="0 0 20 20"
