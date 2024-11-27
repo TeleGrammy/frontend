@@ -23,32 +23,29 @@
 // export default AuthCallback;
 
 import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
+import { loginWithCallback } from '../../slices/authSlice';
+
 const AuthCallback = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const setTokenInCookie = (token) => {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days expiration
-
-    document.cookie = `accessToken=${token}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
-  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('accessToken');
 
     if (token) {
-      setTokenInCookie(token); // Store the token in a cookie
-      console.log('Token stored in cookie:', token);
-      navigate('/home'); // Redirect to a secure page
-    } else {
-      console.error('No token found in the URL');
+      dispatch(
+        loginWithCallback({ user: { email: 's7tot@gmail.com' }, token }),
+      ); // need to change to the user object from the response
     }
+
+    navigate('/home'); // Redirect to a secure page
   }, [navigate]);
 
-  return <div>Loading...</div>;
+  return null;
 };
 
 export default AuthCallback;

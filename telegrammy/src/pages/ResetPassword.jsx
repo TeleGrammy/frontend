@@ -39,18 +39,16 @@ function ResetPassword() {
     e.preventDefault();
 
     try {
-      const responses = fetch(
-        `${apiUrl}/v1/auth/reset-password/${token}`,{
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            password: state.password,
-            passwordConfirm: state.confirmPassword
-          }),
-        }
-      );
+      const responses = fetch(`${apiUrl}/v1/auth/reset-password/${token}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: state.password,
+          passwordConfirm: state.confirmPassword,
+        }),
+      });
     } catch (error) {
       const data = await response.json();
       dispatch({ type: 'setError', payload: data.message });
@@ -59,7 +57,7 @@ function ResetPassword() {
       dispatch({ type: 'setError', payload: 'Passwords do not match.' });
     } else {
       dispatch({ type: 'setError', payload: '' });
-     
+
       navigate('/');
     }
   };

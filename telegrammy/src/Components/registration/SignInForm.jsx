@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useReducer } from 'react';
 import SocialLogin from './SocialLogin';
 import UserNameIcon from '../icons/UserNameIcon';
 import EmailIcon from '../icons/EmailIcon';
@@ -7,7 +7,7 @@ import PasswordIcon from '../icons/PasswordIcon';
 import ShowPasswordIcon from '../icons/ShowPasswordIcon';
 import HidePasswordIcon from '../icons/HidePasswordIcon';
 import { ClipLoader } from 'react-spinners';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../slices/authSlice'; // Import the loginUser thunk
 
@@ -42,17 +42,13 @@ function reducer(state, action) {
 
 const SignInForm = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const navigate = useNavigate();
   const reduxDispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
-  const user = useSelector((state) => state.auth.user);
   const handleSubmitForm = async (e) => {
     e.preventDefault();
     reduxDispatch(loginUser({ UUID: state.email, password: state.password }));
   };
-  useEffect(() => {
-    if (user) navigate('/home');
-  }, [user, navigate]);
+
   return (
     <div className="w-full p-6 md:w-1/2 md:p-7">
       <h2 className="mb-6 text-2xl font-semibold text-gray-700 md:mb-8">
@@ -125,7 +121,7 @@ const SignInForm = () => {
         {/* Checkbox */}
         <div className="mb-4 flex items-center justify-end">
           <Link
-            to="/forget-password"
+            to="/auth/forget-password"
             className="text-sm text-blue-500 hover:underline"
           >
             Forgot your password?

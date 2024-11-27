@@ -1,4 +1,3 @@
-import React from 'react';
 import WelcomeMessage from '../Components/registration/WelcomeMessage';
 import SignInForm from '../Components/registration/SignInForm';
 const Login = () => {

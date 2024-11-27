@@ -1,12 +1,11 @@
 import React from 'react';
-import logo from '../../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
 
 const WelcomeMessage = ({ signIn = true }) => {
   const navigate = useNavigate();
   return (
     <div className="flex w-full flex-col items-center justify-center rounded-none bg-sky-950 p-6 text-white md:w-1/2 md:rounded-lg md:p-8">
-      <img src={logo} alt="Telegram" className="mb-4 w-32 md:w-36" />
+      <img src="/logo.png" alt="Telegram" className="mb-4 w-32 md:w-36" />
       <h2 className="mb-2 text-2xl font-semibold md:mb-4 md:text-3xl">
         Welcome to
       </h2>

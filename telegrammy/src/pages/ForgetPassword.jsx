@@ -43,18 +43,15 @@ const ForgetPassword = () => {
 
     try {
       dispatch({ type: 'loading', payload: true });
-      const response = await fetch(
-        `${apiUrl}/v1/auth/forget-password`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: state.email,
-          }),
+      const response = await fetch(`${apiUrl}/v1/auth/forget-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          email: state.email,
+        }),
+      });
       if (!response.ok) {
         const data = await response.json();
         dispatch({
@@ -81,18 +78,15 @@ const ForgetPassword = () => {
 
     try {
       dispatch({ type: 'loading', payload: true });
-      const response = await fetch(
-        `${apiUrl}/v1/auth/reset-password/resend`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: state.email,
-          }),
+      const response = await fetch(`${apiUrl}/v1/auth/reset-password/resend`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          email: state.email,
+        }),
+      });
       if (!response.ok) {
         dispatch({
           type: 'message',

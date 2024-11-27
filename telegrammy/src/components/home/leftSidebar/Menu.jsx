@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'; // Import hooks
 
 import { ToggleDarkMode } from '../../../slices/darkModeSlice';
+
+import { logout } from '../../../slices/authSlice';
+
 import MenuItem from './MenuItem';
 
 import {
@@ -13,6 +16,9 @@ import {
   FaBullseye,
   FaSignOutAlt,
 } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const Menuitems = [
   {
@@ -38,21 +44,29 @@ const Menuitems = [
 function Menu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const navigate = useNavigate();
+
   const dispatch = useDispatch();
   const { isDarkTheme } = useSelector((state) => state.darkMode);
 
   const Logout = async () => {
-    // try {
-    //   const response = await fetch(`${apiUrl}/v1/auth/logout`, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     credentials: 'include',
-    //   });
-    // } catch (error) {
-    //   console.error('Error:', error);
-    // }
+    try {
+      const response = await fetch(`${apiUrl}/v1/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        console.log('Logout Success');
+        await dispatch(logout());
+        navigate('/');
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -91,7 +105,7 @@ function Menu() {
               </span>
             </li>
             <li
-              onClick={() => dispatch(Logout())}
+              onClick={Logout}
               className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
               data-test-id="logout-button"
             >
