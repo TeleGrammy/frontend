@@ -15,7 +15,7 @@ const WelcomeMessage = ({ signIn = true }) => {
       </p>
       <button
         className="mt-4 rounded-md border border-white px-4 py-2 transition-colors duration-300 ease-in-out hover:bg-white hover:text-sky-950"
-        onClick={() => navigate(signIn ? '/login' : '/signup')}
+        onClick={() => navigate(signIn ? '/auth/login' : '/auth/signup')}
       >
         {signIn ? 'Sign In' : 'Sign Up'}
       </button>
