@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import SignUpForm from '../Components/registration/SignUpForm';
-import WelcomeMessage from '../Components/registration/WelcomeMessage';
+import SignUpForm from '../components/registration/SignUpForm';
+import WelcomeMessage from '../components/registration/WelcomeMessage';
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
-import EmailVerification from '../Components/registration/EmailVerification';
+import EmailVerification from '../components/registration/EmailVerification';
 
 const SignUp = () => {
   const [verificationEmail, setVerificationEmail] = useState('');
