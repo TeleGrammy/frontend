@@ -55,6 +55,8 @@
     --border-search: rgb(77, 77, 77);
     --bg-hover: rgba(10, 10, 10, 0.8);
     --bg-line: rgba(170, 170, 170, 255);
+    --bg-button: rgba(121, 113, 192, 1);
+    --bg-button-hover: rgba(101, 93, 172, 1);
     --bg-image: url('./assets/home-bg-dark.jpg');
     --bg-image-color: rgba(17, 16, 16, 0.61);
     --bg-message-sender: rgba(121, 113, 192, 1);
