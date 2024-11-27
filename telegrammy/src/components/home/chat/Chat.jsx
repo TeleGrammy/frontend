@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import VoiceNoteButton from './VoiceNoteButton';
 import VoiceNotePlayer from './VoiceNotePlayer';
-
+import StickerIcon from '../../icons/StickerIcon';
+import GifIcon from '../../icons/GIFIcon';
+import '../../../../public/css/picker.css';
+import axios from 'axios';
+import Picker from 'emoji-picker-react';
 function formatDate(date) {
   const options = {
     weekday: 'short',
@@ -34,6 +38,11 @@ function Chat() {
   const [messages, setMessages] = useState(initialMessages);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [replyToMessageId, setReplyToMessageId] = useState(null);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('emoji'); // Tabs: 'emoji', 'stickers', 'gifs'
+  const [gifs, setGifs] = useState([]);
+  const [stickers, setStickers] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null); // Store the selected item
 
   const messagesEndRef = useRef(null);
 
@@ -121,6 +130,56 @@ function Chat() {
     setMessages([...messages, newMessage]);
   };
 
+  const handleEmojiClick = (emojiObject) => {
+    setInputValue((prev) => prev + emojiObject.emoji);
+  };
+  const fetchGifs = async (query) => {
+    const API_KEY = 'qU4yFyriCMVi6jpjzbUkcFH8CExbUGHK';
+    const url = `https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${query}&limit=5&offset=0&rating=g&lang=en`; // Giphy API endpoint for searching Stickers
+    try {
+      const response = await axios.get(url);
+      setGifs(response.data.data);
+    } catch (error) {
+      console.error('Error fetching GIFs:', error);
+    }
+  };
+
+  const fetchStickers = async (query) => {
+    const API_KEY = 'qU4yFyriCMVi6jpjzbUkcFH8CExbUGHK';
+    const url = `https://api.giphy.com/v1/stickers/search?api_key=${API_KEY}&q=${query}&limit=5`; // Giphy API endpoint for searching Stickers
+    try {
+      const response = await axios.get(url);
+      setStickers(response.data.data);
+      // console.log(response.data.data);
+    } catch (error) {
+      console.error('Error fetching Stickers:', error);
+    }
+  };
+
+  const handleSelectItem = (item) => {
+    console.log(item);
+    const newMessage = {
+      id: messages.length + 1,
+      type:'sent',
+      content: (
+        <img
+          key={messages.length + 1}
+          src={item} // Adjust according to the response structure
+          alt="Sticker"
+          width="100"
+        />
+      ),
+      timestamp: new Date().toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+      }),
+      date: new Date().toISOString().slice(0, 10),
+      replyTo: replyToMessageId || null,
+    };
+
+    setMessages([...messages, newMessage]);
+  };
+
   let lastDate = null;
 
   return (
@@ -147,7 +206,9 @@ function Chat() {
                 />
               ) : (
                 <div
-                  className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} mb-5 items-center`}
+                  className={`flex ${
+                    message.type === 'sent' ? 'justify-end' : 'justify-start'
+                  } mb-5 items-center`}
                 >
                   {message.type === 'sent' && (
                     <div className="flex flex-row space-x-1 pr-2">
@@ -226,6 +287,132 @@ function Chat() {
           </div>
         )}
         <div className="flex items-center space-x-2">
+          {/* Emoji/Sticker/GIF Picker Button */}
+          <button
+            onClick={() => setIsPickerOpen(!isPickerOpen)}
+            className="rounded-full p-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+          >
+            😊
+          </button>
+          {isPickerOpen && (
+            <div className="absolute bottom-16 left-4 z-50 w-64 rounded-lg bg-gray-100 shadow-lg dark:bg-gray-800">
+              {/* Tab Navigation */}
+              <div className="flex justify-around border-b border-gray-300 dark:border-gray-600">
+                <button
+                  onClick={() => setActiveTab('emoji')}
+                  className={`flex-grow p-2 ${
+                    activeTab === 'emoji' ? 'bg-gray-300 dark:bg-gray-600' : ''
+                  }`}
+                >
+                  {' '}
+                  😊
+                </button>
+                <button
+                  onClick={() => setActiveTab('stickers')}
+                  className={`flex-grow p-2 ${
+                    activeTab === 'stickers'
+                      ? 'bg-gray-300 dark:bg-gray-600'
+                      : ''
+                  }`}
+                >
+                  <StickerIcon />
+                </button>
+                <button
+                  onClick={() => setActiveTab('gifs')}
+                  className={`flex-grow p-2 ${
+                    activeTab === 'gifs' ? 'bg-gray-300 dark:bg-gray-600' : ''
+                  }`}
+                >
+                  {' '}
+                  <GifIcon />
+                </button>
+              </div>
+
+              {/* Tab Content */}
+              <div className="p-4">
+                {activeTab === 'emoji' && (
+                  <div className="flex flex-wrap gap-2">
+                    <Picker
+                      set="google" // Use Google's emoji set
+                      showPreview={false} // Disable the preview
+                      className="custom-picker"
+                      style={{
+                        backgroundColor: '#1f2937',
+                        border: 'none',
+                      }}
+                      onEmojiClick={(emoji) => {
+                        handleEmojiClick(emoji);
+                      }}
+                    />
+                  </div>
+                )}
+                {activeTab === 'stickers' && (
+                  <div className="flex flex-wrap gap-2">
+                    <input
+                      type="text"
+                      className="rounded p-0.5 pl-3 text-gray-600"
+                      placeholder="Search"
+                      onChange={(e) => {
+                        const query = e.target.value;
+                        fetchStickers(query);
+                      }}
+                    />
+                    <div>
+                      {/* Ensure stickers is always an array */}
+                      {stickers && stickers.length > 0 ? (
+                        stickers.map((sticker, index) => (
+                          <img
+                            key={index}
+                            src={sticker.images.fixed_height.url} // Adjust according to the response structure
+                            alt="Sticker"
+                            width="100"
+                            onClick={() =>
+                              handleSelectItem(sticker.images.fixed_height.url)
+                            }
+                            className="cursor-pointer"
+                          />
+                        ))
+                      ) : (
+                        <p>No stickers found</p> // Fallback if no stickers are found
+                      )}
+                    </div>
+                  </div>
+                )}
+                {activeTab === 'gifs' && (
+                  <div className="flex flex-wrap gap-2">
+                    <input
+                      type="text"
+                      className="rounded p-0.5 pl-3 text-gray-600"
+                      placeholder="Search"
+                      onChange={(e) => {
+                        const query = e.target.value;
+                        fetchGifs(query);
+                      }}
+                    />
+                    <div>
+                      {/* Ensure stickers is always an array */}
+                      {gifs && gifs.length > 0 ? (
+                        gifs.map((gif, index) => (
+                          <img
+                            key={index}
+                            src={gif.images.fixed_height.url} // Adjust according to the response structure
+                            alt="gif"
+                            width="100"
+                            onClick={() =>
+                              handleSelectItem(gif.images.fixed_height.url)
+                            } // Capture selected sticker
+                            className="cursor-pointer"
+                          />
+                        ))
+                      ) : (
+                        <p>No GIFs found</p> // Fallback if no stickers are found
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <input
             type="text"
             placeholder={

@@ -1,6 +1,6 @@
 import React, { useReducer } from 'react';
-import ShowPasswordIcon from '../Components/icons/ShowPasswordIcon';
-import HidePasswordIcon from '../Components/icons/HidePasswordIcon';
+import ShowPasswordIcon from '../components/icons/ShowPasswordIcon';
+import HidePasswordIcon from '../components/icons/HidePasswordIcon';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
