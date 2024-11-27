@@ -1,0 +1,19 @@
+/* Apply styles to the custom-picker container */
+.custom-picker {
+    background-color: #1f2937; /* Tailwind gray-600 */
+    color: white; /* Set text color to white */
+    border: none; /* Remove borders */
+    box-shadow: none; /* Remove box shadow */
+    border-radius: 0.5rem; /* Optional: rounded corners */
+    font-family: Arial, sans-serif; /* Optional: change font */
+    padding: 0.5rem; 
+  }
+  
+  /* Style the h2 inside the Picker */
+  .custom-picker h2 {
+    background-color: #1f2937 !important; /* Tailwind gray-600 */
+    color: white !important; /* White text */
+    margin: 0; /* Optional: remove any default margins */
+    padding: 0.5rem; /* Optional: padding for the header */
+  }
+  

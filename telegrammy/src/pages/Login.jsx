@@ -1,5 +1,5 @@
-import WelcomeMessage from '../Components/registration/WelcomeMessage';
-import SignInForm from '../Components/registration/SignInForm';
+import WelcomeMessage from '../components/registration/WelcomeMessage';
+import SignInForm from '../components/registration/SignInForm';
 const Login = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">

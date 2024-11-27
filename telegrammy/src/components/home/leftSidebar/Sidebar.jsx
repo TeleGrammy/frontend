@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 import Resizer from './Resizer';
 import ChatList from './ChatList';
-import Settings from '../../../Components/Settings/Settings';
+import Settings from '../../../components/Settings/Settings';
 const minWidth = 300; // Minimum sidebar width
 const maxWidth = 600; // Maximum sidebar width
 
