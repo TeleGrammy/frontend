@@ -3,45 +3,50 @@ import Edit from './Edit';
 import PrivacySettings from './PrivacySettings';
 import { useDispatch } from "react-redux";
 import { setcurrentMenu } from '../../slices/sidebarSlice'
+import { ClipLoader } from 'react-spinners';
+const apiUrl = import.meta.env.VITE_API_URL;
+
 
 
 const Settings = () => {
   const [view, setView] = useState('settings');
+  const [name, setName] = useState('');
+  const [bio, setBio] = useState('');
+  const [username, setUsername] =useState('');
+  const [profilePicture, setProfilePicture] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const [name, setName] = useState(() => localStorage.getItem('name') || 'Mohamed');
-  const [bio, setBio] = useState(() => localStorage.getItem('bio') || 'This is my bio');
-  const [username, setUsername] = useState(() => localStorage.getItem('username') || 'mohamed123');
-  const [profilePicture, setProfilePicture] = useState(() => localStorage.getItem('profilePicture') || null);
-  const [email, setEmail] = useState(() => localStorage.getItem('email') || 'user@example.com');
-  const [phone, setPhone] = useState(() => localStorage.getItem('phone') || '+1 (123) 456-7890');
+ useEffect(() => {
+    // Fetch user data from the endpoint
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/v1/user/profile/`, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+          },
+          credentials: 'include',
+        });
+        const data = await response.json();
+        console.log(data);
+        setName(data.data.user.screenName);
+        setBio(data.data.user.bio || '');
+        setUsername(data.data.user.username);
+        setEmail(data.data.user.email);
+        setPhone(data.data.user.phone);
+        setProfilePicture(data.data.user.picture || '');
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    localStorage.setItem('name', name);
-  }, [name]);
+    fetchUserData();
+  }, []); 
 
-  useEffect(() => {
-    localStorage.setItem('bio', bio);
-  }, [bio]);
-
-  useEffect(() => {
-    localStorage.setItem('username', username);
-  }, [username]);
-
-  useEffect(() => {
-    if (profilePicture) {
-      localStorage.setItem('profilePicture', profilePicture);
-    } else {
-      localStorage.removeItem('profilePicture');
-    }
-  }, [profilePicture]);
-
-  useEffect(() => {
-    localStorage.setItem('email', email);
-  }, [email]);
-
-  useEffect(() => {
-    localStorage.setItem('phone', phone);
-  }, [phone]);
 
   const deriveInitials = (fullName) => {
     if (!fullName) return '';
@@ -58,12 +63,21 @@ const Settings = () => {
 
   const initials = deriveInitials(name);
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <ClipLoader color="#ffffff" size={50} />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-bg-primary text-white min-h-screen w-full flex flex-col items-center p-4 sm:p-6 overflow-auto no-scrollbar">
       {view === 'settings' && (
         <div className="w-full max-w-md sm:max-w-lg">
           <div className="flex items-center justify-between sm:py-4">
           <button
+          data-test-id="settings"
             onClick={() => handleClick()}
             className="text-[#A9A9A9] hover:text-gray-300"
             aria-label="Go Back"
@@ -75,6 +89,7 @@ const Settings = () => {
             <h2 className="text-xl sm:text-2xl font-semibold ml-6 text-text-primary">Settings</h2>
 
             <button
+            data-test-id="edit-settings"
               className="text-[#FF6347] hover:text-[#FF4500] flex items-center"
               onClick={() => setView('edit')}
               title="Edit Profile"
@@ -111,6 +126,7 @@ const Settings = () => {
 
           <div className="space-y-3 sm:space-y-4">
             <button
+            data-test-id="privacy"
               className="w-full text-left px-3 py-2 sm:px-4 sm:py-3 bg-bg-secondary text-text-primary rounded-lg flex items-center hover:bg-bg-hover transition duration-200"
               onClick={() => setView('privacy')}
             >
