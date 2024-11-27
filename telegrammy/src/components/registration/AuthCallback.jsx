@@ -1,27 +1,3 @@
-// import { useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
-
-// const AuthCallback = () => {
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const params = new URLSearchParams(window.location.search);
-//     const token = params.get('accessToken');
-
-//     if (token) {
-//       localStorage.setItem('token', token); // Store the token securely
-//       console.log('Token:', token);
-//       navigate('/home'); // Redirect to a secure page
-//     } else {
-//       console.error('No token found in the URL');
-//     }
-//   }, [navigate]);
-
-//   return <div>Loading...</div>;
-// };
-
-// export default AuthCallback;
-
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
