@@ -1,12 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import MuteIcon from '../../icons/MuteIcon';
 
 const Chats = () => {
-  // State to manage the context menu
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, chatId: null });
-  const contextMenuRef = useRef(null);
-
-  const chats = [
+  const [chats, setChats] = useState([
     {
       id: "1",
       name: "user1",
@@ -21,7 +18,7 @@ const Chats = () => {
     },
     {
       id: "2",
-      name: "user2",
+      name: "user2 ",
       lastMessage: {
         sender: "youssef",
         content: "Remember to buy groceries!",
@@ -43,20 +40,20 @@ const Chats = () => {
       picture: "https://picsum.photos/seed/nature/50/50",
       isMuted: false,
     },
-  ];
+  ]);
 
-  // Handle right-click to show context menu
+  const contextMenuRef = useRef(null);
+  const containerRef = useRef(null);
+
+  
   const handleContextMenu = (e, chatId) => {
     e.preventDefault();
 
-    // Get container width and context menu width
-    const containerWidth = e.target.closest('.chats-container').offsetWidth; // Assuming '.chats-container' is your container div
-    const menuWidth = 200; // Set the context menu width (you can also calculate it dynamically if needed)
+    const containerWidth = e.target.closest('.chats-container').offsetWidth;
+    const menuWidth = 200; 
 
-    // Calculate the x position, ensuring the menu doesn't go beyond the container
     const xPos = Math.min(e.pageX, containerWidth - menuWidth);
 
-    // Set context menu position and visibility
     setContextMenu({
       visible: true,
       chatId: chatId,
@@ -65,7 +62,7 @@ const Chats = () => {
     });
   };
 
-  // Handle mute action
+  
   const handleMute = (chatId, duration) => {
     const updatedChats = chats.map(chat => {
       if (chat.id === chatId) {
@@ -73,11 +70,12 @@ const Chats = () => {
       }
       return chat;
     });
-    // Assuming you have a state to update the chats
+
+    setChats(updatedChats);
     setContextMenu({ ...contextMenu, visible: false });
   };
 
-  // Handle unmute action
+
   const handleUnmute = (chatId) => {
     const updatedChats = chats.map(chat => {
       if (chat.id === chatId) {
@@ -85,18 +83,44 @@ const Chats = () => {
       }
       return chat;
     });
-    // Assuming you have a state to update the chats
+
+    setChats(updatedChats); 
     setContextMenu({ ...contextMenu, visible: false });
   };
 
+  
+  const handleClickOutside = (e) => {
+    if (contextMenuRef.current && !contextMenuRef.current.contains(e.target)) {
+      setContextMenu({ ...contextMenu, visible: false });
+    }
+  };
+
+
+  const handleClickInside = (e) => {
+    if (contextMenu.visible && containerRef.current.contains(e.target)) {
+      setContextMenu({ ...contextMenu, visible: false });
+    }
+  };
+
+  useEffect(() => {
+    
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('click', handleClickInside);
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('click', handleClickInside);
+    };
+  }, [contextMenu]);
+
   return (
-    <div className="chats-container flex flex-col bg-bg-primary text-white h-full overflow-y-auto w-full">
+    <div ref={containerRef} className="chats-container flex flex-col bg-bg-primary text-white h-full overflow-y-auto w-full">
       <ul className="divide-y divide-gray-700">
         {chats.map((chat) => (
           <li
             key={chat.id}
-            className="flex items-center p-4 hover:bg-gray-700 transition w-full"
-            onContextMenu={(e) => handleContextMenu(e, chat.id)} // Added right-click event handler
+            className="flex items-center p-4 hover:bg-gray-700 transition w-full cursor-pointer"
+            onContextMenu={(e) => handleContextMenu(e, chat.id)} 
           >
             {/* Profile Picture */}
             <img
@@ -138,7 +162,7 @@ const Chats = () => {
           className="absolute bg-gray-800 text-white rounded shadow-lg w-48 z-50"
           style={{
             top: contextMenu.y,
-            left: contextMenu.x, // Positioned dynamically based on the calculated x position
+            left: contextMenu.x, 
           }}
         >
           <ul>
@@ -154,19 +178,19 @@ const Chats = () => {
               <>
                 <li
                   className="p-2 hover:bg-gray-700 cursor-pointer"
-                  onClick={() => handleMute(contextMenu.chatId, 8 * 60 * 60 * 1000)} // 8 hours in ms
+                  onClick={() => handleMute(contextMenu.chatId, 8 * 60 * 60 * 1000)} 
                 >
                   Mute for 8 Hours
                 </li>
                 <li
                   className="p-2 hover:bg-gray-700 cursor-pointer"
-                  onClick={() => handleMute(contextMenu.chatId, 7 * 24 * 60 * 60 * 1000)} // 7 days in ms
+                  onClick={() => handleMute(contextMenu.chatId, 7 * 24 * 60 * 60 * 1000)} 
                 >
                   Mute for 7 Days
                 </li>
                 <li
                   className="p-2 hover:bg-gray-700 cursor-pointer"
-                  onClick={() => handleMute(contextMenu.chatId, null)} // Permanent mute
+                  onClick={() => handleMute(contextMenu.chatId, null)} 
                 >
                   Mute Permanently
                 </li>
