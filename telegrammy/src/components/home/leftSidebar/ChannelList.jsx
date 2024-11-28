@@ -163,7 +163,8 @@ function ChannelList() {
           </div>
         </div>
       )}
-      {view === 'newChannel' && channelName.length > 0 && (
+      {((view === 'newChannel' && channelName.length > 0) ||
+        view === 'addMembers') && (
         <div
           className="absolute bottom-8 right-8 flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-full bg-bg-button text-2xl hover:bg-bg-button-hover"
           onClick={() => {
