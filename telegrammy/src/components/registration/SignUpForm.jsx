@@ -101,23 +101,20 @@ const SignUpForm = ({ setVerificationEmail }) => {
 
     try {
       dispatch({ type: 'loading', payload: true });
-      const response = await fetch(
-        `${apiUrl}/v1/auth/register`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: state.userName,
-            email: state.email,
-            phone: phoneNumberWithCode,
-            password: state.password,
-            passwordConfirm: state.confirmPassword,
-            token: state.captchaToken,
-          }),
+      const response = await fetch(`${apiUrl}/v1/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          username: state.userName,
+          email: state.email,
+          phone: phoneNumberWithCode,
+          password: state.password,
+          passwordConfirm: state.confirmPassword,
+          token: state.captchaToken,
+        }),
+      });
       const data = await response.json();
       console.log(response);
       if (!response.ok) {
@@ -127,7 +124,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
       console.log(response.status);
       console.log('User registered successfully');
       setVerificationEmail(state.email);
-      navigate('/signup/verify');
+      navigate('/auth/signup/verify');
     } catch (error) {
       dispatch({ type: 'error', payload: error.message });
     } finally {
