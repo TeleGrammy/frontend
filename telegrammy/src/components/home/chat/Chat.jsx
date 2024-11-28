@@ -6,6 +6,7 @@ import GifIcon from '../../icons/GIFIcon';
 import '../../../../public/css/picker.css';
 import axios from 'axios';
 import Picker from 'emoji-picker-react';
+import CryptoJS from 'crypto-js';
 function formatDate(date) {
   const options = {
     weekday: 'short',
