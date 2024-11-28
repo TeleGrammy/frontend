@@ -19,6 +19,10 @@ const sidebarSlice = createSlice({
       state.currentRightSidebar = action.payload;
     },
 
+    updateRightSidebar(state, action) {
+      state.currentRightSidebar = action.payload;
+    },
+
     closeRightSidebar(state) {
       state.isRightSidebarOpen = false;
       state.currentRightSidebar = '';
@@ -26,7 +30,11 @@ const sidebarSlice = createSlice({
   },
 });
 
-export const { setcurrentMenu, setRightSidebar, closeRightSidebar } =
-  sidebarSlice.actions;
+export const {
+  setcurrentMenu,
+  setRightSidebar,
+  updateRightSidebar,
+  closeRightSidebar,
+} = sidebarSlice.actions;
 
 export default sidebarSlice.reducer;

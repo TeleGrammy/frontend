@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'; // Import hooks
+import { useNavigate } from 'react-router-dom';
 
 import { ToggleDarkMode } from '../../../slices/darkModeSlice';
-
 import { logout } from '../../../slices/authSlice';
 
 import MenuItem from './MenuItem';
 
+import { ClipLoader } from 'react-spinners';
 import {
   FaCog,
   FaMoon,
@@ -16,7 +17,6 @@ import {
   FaBullseye,
   FaSignOutAlt,
 } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -43,6 +43,7 @@ const Menuitems = [
 
 function Menu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isloggingOut, setIsloggingOut] = useState(false);
 
   const navigate = useNavigate();
 
@@ -51,6 +52,7 @@ function Menu() {
 
   const Logout = async () => {
     try {
+      setIsloggingOut(true);
       const response = await fetch(`${apiUrl}/v1/auth/logout`, {
         method: 'POST',
         headers: {
@@ -61,11 +63,13 @@ function Menu() {
 
       if (response.ok) {
         console.log('Logout Success');
-        await dispatch(logout());
+        dispatch(logout());
         navigate('/');
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsloggingOut(false);
     }
   };
 
@@ -109,7 +113,11 @@ function Menu() {
               className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
               data-test-id="logout-button"
             >
-              <FaSignOutAlt />
+              {isloggingOut ? (
+                <ClipLoader size={17} color={'text-text-primary'} />
+              ) : (
+                <FaSignOutAlt />
+              )}
               <span className="ml-4">Log Out</span>
             </li>
           </ul>

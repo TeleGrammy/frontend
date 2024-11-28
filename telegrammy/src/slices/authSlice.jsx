@@ -13,18 +13,6 @@ const initialState = {
   error: '',
 };
 
-export const clearTokenFromCookie = () => {
-  document.cookie =
-    'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict';
-};
-
-export const setTokenInCookie = (token) => {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days expiration
-
-  document.cookie = `accessToken=${token}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
-};
-
 // Create an async thunk for the login request
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
@@ -32,6 +20,7 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await fetch(`${apiUrl}/v1/auth/login`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -47,10 +36,7 @@ export const loginUser = createAsyncThunk(
 
       const data = await response.json();
 
-      const token = data.data.accessToken;
       const user = data.data.updatedUser;
-      clearTokenFromCookie();
-      setTokenInCookie(token);
       return user;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -64,23 +50,13 @@ export const authSlice = createSlice({
   reducers: {
     login(state, { payload }) {},
     logout(state) {
-      clearTokenFromCookie();
       localStorage.removeItem('user');
       state.user = null;
       state.isLogin = false;
     },
     loginWithCallback(state, { payload }) {
-      // setTokenInCookie(payload.token);
       state.user = payload.user;
-      state.isLogin = document.cookie
-        .split(';')
-        .some((cookie) => cookie.trim().startsWith('accessToken'));
-
-      console.log(
-        document.cookie
-          .split(';')
-          .some((cookie) => cookie.trim().startsWith('accessToken')),
-      );
+      state.isLogin = true;
 
       localStorage.setItem('user', JSON.stringify(state.user));
     },
