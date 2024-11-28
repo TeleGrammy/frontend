@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 
-const ReCaptchaForm = ({ dispatch }) => {
+const ReCaptchaForm = ({ dispatch, captchaRef }) => {
   const handleCaptchaChange = (captchaToken) => {
     if (captchaToken !== null) {
       dispatch({ type: 'captchaVerified', payload: true });
@@ -16,6 +16,7 @@ const ReCaptchaForm = ({ dispatch }) => {
 
   return (
     <ReCAPTCHA
+      ref={captchaRef}
       sitekey="6LcQJGEqAAAAADBuvZhUXn5f8FqnU0Vsto5Um5NF"
       onChange={handleCaptchaChange}
       onExpired={handleCaptchaExpired}
