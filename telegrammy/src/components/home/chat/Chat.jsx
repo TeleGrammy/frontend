@@ -6,6 +6,8 @@ import GifIcon from '../../icons/GIFIcon';
 import '../../../../public/css/picker.css';
 import axios from 'axios';
 import Picker from 'emoji-picker-react';
+
+import ChatHeader from './ChatHeader';
 function formatDate(date) {
   const options = {
     weekday: 'short',
@@ -221,6 +223,7 @@ function Chat() {
     <div
       className={`relative flex flex-grow flex-col justify-between ${viewingImage ? '' : 'space-y-4'} overflow-y-auto text-black dark:text-white`}
     >
+      <ChatHeader groupName={'groupName'} groupPhoto={'https://picsum.photos/50/50'} />
       <div className="flex-grow overflow-y-auto px-4">
         {messages.map((message) => {
           const showDateDivider = message.date !== lastDate;
