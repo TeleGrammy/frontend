@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import googleIcon from '../../assets/google.png';
 import facebookIcon from '../../assets/facebook.png';
 import githubIcon from '../../assets/github.png';
-import ImagedButton from '../Shared/ImagedButton';
+import ImagedButton from '../shared/ImagedButton';
 const apiUrl = import.meta.env.VITE_API_URL;
 const images = [
   {
