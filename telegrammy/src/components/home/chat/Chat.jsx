@@ -16,6 +16,8 @@ function formatDate(date) {
   return new Date(date).toLocaleDateString('en-US', options);
 }
 
+const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
+
 const initialMessages = [
   {
     id: 1,
@@ -46,15 +48,42 @@ function Chat() {
   const [activeTab, setActiveTab] = useState('emoji'); // Tabs: 'emoji', 'stickers', 'gifs'
   const [gifs, setGifs] = useState([]);
   const [stickers, setStickers] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null); // Store the selected item
-
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [mentionIndex, setMentionIndex] = useState(0); // For navigating suggestions
+  const [isMentioning, setIsMentioning] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleInputChange = (event) => setInputValue(event.target.value);
+  const handleInputChange = (event) => {
+    const value = event.target.value;
+    setInputValue(value);
+
+    const mentionMatch = value.match(/@(\w*)$/); // Match `@` followed by optional text
+    if (mentionMatch) {
+      const mentionQuery = mentionMatch[1];
+      const suggestions = mentionUsers.filter((user) =>
+        user.toLowerCase().startsWith(mentionQuery.toLowerCase()),
+      );
+      setFilteredUsers(suggestions);
+      setIsMentioning(true);
+      setMentionIndex(-1); // Reset dropdown selection
+    } else {
+      setFilteredUsers([]);
+      setIsMentioning(false);
+    }
+  };
+
+  const handleSelectUser = (user) => {
+    // Replace the @mention with the selected user
+    const updatedInputValue = inputValue.replace(/@\w*$/, `@${user} `);
+    setInputValue(updatedInputValue);
+    setIsMentioning(false);
+    setFilteredUsers([]);
+    setMentionIndex(-1);
+  };
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -213,6 +242,32 @@ function Chat() {
     };
 
     setMessages([...messages, newMessage]);
+  };
+
+  const handleKeyDown = (event) => {
+    if (isMentioning) {
+      if (event.key === 'ArrowDown') {
+        // Move selection down
+        event.preventDefault();
+        setMentionIndex((prevIndex) =>
+          prevIndex < filteredUsers.length - 1 ? prevIndex + 1 : 0,
+        );
+      } else if (event.key === 'ArrowUp') {
+        // Move selection up
+        event.preventDefault();
+        setMentionIndex((prevIndex) =>
+          prevIndex > 0 ? prevIndex - 1 : filteredUsers.length - 1,
+        );
+      } else if (event.key === 'Enter' && mentionIndex >= 0) {
+        // Select the current mention
+        event.preventDefault();
+        handleSelectUser(filteredUsers[mentionIndex]);
+      } else if (event.key === 'Escape') {
+        // Close the mention dropdown
+        setIsMentioning(false);
+        setFilteredUsers([]);
+      }
+    }
   };
 
   let lastDate = null;
@@ -519,6 +574,23 @@ function Chat() {
               </div>
             </div>
           )}
+          {isMentioning && filteredUsers.length > 0 && (
+            <div className="absolute bottom-16 left-4 z-50 w-64 rounded-lg bg-white shadow-lg dark:bg-gray-800">
+              {filteredUsers.map((user, index) => (
+                <div
+                  key={index}
+                  className={`cursor-pointer p-2 ${
+                    mentionIndex === index ? 'bg-gray-300' : ''
+                  }`}
+                  onMouseDown={() => handleSelectUser(user)}
+                  onMouseEnter={() => setMentionIndex(index)}
+                >
+                  {user}
+                </div>
+              ))}
+            </div>
+          )}
+
           <input
             type="text"
             placeholder={
@@ -530,6 +602,7 @@ function Chat() {
             }
             value={inputValue}
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className="flex-grow rounded-lg border border-gray-300 px-4 py-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           />
           <div className="relative">

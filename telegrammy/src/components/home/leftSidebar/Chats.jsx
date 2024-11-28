@@ -7,6 +7,7 @@ const Chats = () => {
     {
       id: "1",
       name: "user1",
+      username: "user1",
       lastMessage: {
         sender: "user1",
         content: "Hey, how are you?",
@@ -18,7 +19,8 @@ const Chats = () => {
     },
     {
       id: "2",
-      name: "user2 ",
+      name: "user2",
+      username: "user2",
       lastMessage: {
         sender: "youssef",
         content: "Remember to buy groceries!",
@@ -31,6 +33,7 @@ const Chats = () => {
     {
       id: "3",
       name: "user3",
+      username: "user3",
       lastMessage: {
         sender: "user3",
         content: "hiii",
