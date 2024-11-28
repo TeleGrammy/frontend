@@ -8,6 +8,7 @@ import Sidebar from '../components/home/leftSidebar/Sidebar';
 import Chat from '../components/home/chat/Chat';
 import RightSidebar from '../components/home/rightSidebar/RightSidebar';
 
+
 function Home() {
   const { isDarkTheme } = useSelector((state) => state.darkMode);
 
@@ -24,6 +25,7 @@ function Home() {
   return (
     <div className="chat-bg flex h-screen w-screen flex-row">
       <Sidebar />
+
       <Chat />
       {isRightSidebarOpen && <RightSidebar />}
       <ToastContainer />
