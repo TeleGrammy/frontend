@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import Resizer from './Resizer';
 import ChatList from './ChatList';
 import Settings from '../../../Components/Settings/Settings';
-import CreateButton from './CreateButton';
+import ChannelList from './ChannelList';
 const minWidth = 300; // Minimum sidebar width
 const maxWidth = 600; // Maximum sidebar width
 
@@ -24,11 +24,10 @@ const SideBar = () => {
 
       {/** setting component */}
       {currentMenu === 'Setting' && <Settings />}
+      {currentMenu === 'ChannelList' && <ChannelList />}
       {/* {currentMenu === 'EditSettings' && <EditSettings />}*/}
       {/* Resizer handle */}
       <Resizer setWidth={setWidth} />
-
-      <CreateButton />
     </div>
   );
 };

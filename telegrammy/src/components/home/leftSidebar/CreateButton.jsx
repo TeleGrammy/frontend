@@ -9,15 +9,15 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 const CreateButtonitems = [
   {
-    Name: 'New Channel',
-    icon: <FaPodcast />,
-    newMenu: 'ChatList',
+    Name: 'New Group',
+    icon: <FaUsers />,
+    newMenu: 'GroupList',
     isRightSidebar: false,
   },
   {
-    Name: 'New Group',
-    icon: <FaUsers />,
-    newMenu: 'Setting',
+    Name: 'New Channel',
+    icon: <FaPodcast />,
+    newMenu: 'ChannelList',
     isRightSidebar: false,
   },
 ];

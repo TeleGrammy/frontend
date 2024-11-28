@@ -1,6 +1,7 @@
 import Searchbar from './Searchbar';
 import Menu from './Menu';
 import Header from './Header';
+import CreateButton from './CreateButton';
 
 function ChatList() {
   return (
@@ -10,6 +11,8 @@ function ChatList() {
         <Menu />
         <Searchbar />
       </Header>
+
+      <CreateButton />
       {/* chats */}
       {/* component of users */}
     </>
