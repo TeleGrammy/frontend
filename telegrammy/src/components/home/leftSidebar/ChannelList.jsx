@@ -99,7 +99,7 @@ function ChannelList() {
                   type="text"
                   value={channelName}
                   onChange={(e) => setChannelName(e.target.value)}
-                  className="w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
+                  className="mt-2 w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
                   placeholder="Channel Name"
                   aria-label="ChannelName"
                 />
@@ -110,14 +110,14 @@ function ChannelList() {
                   className="block text-sm text-text-primary"
                   htmlFor="description"
                 >
-                  Description
+                  Description (Optional)
                 </label>
                 <input
                   data-test-id="description-input"
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
+                  className="mt-2 w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
                   placeholder="Description"
                   aria-label="Description"
                 />
@@ -163,16 +163,19 @@ function ChannelList() {
           </div>
         </div>
       )}
-      <div
-        className="absolute bottom-8 right-8 flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-full bg-bg-button text-2xl hover:bg-bg-button-hover"
-        onClick={() => {
-          if (view === 'newChannel') setView('addMembers');
-          else if (view === 'addMembers') dispatch(setcurrentMenu('ChatList'));
-        }}
-        data-test-id="create-button"
-      >
-        <FaAngleRight className="text-text-primary opacity-70" />
-      </div>
+      {view === 'newChannel' && channelName.length > 0 && (
+        <div
+          className="absolute bottom-8 right-8 flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-full bg-bg-button text-2xl hover:bg-bg-button-hover"
+          onClick={() => {
+            if (view === 'newChannel') setView('addMembers');
+            else if (view === 'addMembers')
+              dispatch(setcurrentMenu('ChatList'));
+          }}
+          data-test-id="create-button"
+        >
+          <FaAngleRight className="text-text-primary opacity-70" />
+        </div>
+      )}
     </div>
   );
 }
