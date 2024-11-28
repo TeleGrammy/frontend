@@ -13,12 +13,12 @@ const initialState = {
   error: '',
 };
 
-const clearTokenFromCookie = () => {
+export const clearTokenFromCookie = () => {
   document.cookie =
     'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict';
 };
 
-const setTokenInCookie = (token) => {
+export const setTokenInCookie = (token) => {
   const expires = new Date();
   expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days expiration
 
@@ -70,9 +70,18 @@ export const authSlice = createSlice({
       state.isLogin = false;
     },
     loginWithCallback(state, { payload }) {
-      setTokenInCookie(payload.token);
+      // setTokenInCookie(payload.token);
       state.user = payload.user;
-      state.isLogin = true;
+      state.isLogin = document.cookie
+        .split(';')
+        .some((cookie) => cookie.trim().startsWith('accessToken'));
+
+      console.log(
+        document.cookie
+          .split(';')
+          .some((cookie) => cookie.trim().startsWith('accessToken')),
+      );
+
       localStorage.setItem('user', JSON.stringify(state.user));
     },
   },
