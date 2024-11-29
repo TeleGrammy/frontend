@@ -4,7 +4,7 @@ import { useState } from 'react';
 import AddUsersList from './AddUsersList';
 import { FaAngleRight } from 'react-icons/fa';
 
-function ChannelList() {
+function ChannelList({ channelOrGroup }) {
   const [view, setView] = useState('newChannel');
   const [channelName, setChannelName] = useState('');
   const [description, setDescription] = useState('');
@@ -38,7 +38,7 @@ function ChannelList() {
                 </svg>
               </button>
               <h2 className="mr-5 text-xl font-semibold text-text-primary">
-                New Channel
+                New {channelOrGroup === 'channel' ? 'Channel' : 'Group'}
               </h2>
               <div></div>
             </div>
@@ -92,7 +92,8 @@ function ChannelList() {
                   className="block text-sm text-text-primary"
                   htmlFor="channelName"
                 >
-                  Enter Channel Name
+                  Enter {channelOrGroup === 'channel' ? 'Channel' : 'Group'}{' '}
+                  Name
                 </label>
                 <input
                   data-test-id="channel-name-input"
