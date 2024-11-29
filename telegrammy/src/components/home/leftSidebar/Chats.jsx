@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import MuteIcon from '../../icons/MuteIcon';
 
 import { setOpenedChat } from '../../../slices/chatsSlice';
-import { initialChatsLSB } from './mockData.js';
+import { initialChatsLSB } from '../../../mocks/mockDataChatList';
 
 const Chats = ({ searchValue }) => {
   const dispatch = useDispatch();
