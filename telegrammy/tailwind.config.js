@@ -11,7 +11,7 @@ export default {
         'text-secondary': 'var(--text-secondary)',
         'bg-primary': 'var(--bg-primary)',
         'bg-secondary': 'var(--bg-secondary)',
-        'bg-border': 'var(--border)',
+        border: 'var(--border)',
         'bg-hover': 'var(--bg-hover)',
         'bg-line': 'var(--bg-line)',
         'bg-search': 'var(--bg-search)',
