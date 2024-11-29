@@ -107,7 +107,7 @@ const AddUsersList = ({ addedMembers, setAddedMembers }) => {
           className="w-full rounded-lg bg-bg-secondary p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-      <ul className="flex h-[90%] flex-col overflow-y-auto">
+      <ul className="no-scrollbar flex h-[90%] flex-col overflow-y-auto">
         {filteredContacts.length > 0 ? (
           filteredContacts.map((user) => (
             <li

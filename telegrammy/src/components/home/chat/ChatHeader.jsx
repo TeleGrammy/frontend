@@ -1,28 +1,40 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { closeRightSidebar, setRightSidebar } from '../../../slices/sidebarSlice';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  closeRightSidebar,
+  setRightSidebar,
+} from '../../../slices/sidebarSlice';
 
-function ChatHeader({groupName,groupPhoto}) {
+function ChatHeader() {
   const [isExpanded, setIsExpanded] = useState(false);
   const dispatch = useDispatch();
 
+  const { openedChat } = useSelector((state) => state.chats);
+  const { isRightSidebarOpen } = useSelector((state) => state.sidebar);
+
   const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-    if(!isExpanded){
+    setIsExpanded((prev) => !prev);
+    if (isRightSidebarOpen) {
       dispatch(closeRightSidebar());
-    }else{
-      dispatch(setRightSidebar('Group Info'));
+    } else {
+      dispatch(setRightSidebar(`${openedChat.type} Info`));
     }
   };
 
   return (
     <div>
       <div
-        className="flex items-center p-4 bg-bg-primary cursor-pointer"
+        className="flex cursor-pointer items-center bg-bg-primary p-4"
         onClick={toggleExpand}
       >
-        <img src={groupPhoto} alt="" className='w-10 h-10 rounded-full' />
-        <h1 className="text-xl font-semibold text-text-primary ml-5 mb-1">{groupName}</h1>
+        <img
+          src={openedChat.picture}
+          alt=""
+          className="h-10 w-10 rounded-full"
+        />
+        <h1 className="mb-1 ml-5 text-xl font-semibold text-text-primary">
+          {openedChat.name}
+        </h1>
       </div>
     </div>
   );
