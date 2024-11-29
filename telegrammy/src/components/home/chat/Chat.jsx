@@ -6,7 +6,11 @@ import GifIcon from '../../icons/GIFIcon';
 import styles from './Chat.module.css';
 import axios from 'axios';
 import Picker from 'emoji-picker-react';
+
 import CryptoJS from 'crypto-js';
+import ChatHeader from './ChatHeader';
+import { useSelector } from 'react-redux';
+
 function formatDate(date) {
   const options = {
     weekday: 'short',
@@ -37,6 +41,8 @@ const initialMessages = [
 ];
 
 function Chat() {
+  const isAdmin = false;
+  const { openedChat } = useSelector((state) => state.chats);
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState(initialMessages);
   const [editingMessageId, setEditingMessageId] = useState(null);
@@ -289,6 +295,7 @@ function Chat() {
     <div
       className={`relative flex flex-grow flex-col justify-between ${viewingImage ? '' : 'space-y-4'} overflow-y-auto text-black dark:text-white`}
     >
+      <ChatHeader />
       <div className="flex-grow overflow-y-auto px-4">
         {messages.map((message) => {
           const showDateDivider = message.date !== lastDate;
@@ -609,13 +616,16 @@ function Chat() {
           )}
 
           <input
+            disabled={openedChat.type === 'Channel' && !isAdmin}
             type="text"
             placeholder={
-              editingMessageId
-                ? 'Edit your message...'
-                : replyToMessageId
-                  ? 'Type your reply...'
-                  : 'Type your message...'
+              !isAdmin
+                ? "YOU DON'T HAVE PERMISSION!"
+                : editingMessageId
+                  ? 'Edit your message...'
+                  : replyToMessageId
+                    ? 'Type your reply...'
+                    : 'Type your message...'
             }
             value={inputValue}
             onChange={handleInputChange}

@@ -1,41 +1,67 @@
+
+
+
+
 import React, { useState, useRef, useEffect } from 'react';
 import MuteIcon from '../../icons/MuteIcon';
+import { useDispatch } from 'react-redux';
+import { setOpenedChat } from '../../../slices/chatsSlice';
+const Chats = () => {
+  const dispatch = useDispatch();
 
-const initialChats = [
-  {
-    id: '1',
-    name: 'user1',
-    username: 'user1',
-    lastMessage: {
-      sender: 'user1',
-      content: 'Hey, how are you?',
-      timeStamp: '9:45 PM',
+  const initialChats = [
+    {
+      id: '1',
+      name: 'user1',
+      type: 'Group',
+      lastMessage: {
+        sender: 'user1',
+        content: 'Hey, how are you?',
+        timeStamp: '9:45 PM',
+      },
+      unreadCount: 2,
+      picture: 'https://picsum.photos/50/50',
+      isMuted: false,
     },
-    unreadCount: 2,
-    picture: 'https://picsum.photos/50/50',
-    isMuted: false,
-  },
-  {
-    id: '2',
-    name: 'user2',
-    username: 'user2',
-    lastMessage: {
-      sender: 'youssef',
-      content: 'Remember to buy groceries!',
-      timeStamp: '8:33 PM',
+    {
+      id: '2',
+      name: 'user2 ',
+      type: 'User',
+      lastMessage: {
+        sender: 'youssef',
+        content: 'Remember to buy groceries!',
+        timeStamp: '8:33 PM',
+      },
+      unreadCount: 0,
+      picture: 'https://picsum.photos/seed/sports/50/50',
+      isMuted: true,
     },
-    unreadCount: 0,
-    picture: 'https://picsum.photos/seed/sports/50/50',
-    isMuted: true,
-  },
-  {
-    id: '3',
-    name: 'user3',
-    username: 'user3',
-    lastMessage: {
-      sender: 'user3',
-      content: 'hiii',
-      timeStamp: '9:35 PM',
+    {
+      id: '3',
+      name: 'user3',
+      type: 'User',
+      lastMessage: {
+        sender: 'user3',
+        content: 'hiii',
+        timeStamp: '9:35 PM',
+      },
+      unreadCount: 3,
+      picture: 'https://picsum.photos/seed/nature/50/50',
+      isMuted: false,
+    },
+    {
+      id: '4',
+      name: 'My Channel',
+      type: 'Channel',
+      lastMessage: {
+        sender: 'user3',
+        content: 'hiii',
+        timeStamp: '9:35 PM',
+      },
+      unreadCount: 3,
+      picture: 'https://picsum.photos/seed/nature/50/50',
+      isMuted: false,
+
     },
     unreadCount: 3,
     picture: 'https://picsum.photos/seed/nature/50/50',
@@ -120,12 +146,21 @@ const Chats = () => {
       ref={containerRef}
       className="chats-container flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white"
     >
+
+  const handleClickChat = (chat) => {
+    dispatch(setOpenedChat(chat));
+  };
+
+ 
       <ul className="divide-y divide-gray-700">
         {chats.map((chat) => (
           <li
             key={chat.id}
+
             className="flex w-full cursor-pointer items-center p-4 transition hover:bg-gray-700"
             onContextMenu={(e) => handleContextMenu(e, chat.id)}
+            onClick={() => handleClickChat(chat)}
+
           >
             {/* Profile Picture */}
             <img
