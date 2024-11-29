@@ -16,21 +16,25 @@ jest.mock('react-router-dom', () => {
 global.fetch = jest.fn(() =>
   Promise.resolve({
     json: () => Promise.resolve({ success: true }),
-  })
+  }),
 );
 
 describe('ResetPassword Component', () => {
   const mockNavigate = jest.fn();
 
-  function renderWithRouter(component, { route = '/reset-password/sample-token' } = {}) {
+  function renderWithRouter(
+    component,
+    { route = '/reset-password/sample-token' } = {},
+  ) {
     window.history.pushState({}, 'Test page', route); // Set the route explicitly
     return render(
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<div>Home Page</div>} /> {/* Root route for completeness */}
+          <Route path="/" element={<div>Home Page</div>} />{' '}
+          {/* Root route for completeness */}
           <Route path="/reset-password/:token" element={component} />
         </Routes>
-      </BrowserRouter>
+      </BrowserRouter>,
     );
   }
 
@@ -39,7 +43,9 @@ describe('ResetPassword Component', () => {
   });
 
   test('renders the ResetPassword component', () => {
-    renderWithRouter(<ResetPassword />, { route: '/reset-password/sample-token' }); 
+    renderWithRouter(<ResetPassword />, {
+      route: '/reset-password/sample-token',
+    });
 
     expect(screen.getByText(/Set Your New Password/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/New Password/i)).toBeInTheDocument();
@@ -48,7 +54,9 @@ describe('ResetPassword Component', () => {
   });
 
   test('handles password input change', () => {
-    renderWithRouter(<ResetPassword />, { route: '/reset-password/sample-token' }); 
+    renderWithRouter(<ResetPassword />, {
+      route: '/reset-password/sample-token',
+    });
 
     const passwordInput = screen.getByLabelText(/New Password/i);
     fireEvent.change(passwordInput, { target: { value: 'new-password' } });
@@ -56,15 +64,21 @@ describe('ResetPassword Component', () => {
   });
 
   test('handles confirm password input change', () => {
-    renderWithRouter(<ResetPassword />, { route: '/reset-password/sample-token' }); 
+    renderWithRouter(<ResetPassword />, {
+      route: '/reset-password/sample-token',
+    });
 
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
-    fireEvent.change(confirmPasswordInput, { target: { value: 'new-password' } });
+    fireEvent.change(confirmPasswordInput, {
+      target: { value: 'new-password' },
+    });
     expect(confirmPasswordInput).toHaveValue('new-password');
   });
 
   test('shows error message if passwords do not match', async () => {
-    renderWithRouter(<ResetPassword />, { route: '/reset-password/sample-token' });
+    renderWithRouter(<ResetPassword />, {
+      route: '/reset-password/sample-token',
+    });
 
     const passwordInput = screen.getByLabelText(/New Password/i);
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
@@ -83,14 +97,18 @@ describe('ResetPassword Component', () => {
     const { useNavigate } = require('react-router-dom'); // Get the mocked useNavigate
     useNavigate.mockImplementation(() => mockNavigate); // Implement the mocked navigation
 
-    renderWithRouter(<ResetPassword />, { route: '/reset-password/sample-token' }); 
+    renderWithRouter(<ResetPassword />, {
+      route: '/reset-password/sample-token',
+    });
 
     const passwordInput = screen.getByLabelText(/New Password/i);
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
     const submitButton = screen.getByRole('button', { name: /Submit/i });
 
     fireEvent.change(passwordInput, { target: { value: 'matching-password' } });
-    fireEvent.change(confirmPasswordInput, { target: { value: 'matching-password' } });
+    fireEvent.change(confirmPasswordInput, {
+      target: { value: 'matching-password' },
+    });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
