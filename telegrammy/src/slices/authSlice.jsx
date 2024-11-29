@@ -48,14 +48,14 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login(state, { payload }) {},
+    login(state, action) {},
     logout(state) {
       localStorage.removeItem('user');
       state.user = null;
       state.isLogin = false;
     },
-    loginWithCallback(state, { payload }) {
-      state.user = payload.user;
+    loginWithCallback(state, action) {
+      state.user = action.payload.user;
       state.isLogin = true;
 
       localStorage.setItem('user', JSON.stringify(state.user));

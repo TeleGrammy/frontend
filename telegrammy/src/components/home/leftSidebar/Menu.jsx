@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'; // Import hooks
 import { useNavigate } from 'react-router-dom';
 
@@ -45,6 +45,9 @@ function Menu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isloggingOut, setIsloggingOut] = useState(false);
 
+  const menuRef = useRef(null);
+  const barsRef = useRef(null);
+
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
@@ -73,9 +76,26 @@ function Menu() {
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current &&
+        !barsRef.current.contains(event.target) &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <>
       <div
+        ref={barsRef}
         className="flex min-h-8 min-w-8 cursor-pointer items-center justify-center rounded-full hover:bg-bg-secondary"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         data-test-id="menu-button"
@@ -84,6 +104,7 @@ function Menu() {
       </div>
       {isMenuOpen && (
         <div
+          ref={menuRef}
           className={`absolute left-4 top-[4rem] min-w-60 rounded-2xl border border-border bg-bg-primary opacity-80 shadow-xl`}
         >
           <ul className="text-l flex flex-col items-start justify-start space-y-2 p-2 px-4">
