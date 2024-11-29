@@ -4,7 +4,9 @@ import { useSelector } from 'react-redux';
 function ChannelSettings({ toggleView, isAdmin }) {
   const { openedChat } = useSelector((state) => state.chats);
   const [channelPhoto, setChannelPhoto] = useState(openedChat.picture);
-  const [channelDescription, setDescription] = useState(openedChat.description);
+  const [channelDescription, setChannelDescription] = useState(
+    openedChat.description,
+  );
   const [privacy, setPrivacy] = useState('Public');
   const fileInputRef = useRef(null);
 

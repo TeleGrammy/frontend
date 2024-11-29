@@ -4,6 +4,8 @@ import { useState } from 'react';
 import AddUsersList from './AddUsersList';
 import { FaAngleRight } from 'react-icons/fa';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 function ChannelList({ channelOrGroup }) {
   const [view, setView] = useState('newChannel');
   const [channelName, setChannelName] = useState('');
@@ -20,6 +22,33 @@ function ChannelList({ channelOrGroup }) {
       setImage(imageUrl);
     }
   };
+
+  function handleCreateGroupOrChannel() {
+    const createGroup = async () => {
+      console.log(channelName);
+      try {
+        const response = await fetch(
+          `${apiUrl}/v1/${channelOrGroup === 'channel' ? 'channels' : 'groups'}/`,
+          {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              name: channelName, // Replace with your actual channel name
+              description: description, // Replace with your actual description
+            }),
+            credentials: 'include',
+          },
+        );
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error('Error creating group or channel:', error.message);
+      }
+    };
+    createGroup();
+  }
 
   return (
     <div className="no-scrollbar flex w-full flex-col items-center overflow-auto bg-bg-primary p-4 text-white sm:p-6">
@@ -172,8 +201,10 @@ function ChannelList({ channelOrGroup }) {
         <div
           className="absolute bottom-8 right-8 flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-full bg-bg-button text-2xl hover:bg-bg-button-hover"
           onClick={() => {
-            if (view === 'newChannel') setView('addMembers');
-            else if (view === 'addMembers')
+            if (view === 'newChannel') {
+              handleCreateGroupOrChannel();
+              setView('addMembers');
+            } else if (view === 'addMembers')
               dispatch(setcurrentMenu('ChatList'));
           }}
           data-test-id="create-button"
