@@ -84,6 +84,112 @@ const initialState = {
         },
       ],
     },
+    {
+      userId: 2,
+      stories: [
+        {
+          content: 'Sample text related to image 2',
+          media:
+            'https://th.bing.com/th/id/OIP.K8_O7juMTdNJH-m9w6DAvQHaJp?w=120&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
+          views: 5,
+          expiresAt: '2030-12-2',
+          Name: 'John M4 Doe',
+          duration: 7,
+          userId: 2,
+        },
+      ],
+    },
+    {
+      userId: 2,
+      stories: [
+        {
+          content: 'Sample text related to image 2',
+          media:
+            'https://th.bing.com/th/id/OIP.K8_O7juMTdNJH-m9w6DAvQHaJp?w=120&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
+          views: 5,
+          expiresAt: '2030-12-2',
+          Name: 'John M4 Doe',
+          duration: 7,
+          userId: 2,
+        },
+      ],
+    },
+    {
+      userId: 2,
+      stories: [
+        {
+          content: 'Sample text related to image 2',
+          media:
+            'https://th.bing.com/th/id/OIP.K8_O7juMTdNJH-m9w6DAvQHaJp?w=120&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
+          views: 5,
+          expiresAt: '2030-12-2',
+          Name: 'John M4 Doe',
+          duration: 7,
+          userId: 2,
+        },
+      ],
+    },
+    {
+      userId: 2,
+      stories: [
+        {
+          content: 'Sample text related to image 2',
+          media:
+            'https://th.bing.com/th/id/OIP.K8_O7juMTdNJH-m9w6DAvQHaJp?w=120&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
+          views: 5,
+          expiresAt: '2030-12-2',
+          Name: 'John M4 Doe',
+          duration: 7,
+          userId: 2,
+        },
+      ],
+    },
+    {
+      userId: 2,
+      stories: [
+        {
+          content: 'Sample text related to image 2',
+          media:
+            'https://th.bing.com/th/id/OIP.K8_O7juMTdNJH-m9w6DAvQHaJp?w=120&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
+          views: 5,
+          expiresAt: '2030-12-2',
+          Name: 'John M4 Doe',
+          duration: 7,
+          userId: 2,
+        },
+      ],
+    },
+    {
+      userId: 2,
+      stories: [
+        {
+          content: 'Sample text related to image 2',
+          media:
+            'https://th.bing.com/th/id/OIP.K8_O7juMTdNJH-m9w6DAvQHaJp?w=120&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
+          views: 5,
+          expiresAt: '2030-12-2',
+          Name: 'John M4 Doe',
+          duration: 7,
+          userId: 2,
+        },
+      ],
+    },
+    {
+      userId: 2,
+      stories: [
+        {
+          content: 'Sample text related to image 2',
+          media:
+            'https://th.bing.com/th/id/OIP.K8_O7juMTdNJH-m9w6DAvQHaJp?w=120&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
+          views: 5,
+          expiresAt: '2030-12-2',
+          Name: 'John M4 Doe',
+          duration: 7,
+          userId: 2,
+        },
+      ],
+    },
+    
   ],
   showedMyStoryIndex: null,
   showedOtherStoryIndex: null,

@@ -4,16 +4,56 @@ import { useState } from 'react';
 import AddUsersList from './AddUsersList';
 import { FaAngleRight } from 'react-icons/fa';
 
-function ChannelList() {
+const apiUrl = import.meta.env.VITE_API_URL;
+
+function ChannelList({ channelOrGroup }) {
   const [view, setView] = useState('newChannel');
   const [channelName, setChannelName] = useState('');
   const [description, setDescription] = useState('');
   const [addedMembers, setAddedMembers] = useState([]);
   const dispatch = useDispatch();
+
+  const [image, setImage] = useState(null);
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file); // Create a preview URL
+      setImage(imageUrl);
+    }
+  };
+
+  function handleCreateGroupOrChannel() {
+    const createGroup = async () => {
+      console.log(channelName);
+      try {
+        const response = await fetch(
+          `${apiUrl}/v1/${channelOrGroup === 'channel' ? 'channels' : 'groups'}/`,
+          {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              name: channelName, // Replace with your actual channel name
+              description: description, // Replace with your actual description
+            }),
+            credentials: 'include',
+          },
+        );
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error('Error creating group or channel:', error.message);
+      }
+    };
+    createGroup();
+  }
+
   return (
-    <div className="no-scrollbar flex min-h-screen w-full flex-col items-center overflow-auto bg-bg-primary p-4 text-white sm:p-6">
+    <div className="no-scrollbar flex w-full flex-col items-center overflow-auto bg-bg-primary p-4 text-white sm:p-6">
       {view == 'newChannel' && (
-        <div className="flex min-h-screen w-full flex-col items-center p-4 text-text-primary sm:p-6">
+        <div className="flex w-full flex-col items-center p-4 text-text-primary sm:p-6">
           <div className="w-full bg-bg-primary">
             <div className="mb-4 flex w-full items-center justify-between sm:mb-6">
               <button
@@ -38,51 +78,43 @@ function ChannelList() {
                 </svg>
               </button>
               <h2 className="mr-5 text-xl font-semibold text-text-primary">
-                New Channel
+                New {channelOrGroup === 'channel' ? 'Channel' : 'Group'}
               </h2>
               <div></div>
             </div>
 
-            <div className="mb-4 flex w-full flex-col items-center sm:mb-6">
+            <div className="m-10 flex items-center justify-center">
               <div className="relative">
-                {/* <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#FF8C00] to-[#FF6347] text-2xl text-text-primary sm:h-24 sm:w-24 sm:text-3xl">
-                  {preview ? (
-                    <img
-                      src={preview}
-                      alt="Profile Preview"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    initials
-                  )}
-                </div>
-                <button
-                  onClick={() => fileInputRef.current.click()}
-                  className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-white p-1 text-black"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15.232 5.232l3.536 3.536M9 19l6.364-6.364a1 1 0 011.414 0l2.121 2.121a1 1 0 01-1.414 1.414L11 16l-4 1 1-4z"
-                    />
-                  </svg>
-                </button> 
                 <input
                   type="file"
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  onChange={handleFileChange}
-                  accept="image/*,video/*"
-                  data-test-id="add-story-file-input"
-                />*/}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                />
+                <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-gradient-to-b from-purple-500 to-purple-700 text-white">
+                  {image ? (
+                    <img
+                      src={image}
+                      alt="Uploaded"
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-12 w-12"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -92,7 +124,8 @@ function ChannelList() {
                   className="block text-sm text-text-primary"
                   htmlFor="channelName"
                 >
-                  Enter Channel Name
+                  Enter {channelOrGroup === 'channel' ? 'Channel' : 'Group'}{' '}
+                  Name
                 </label>
                 <input
                   data-test-id="channel-name-input"
@@ -168,8 +201,10 @@ function ChannelList() {
         <div
           className="absolute bottom-8 right-8 flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-full bg-bg-button text-2xl hover:bg-bg-button-hover"
           onClick={() => {
-            if (view === 'newChannel') setView('addMembers');
-            else if (view === 'addMembers')
+            if (view === 'newChannel') {
+              handleCreateGroupOrChannel();
+              setView('addMembers');
+            } else if (view === 'addMembers')
               dispatch(setcurrentMenu('ChatList'));
           }}
           data-test-id="create-button"

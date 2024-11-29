@@ -24,7 +24,10 @@ const SideBar = () => {
 
       {/** setting component */}
       {currentMenu === 'Setting' && <Settings />}
-      {currentMenu === 'ChannelList' && <ChannelList />}
+      {currentMenu === 'ChannelList' && (
+        <ChannelList channelOrGroup="channel" />
+      )}
+      {currentMenu === 'GroupList' && <ChannelList channelOrGroup="group" />}
       {/* {currentMenu === 'EditSettings' && <EditSettings />}*/}
       {/* Resizer handle */}
       <Resizer setWidth={setWidth} />

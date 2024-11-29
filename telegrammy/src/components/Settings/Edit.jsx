@@ -69,15 +69,6 @@ const Edit = ({
     return re.test(String(phone));
   };
 
-  //download the image
-  const handleDownload = () => {
-    const dataUrl = URL.createObjectURL(selectedFile);
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = 'story.png';
-    link.click();
-  };
-
   const handleUpdate = async () => {
     const hasProfileChanged = currentUsername !== username || bioText !== bio || fullName.trim() !== name || currentPhone !== phone;
     const hasEmailChanged = currentEmail !== email;
@@ -153,10 +144,7 @@ const Edit = ({
         const dataUrl = URL.createObjectURL(selectedFile);
         const response = await fetch(dataUrl);
         const blob = await response.blob();
-        console.log(blob);
-        formData.append('picture', blob);
-        // console.log(formData);
-        handleDownload();
+        formData.append('picture', blob,selectedFile.name);
 
         const pictureResponse = await fetch(`${apiUrl}/v1/user/profile/picture/`, {
           method: 'PATCH',
@@ -170,7 +158,7 @@ const Edit = ({
         } else {
           const pictureResult = await pictureResponse.json();
           console.log('Profile picture updated successfully:', pictureResult);
-          setProfilePicture(pictureResult.url); // Assuming the response contains the URL of the uploaded picture
+          setProfilePicture(pictureResult.data.user.picture); // Assuming the response contains the URL of the uploaded picture
         }
       } catch (error) {
         console.error('Error updating profile picture:', error);
@@ -217,7 +205,6 @@ const Edit = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         const photoURL = reader.result; // Get the Data URL
-        console.log('Photo URL:', photoURL);
 
         setPath(photoURL); // Save it to the `path` state
         setProfilePicture(photoURL); // Save it to the `profilePicture` state
