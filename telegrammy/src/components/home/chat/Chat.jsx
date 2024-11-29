@@ -13,6 +13,7 @@ import {
   initialMessages2,
   initialMessages3,
 } from './mockData.js';
+import { initialChatsLSB } from '../leftSidebar/mockData';
 import ChatHeader from './ChatHeader';
 import { useSelector } from 'react-redux';
 function formatDate(date) {
@@ -37,6 +38,7 @@ function Chat() {
   const [messages, setMessages] = useState([initialMessages1]);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [replyToMessageId, setReplyToMessageId] = useState(null);
+  const [forwardingMessageId, setForwardingMessageId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewingImage, setViewingImage] = useState(null);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
@@ -218,6 +220,37 @@ function Chat() {
     }
   };
 
+  const handleForwardMessage = (chat)=>{
+    const messageToForward = messages.find(
+      (msg) => msg.id === forwardingMessageId,
+    );
+    const length = chat.name === 'user1' ? initialMessages1.length : chat.name === 'user2' ? initialMessages2.length : initialMessages3.length;
+    if (messageToForward) {
+      const newMessage = {
+        ...messageToForward,
+        id: length + 1,
+        type: 'sent',
+        timestamp: new Date().toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: 'numeric',
+        }),
+      };
+      switch (chat.name) {
+        case 'user1':
+          initialMessages1.push(newMessage);
+          break;
+        case 'user2':
+          initialMessages2.push(newMessage);
+          break;
+        case 'user3':
+          initialMessages3.push(newMessage);
+          break;
+        default:
+          break;
+      }
+      setForwardingMessageId(null);
+    }
+  }
   const handleDeleteMessage = (id) => {
     const confirmDelete = window.confirm(
       'Are you sure you want to delete this message?',
@@ -229,7 +262,10 @@ function Chat() {
     }
   };
 
-  const handleForwardMessage = (id) => {};
+  const handleClickForwardMessage = (id) => {
+    setForwardingMessageId(id);
+    setInputValue(''); // Clear input if forwarding
+  };
 
   const handleReplyToMessage = (id) => {
     setReplyToMessageId(id);
@@ -388,7 +424,13 @@ function Chat() {
                   className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} mb-5 items-center`}
                 >
                   {message.type === 'sent' && (
-                    <div className="flex flex-row space-x-1 pr-2">
+                    <div className="flex flex-row space-x-2 pr-2">
+                      <button
+                        onClick={() => handleClickForwardMessage(message.id)}
+                        className=" text-xs text-green-500 hover:underline"
+                      >
+                        Forward
+                      </button>
                       <button
                         onClick={() => handleEditMessage(message.id)}
                         className="mr-2 text-xs text-blue-500 hover:underline"
@@ -460,7 +502,13 @@ function Chat() {
                   } mb-5 items-center`}
                 >
                   {message.type === 'sent' && (
-                    <div className="flex flex-row space-x-1 pr-2">
+                    <div className="flex flex-row space-x-2 pr-2">
+                      <button
+                        onClick={() => handleClickForwardMessage(message.id)}
+                        className="text-xs text-green-500 hover:underline"
+                      >
+                        Forward
+                      </button>
                       <button
                         onClick={() => handleEditMessage(message.id)}
                         className="mr-2 text-xs text-blue-500 hover:underline"
@@ -469,7 +517,7 @@ function Chat() {
                       </button>
                       <button
                         onClick={() => handleDeleteMessage(message.id)}
-                        className="text-xs text-red-500 hover:underline"
+                        className="text-xs mr-2 text-red-500 hover:underline"
                       >
                         Delete
                       </button>
@@ -504,12 +552,20 @@ function Chat() {
                     </div>
                   </div>
                   {message.type === 'received' && (
-                    <button
-                      onClick={() => handleReplyToMessage(message.id)}
-                      className="ml-2 text-xs text-blue-500 hover:underline"
-                    >
-                      Reply
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleClickForwardMessage(message.id)}
+                        className="ml-2 text-xs text-green-500 hover:underline"
+                      >
+                        Forward
+                      </button>
+                      <button
+                        onClick={() => handleReplyToMessage(message.id)}
+                        className="ml-2 text-xs text-blue-500 hover:underline"
+                      >
+                        Reply
+                      </button>
+                    </>
                   )}
                 </div>
               )}
@@ -789,6 +845,38 @@ function Chat() {
           <div className="flex items-center space-x-2">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-t-4 border-gray-200 border-t-transparent"></div>
             <span className="text-white">Uploading...</span>
+          </div>
+        </div>
+      )}
+      {forwardingMessageId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center space-y-0 bg-black bg-opacity-40">
+          <div className="relative flex flex-row items-center justify-center">
+            {/* Center this image */}
+            <div className="z-50 w-64 rounded-lg bg-white shadow-lg dark:bg-gray-800">
+              <div className="p-4">
+                <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
+                  Forward to:
+                </h3>
+                {initialChatsLSB.map((chat) => (
+                  <div
+                    key={chat.id}
+                    className="cursor-pointer p-2 hover:bg-gray-200 dark:hover:bg-gray-600 flex flex-row"
+                    onClick={() => {
+                      handleForwardMessage(chat);
+                    }}
+                  >
+                    <img src={chat.picture} alt={chat.name} className="h-8 w-8 rounded-full object-cover" />
+                    <span className="ml-2">{chat.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={()=>{setForwardingMessageId(null);setInputValue('')}}
+              className="m-4 self-start rounded-full bg-black bg-opacity-50 p-2 text-2xl text-white hover:bg-opacity-75"
+            >
+              &times;
+            </button>
           </div>
         </div>
       )}
