@@ -9,20 +9,18 @@ import SelectedInfo from '../rightSidebar/SelectedInfo';
 import Header from '../leftSidebar/Header';
 
 const initialGroupMembers = [
-  { username: 'Alice', photo: 'https://picsum.photos/50/50' },
-  { username: 'Bob', photo: 'https://picsum.photos/50/50' },
-  { username: 'Charlie', photo: 'https://picsum.photos/50/50' },
-  { username: 'Alice', photo: 'https://picsum.photos/50/50' },
-  { username: 'Bob', photo: 'https://picsum.photos/50/50' },
-  { username: 'Charlie', photo: 'https://picsum.photos/50/50' },
-  { username: 'Alice', photo: 'https://picsum.photos/50/50' },
-  { username: 'Bob', photo: 'https://picsum.photos/50/50' },
-  { username: 'Charlie', photo: 'https://picsum.photos/50/50' },
-  { username: 'Charlie', photo: 'https://picsum.photos/50/50' },
-  { username: 'Charlie', photo: 'https://picsum.photos/50/50' },
-  { username: 'Charlie', photo: 'https://picsum.photos/50/50' },
-  { username: 'Charlie', photo: 'https://picsum.photos/50/50' },
-  { username: 'Charlie', photo: 'https://picsum.photos/50/50' },
+  { username: 'Alice', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: false },
+  { username: 'Bob', photo: 'https://picsum.photos/50/50', canComment: true, canDownload: false },
+  { username: 'Charlie', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: true },
+  { username: 'David', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: false },
+  { username: 'Eve', photo: 'https://picsum.photos/50/50', canComment: true, canDownload: false },
+  { username: 'Frank', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: true },
+  { username: 'Grace', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: false },
+  { username: 'Hannah', photo: 'https://picsum.photos/50/50', canComment: true, canDownload: false },
+  { username: 'Isaac', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: true },
+  { username: 'Jack', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: false },
+  { username: 'Karen', photo: 'https://picsum.photos/50/50', canComment: true, canDownload: false },
+  { username: 'Leo', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: true },
 ];
 
 const initialGroupPhoto = 'https://picsum.photos/50/50';
@@ -38,10 +36,13 @@ function GroupOrChannelInfo() {
   const [groupPhoto, setGroupPhoto] = useState(initialGroupPhoto);
   const [groupDescription, setGroupDescription] = useState('hello');
   const [view, setView] = useState('info');
+  const [searchQuery, setSearchQuery] = useState(''); // State for search query
 
-  const addMember = () => {
-    console.log(`Add member to group with ID: ${openedChat.id}`);
-  };
+  // Filtered members based on search query
+  const filteredMembers = groupMembers.filter((member) =>
+    member.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
 
   const makeAdmin = (username) => {
     if (!admins.includes(username)) {
@@ -54,7 +55,6 @@ function GroupOrChannelInfo() {
     setGroupMembers(
       groupMembers.filter((member) => member.username !== username),
     );
-    console.log(`${username} has been removed from the group.`);
   };
 
   const setPermissions = (username, permissionType, value) => {
@@ -62,7 +62,11 @@ function GroupOrChannelInfo() {
   };
 
   const toggleUserOptions = (username) => {
-    setSelectedUser(selectedUser === username ? null : username);
+    if (selectedUser === username) {
+      setSelectedUser(null);
+    } else {
+      setSelectedUser(username);
+    }
   };
 
   const toggleView = () => {
@@ -72,6 +76,17 @@ function GroupOrChannelInfo() {
   const GenerateInviteLink = () => {};
 
   const handleSubmitAddedUsers = () => {};
+
+  const togglePermission = (username, permissionType) => {
+    setGroupMembers((prevMembers) =>
+      prevMembers.map((member) =>
+        member.username === username
+          ? { ...member, [permissionType]: !member[permissionType] }
+          : member
+      )
+    );
+    console.log(`Toggled ${permissionType} permission for ${username}`);
+  };
 
   return (
     <>
@@ -138,14 +153,26 @@ function GroupOrChannelInfo() {
               {groupDescription}
             </p>
             <h2 className="mb-2 text-center text-text-primary">Members</h2>
+
+            {/* Search bar */}
+            <div className="p-4">
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full p-2 rounded bg-bg-secondary text-text-primary outline-none"
+              />
+            </div>
+        
+            {/* Display filtered members */}
             <ul className="no-scrollbar mb-4 h-[100%] overflow-y-scroll">
-              {groupMembers.map((member, index) => (
+              {filteredMembers.map((member, index) => (
                 <li
                   key={index}
                   className="mb-2 flex flex-col items-start rounded p-2 hover:bg-bg-secondary"
-                  onClick={() => toggleUserOptions(member.username)}
                 >
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center cursor-pointer" onClick={() => toggleUserOptions(member.username)}>
                     <img
                       src={member.photo}
                       alt={member.username}
@@ -176,19 +203,19 @@ function GroupOrChannelInfo() {
                         className="text-text-primary"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setPermissions(member.username, 'comment', true);
+                          togglePermission(member.username, 'canComment');
                         }}
                       >
-                        Allow Comments
+                        {member.canComment ? 'Revoke Comments' : 'Allow Comments'}
                       </button>
                       <button
                         className="text-text-primary"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setPermissions(member.username, 'download', true);
+                          togglePermission(member.username, 'canDownload');
                         }}
                       >
-                        Allow Download
+                        {member.canDownload ? 'Revoke Download' : 'Allow Download'}
                       </button>
                       <button
                         className="text-red-500"

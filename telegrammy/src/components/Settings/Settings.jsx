@@ -17,6 +17,15 @@ const Settings = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(true);
+  const [maxFileSize, setMaxFileSize] = useState(512);
+  const [autoDownload, setAutoDownload] = useState(false);
+
+  // Function to format file size
+  const formatFileSize = (sizeInKB) => {
+    return sizeInKB > 1024
+      ? `${(sizeInKB / 1024).toFixed(2)} MB`
+      : `${sizeInKB} KB`;
+  };
 
  useEffect(() => {
     // Fetch user data from the endpoint
@@ -135,6 +144,31 @@ const Settings = () => {
               </svg>
               Privacy and Security
             </button>
+
+            <div className="w-full text-left px-3 py-2 sm:px-4 sm:py-3 bg-bg-secondary text-text-primary rounded-lg flex items-center hover:bg-bg-hover transition duration-200">
+              <input
+                id="autoDownloadCheckbox"
+                type="checkbox"
+                checked={autoDownload}
+                onChange={(e) => setAutoDownload(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="autoDownloadCheckbox">Auto Download</label>
+            </div>
+
+            <div className="w-full text-left px-3 py-2 sm:px-4 sm:py-3 bg-bg-secondary text-text-primary rounded-lg flex flex-col items-center hover:bg-bg-hover transition duration-200">
+              <label htmlFor="fileSizeSlider" className="mb-2">Max File Size: {formatFileSize(maxFileSize)}</label>
+              <input
+                id="fileSizeSlider"
+                type="range"
+                min="512"
+                max="20480"
+                value={maxFileSize}
+                onChange={(e) => setMaxFileSize(e.target.value)}
+                className={`w-full ${autoDownload ? 'accent-bg-button' : 'bg-gray-400'}`}
+                disabled={!autoDownload}
+              />
+            </div>
           </div>
         </div>
       )}

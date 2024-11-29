@@ -123,7 +123,7 @@ const PrivacySettings = ({ setView }) => {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ userName: username }),
+        body: JSON.stringify({ userId: username }),
       });
 
       if (!response.ok) {
