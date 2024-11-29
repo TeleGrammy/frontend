@@ -28,6 +28,8 @@ function reducer(state, action) {
       return { ...state, message: action.payload };
     case 'resendDisable':
       return { ...state, resendDisable: action.payload };
+    default:
+      return state;
   }
 }
 const ForgetPassword = () => {
