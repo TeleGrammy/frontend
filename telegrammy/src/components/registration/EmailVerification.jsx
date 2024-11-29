@@ -137,9 +137,9 @@ const EmailVerification = ({ email }) => {
         const data = await response.json();
         dispatch({ type: 'success', payload: true });
         dispatch({ type: 'error', payload: '' });
-        console.log('Verification successful:', data);
+        console.log('Verification successful:');
 
-        navigate('/login');
+        navigate('/auth/login');
       } else {
         const data = await response.json();
         dispatch({ type: 'error', payload: data.message });
@@ -167,16 +167,13 @@ const EmailVerification = ({ email }) => {
     dispatch({ type: 'timer', payload: 30 });
 
     try {
-      const response = await fetch(
-        `${apiUrl}/v1/auth/resend-verification`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email }),
+      const response = await fetch(`${apiUrl}/v1/auth/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({ email }),
+      });
 
       if (response.ok) {
         dispatch({
@@ -209,7 +206,7 @@ const EmailVerification = ({ email }) => {
         dispatch({ type: 'resend', payload: false });
       }
 
-      console.log(isCodeComplete());
+      // console.log(isCodeComplete());
 
       return () => clearInterval(countdown);
     }
