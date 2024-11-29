@@ -1,6 +1,14 @@
 import React, { useState, useRef } from 'react';
 
-function GroupSettings({ groupId, groupPhoto, groupDescription, setGroupPhoto, setGroupDescription, isAdmin, toggleView }) {
+function GroupSettings({
+  groupId,
+  groupPhoto,
+  groupDescription,
+  setGroupPhoto,
+  setGroupDescription,
+  isAdmin,
+  toggleView,
+}) {
   const [privacy, setPrivacy] = useState('Public');
   const [sizeLimit, setSizeLimit] = useState(1000);
   const [muteDuration, setMuteDuration] = useState('None');
@@ -64,15 +72,26 @@ function GroupSettings({ groupId, groupPhoto, groupDescription, setGroupPhoto, s
   };
 
   return (
-    <div className="p-4 bg-bg-primary flex flex-col items-center">
-      <h2 className="text-text-primary mb-4 text-center">Edit Group Settings</h2>
-      <div className="flex flex-col items-center mb-4">
-        <img src={groupPhoto} alt="Group" className="w-16 h-16 rounded-full mb-2" />
+    <div
+      className="flex flex-col items-center bg-bg-primary p-4"
+      data-test-id="group-settings"
+    >
+      <h2 className="mb-4 text-center text-text-primary">
+        Edit Group Settings
+      </h2>
+      <div className="mb-4 flex flex-col items-center">
+        <img
+          src={groupPhoto}
+          alt="Group"
+          className="mb-2 h-16 w-16 rounded-full"
+          data-test-id="group-photo"
+        />
         {isAdmin && (
           <>
             <button
               onClick={() => fileInputRef.current.click()}
-              className="bg-bg-secondary text-text-primary rounded-lg px-2 py-1 mb-2"
+              className="mb-2 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary"
+              data-test-id="select-photo-button"
             >
               Select Photo
             </button>
@@ -82,58 +101,84 @@ function GroupSettings({ groupId, groupPhoto, groupDescription, setGroupPhoto, s
               style={{ display: 'none' }}
               onChange={handlePhotoChange}
               accept="image/*"
+              data-test-id="photo-input"
             />
           </>
         )}
       </div>
-      <div className="mb-4 w-full flex flex-col items-center">
+      <div className="mb-4 flex w-full flex-col items-center">
         {isAdmin ? (
           <input
             type="text"
             value={groupDescription}
             onChange={handleDescriptionChange}
-            className="w-3/4 px-2 py-1 bg-bg-secondary rounded-lg text-text-primary mb-2 text-center"
+            className="mb-2 w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-center text-text-primary"
             placeholder="Enter new group description"
+            data-test-id="description-input"
           />
         ) : (
-          <p className="text-text-primary mb-2 text-center">{groupDescription}</p>
+          <p
+            className="mb-2 text-center text-text-primary"
+            data-test-id="group-description"
+          >
+            {groupDescription}
+          </p>
         )}
       </div>
-      <div className="mb-4 w-full flex flex-col items-center">
-        <label className="block text-sm text-text-primary mb-2">Group Privacy</label>
+      <div className="mb-4 flex w-full flex-col items-center">
+        <label className="mb-2 block text-sm text-text-primary">
+          Group Privacy
+        </label>
         {isAdmin ? (
           <select
             value={privacy}
             onChange={handlePrivacyChange}
-            className="w-3/4 px-2 py-1 bg-bg-secondary rounded-lg text-text-primary"
+            className="w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary"
+            data-test-id="privacy-select"
           >
             <option value="Public">Public</option>
             <option value="Private">Private</option>
           </select>
         ) : (
-          <p className="text-text-primary mb-2 text-center">{privacy}</p>
+          <p
+            className="mb-2 text-center text-text-primary"
+            data-test-id="privacy-value"
+          >
+            {privacy}
+          </p>
         )}
       </div>
-      <div className="mb-4 w-full flex flex-col items-center">
-        <label className="block text-sm text-text-primary mb-2">Group Size Limit</label>
+      <div className="mb-4 flex w-full flex-col items-center">
+        <label className="mb-2 block text-sm text-text-primary">
+          Group Size Limit
+        </label>
         {isAdmin ? (
           <input
             type="number"
             value={sizeLimit}
             onChange={handleSizeLimitChange}
-            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-3/4 px-2 py-1 bg-bg-secondary rounded-lg text-text-primary"
+            className="w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             placeholder="Enter group size limit"
+            data-test-id="size-limit-input"
           />
         ) : (
-          <p className="text-text-primary mb-2 text-center">{sizeLimit}</p>
+          <p
+            className="mb-2 text-center text-text-primary"
+            data-test-id="size-limit-value"
+          >
+            {sizeLimit}
+          </p>
         )}
       </div>
-      <div className="mb-4 w-full flex flex-col items-center">
-        <label className="block text-sm text-text-primary mb-2">Mute Notifications</label>
+      <div className="mb-4 flex w-full flex-col items-center">
+        <label className="mb-2 block text-sm text-text-primary">
+          Mute Notifications
+        </label>
         <select
           value={muteDuration}
           onChange={handleMuteChange}
-          className="w-3/4 px-2 py-1 bg-bg-secondary rounded-lg text-text-primary"
+          className="w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary"
+          data-test-id="mute-duration-select"
         >
           <option value="None">None</option>
           <option value="1 Hour">1 Hour</option>
@@ -144,22 +189,25 @@ function GroupSettings({ groupId, groupPhoto, groupDescription, setGroupPhoto, s
       </div>
       {isAdmin && (
         <button
-          className="w-3/4 bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-lg mb-4"
+          className="mb-4 w-3/4 rounded-lg bg-green-500 px-2 py-1 text-white hover:bg-green-600"
           onClick={saveChanges}
+          data-test-id="save-changes-button"
         >
           Save Changes
         </button>
       )}
       <button
-        className="w-3/4 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg mb-4"
+        className="mb-4 w-3/4 rounded-lg bg-red-500 px-2 py-1 text-white hover:bg-red-600"
         onClick={leaveGroup}
+        data-test-id="leave-group-button"
       >
         Leave Group
       </button>
       {isAdmin && (
         <button
-          className="w-3/4 bg-red-700 hover:bg-red-800 text-white px-2 py-1 rounded-lg"
+          className="w-3/4 rounded-lg bg-red-700 px-2 py-1 text-white hover:bg-red-800"
           onClick={deleteGroup}
+          data-test-id="delete-group-button"
         >
           Delete Group
         </button>

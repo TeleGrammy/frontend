@@ -7,11 +7,13 @@ import {
   setRightSidebar,
 } from '../../../slices/sidebarSlice';
 
-function ChatHeader({handleKey}) {
+function ChatHeader({ handleKey }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const dispatch = useDispatch();
 
-  const { openedChat, searchVisible, searchText } = useSelector((state) => state.chats);
+  const { openedChat, searchVisible, searchText } = useSelector(
+    (state) => state.chats,
+  );
   const { isRightSidebarOpen } = useSelector((state) => state.sidebar);
 
   const toggleExpand = () => {
@@ -39,9 +41,10 @@ function ChatHeader({handleKey}) {
       <div>
         <div className="flex items-center bg-bg-primary p-4">
           <img
+            data-test-id="chat-image"
             src={openedChat.picture}
             alt=""
-            className="cursor-pointer h-10 w-10 rounded-full"
+            className="h-10 w-10 cursor-pointer rounded-full"
             onClick={toggleExpand}
           />
           <h1 className="mb-1 ml-5 text-xl font-semibold text-text-primary">
@@ -50,20 +53,23 @@ function ChatHeader({handleKey}) {
           {searchVisible ? (
             <div className="ml-auto flex items-center">
               <input
+                data-test-id="search-in-chat-input"
                 type="text"
                 value={searchText}
                 onChange={handleSearchChange}
-                className="mr-2 p-1 rounded border border-gray-300 focus:outline-none text-gray-500" // Apply gray text color
+                className="mr-2 rounded border border-gray-300 p-1 text-gray-500 focus:outline-none" // Apply gray text color
                 placeholder="Search..."
                 onKeyDown={handleKey}
               />
               <FaTimes
+                data-test-id="close-search-in-chat-button"
                 className="cursor-pointer text-gray-600 hover:text-gray-900"
                 onClick={toggleSearch}
               />
             </div>
           ) : (
             <FaSearch
+              data-test-id="open-search-in-chat-button"
               className="ml-auto cursor-pointer text-gray-600 hover:text-gray-900"
               onClick={toggleSearch}
             />
