@@ -1,70 +1,71 @@
 import React, { useState, useRef, useEffect } from 'react';
-import MuteIcon from '../../icons/MuteIcon';
 import { useDispatch } from 'react-redux';
+
+import MuteIcon from '../../icons/MuteIcon';
+
 import { setOpenedChat } from '../../../slices/chatsSlice';
-const Chats = () => {
+
+const initialChats = [
+  {
+    id: '1',
+    name: 'user1',
+    type: 'Group',
+    lastMessage: {
+      sender: 'user1',
+      content: 'Hey, how are you?',
+      timeStamp: '9:45 PM',
+    },
+    unreadCount: 2,
+    picture: 'https://picsum.photos/50/50',
+    isMuted: false,
+  },
+  {
+    id: '2',
+    name: 'user2 ',
+    type: 'User',
+    lastMessage: {
+      sender: 'youssef',
+      content: 'Remember to buy groceries!',
+      timeStamp: '8:33 PM',
+    },
+    unreadCount: 0,
+    picture: 'https://picsum.photos/seed/sports/50/50',
+    isMuted: true,
+  },
+  {
+    id: '3',
+    name: 'user3',
+    type: 'User',
+    lastMessage: {
+      sender: 'user3',
+      content: 'hiii',
+      timeStamp: '9:35 PM',
+    },
+    unreadCount: 3,
+    picture: 'https://picsum.photos/seed/nature/50/50',
+    isMuted: false,
+  },
+  {
+    id: '4',
+    name: 'My Channel',
+    type: 'Channel',
+    lastMessage: {
+      sender: 'user3',
+      content: 'hiii',
+      timeStamp: '9:35 PM',
+    },
+    unreadCount: 3,
+    picture: 'https://picsum.photos/seed/nature/50/50',
+    isMuted: false,
+  },
+];
+
+const Chats = ({ searchValue }) => {
   const dispatch = useDispatch();
 
-  const initialChats = [
-    {
-      id: '1',
-      name: 'user1',
-      type: 'Group',
-      lastMessage: {
-        sender: 'user1',
-        content: 'Hey, how are you?',
-        timeStamp: '9:45 PM',
-      },
-      unreadCount: 2,
-      picture: 'https://picsum.photos/50/50',
-      isMuted: false,
-    },
-    {
-      id: '2',
-      name: 'user2 ',
-      type: 'User',
-      lastMessage: {
-        sender: 'youssef',
-        content: 'Remember to buy groceries!',
-        timeStamp: '8:33 PM',
-      },
-      unreadCount: 0,
-      picture: 'https://picsum.photos/seed/sports/50/50',
-      isMuted: true,
-    },
-    {
-      id: '3',
-      name: 'user3',
-      type: 'User',
-      lastMessage: {
-        sender: 'user3',
-        content: 'hiii',
-        timeStamp: '9:35 PM',
-      },
-      unreadCount: 3,
-      picture: 'https://picsum.photos/seed/nature/50/50',
-      isMuted: false,
-    },
-    {
-      id: '4',
-      name: 'My Channel',
-      type: 'Channel',
-      lastMessage: {
-        sender: 'user3',
-        content: 'hiii',
-        timeStamp: '9:35 PM',
-      },
-      unreadCount: 3,
-      picture: 'https://picsum.photos/seed/nature/50/50',
-      isMuted: false,
-    },
-  ];
-
-  const handleClickChat = (chat) => {
-    dispatch(setOpenedChat(chat));
-  };
-
   const [chats, setChats] = useState(initialChats);
+  const [ViewedChats, setViewedChats] = useState(chats);
+
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -74,10 +75,16 @@ const Chats = () => {
   const contextMenuRef = useRef(null);
   const containerRef = useRef(null);
 
+  const handleClickChat = (chat) => {
+    dispatch(setOpenedChat(chat));
+  };
+
   const handleContextMenu = (e, chatId) => {
     e.preventDefault();
 
-    const containerWidth = e.target.closest('.chats-container').offsetWidth;
+    const containerWidth = e.target.closest(
+      '.ViewedChats-container',
+    ).offsetWidth;
     const menuWidth = 200;
 
     const xPos = Math.min(e.pageX, containerWidth - menuWidth);
@@ -91,26 +98,26 @@ const Chats = () => {
   };
 
   const handleMute = (chatId, duration) => {
-    const updatedChats = chats.map((chat) => {
+    const updatedChats = ViewedChats.map((chat) => {
       if (chat.id === chatId) {
         return { ...chat, isMuted: true, muteDuration: duration };
       }
       return chat;
     });
 
-    setChats(updatedChats);
+    setViewedChats(updatedChats);
     setContextMenu({ ...contextMenu, visible: false });
   };
 
   const handleUnmute = (chatId) => {
-    const updatedChats = chats.map((chat) => {
+    const updatedChats = ViewedChats.map((chat) => {
       if (chat.id === chatId) {
         return { ...chat, isMuted: false, muteDuration: null };
       }
       return chat;
     });
 
-    setChats(updatedChats);
+    setViewedChats(updatedChats);
     setContextMenu({ ...contextMenu, visible: false });
   };
 
@@ -135,13 +142,25 @@ const Chats = () => {
       document.removeEventListener('click', handleClickInside);
     };
   }, [contextMenu]);
+
+  useEffect(() => {
+    if (searchValue) {
+      const filteredChats = chats.filter((chat) =>
+        chat.name.toLowerCase().includes(searchValue.toLowerCase()),
+      );
+      setViewedChats(filteredChats);
+    } else {
+      setViewedChats(chats);
+    }
+  }, [searchValue, chats]);
+
   return (
     <div
       ref={containerRef}
-      className="chats-container flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white"
+      className="ViewedChats-container flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white"
     >
       <ul className="divide-y divide-gray-700">
-        {chats.map((chat) => (
+        {ViewedChats.map((chat) => (
           <li
             key={chat.id}
             className="flex w-full cursor-pointer items-center p-4 transition hover:bg-gray-700"
@@ -195,7 +214,8 @@ const Chats = () => {
         >
           <ul>
             {/* Render Mute or Unmute Options Dynamically */}
-            {chats.find((chat) => chat.id === contextMenu.chatId)?.isMuted ? (
+            {ViewedChats.find((chat) => chat.id === contextMenu.chatId)
+              ?.isMuted ? (
               <li
                 className="cursor-pointer p-2 hover:bg-gray-700"
                 onClick={() => handleUnmute(contextMenu.chatId)}
