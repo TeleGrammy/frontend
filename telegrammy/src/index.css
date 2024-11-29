@@ -64,6 +64,7 @@
 
     /* Text colors */
     --text-primary: rgb(255, 255, 255);
+    --text-secondary: rgb(197, 194, 194);
   }
 }
 
@@ -85,4 +86,20 @@
   bottom: 0;
   background-color: var(--bg-image-color); /* Adjust the opacity as needed */
   z-index: 0;
+}
+
+.scrollable::-webkit-scrollbar {
+  @apply h-2; /* Scrollbar width */
+}
+
+.scrollable::-webkit-scrollbar-track {
+  @apply bg-bg-primary; /* Track color */
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  @apply rounded-lg bg-gray-600; /* Handle color and rounded edges */
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500; /* Handle color on hover */
 }
