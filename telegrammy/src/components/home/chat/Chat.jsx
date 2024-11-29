@@ -895,7 +895,7 @@ function Chat() {
           <VoiceNoteButton onSendVoice={handleSendVoice} />
           <button
             onClick={handleSendMessage}
-            className="rounded-lg bg-bg-button px-4 py-2 text-text-primary hover:bg-bg-button-hover"
+            className="hover:bg-bg-message-sender-hover rounded-lg bg-bg-message-sender px-4 py-2 text-white"
           >
             {editingMessageId ? 'Update' : 'Send'}
           </button>

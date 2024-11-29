@@ -1,16 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
-import MuteIcon from '../../icons/MuteIcon';
 import { useDispatch } from 'react-redux';
+
+import MuteIcon from '../../icons/MuteIcon';
+
 import { setOpenedChat } from '../../../slices/chatsSlice';
 import { initialChatsLSB } from './mockData.js';
 const Chats = () => {
   const dispatch = useDispatch();
 
-  const handleClickChat = (chat) => {
-    dispatch(setOpenedChat(chat));
-  };
+const Chats = ({ searchValue }) => {
+  const dispatch = useDispatch();
 
-  const [chats, setChats] = useState(initialChatsLSB);
+  const [chats, setChats] = useState(initialChats);
+  const [ViewedChats, setViewedChats] = useState(chats);
+
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -20,10 +23,16 @@ const Chats = () => {
   const contextMenuRef = useRef(null);
   const containerRef = useRef(null);
 
+  const handleClickChat = (chat) => {
+    dispatch(setOpenedChat(chat));
+  };
+
   const handleContextMenu = (e, chatId) => {
     e.preventDefault();
 
-    const containerWidth = e.target.closest('.chats-container').offsetWidth;
+    const containerWidth = e.target.closest(
+      '.ViewedChats-container',
+    ).offsetWidth;
     const menuWidth = 200;
 
     const xPos = Math.min(e.pageX, containerWidth - menuWidth);
@@ -37,26 +46,26 @@ const Chats = () => {
   };
 
   const handleMute = (chatId, duration) => {
-    const updatedChats = chats.map((chat) => {
+    const updatedChats = ViewedChats.map((chat) => {
       if (chat.id === chatId) {
         return { ...chat, isMuted: true, muteDuration: duration };
       }
       return chat;
     });
 
-    setChats(updatedChats);
+    setViewedChats(updatedChats);
     setContextMenu({ ...contextMenu, visible: false });
   };
 
   const handleUnmute = (chatId) => {
-    const updatedChats = chats.map((chat) => {
+    const updatedChats = ViewedChats.map((chat) => {
       if (chat.id === chatId) {
         return { ...chat, isMuted: false, muteDuration: null };
       }
       return chat;
     });
 
-    setChats(updatedChats);
+    setViewedChats(updatedChats);
     setContextMenu({ ...contextMenu, visible: false });
   };
 
@@ -81,13 +90,25 @@ const Chats = () => {
       document.removeEventListener('click', handleClickInside);
     };
   }, [contextMenu]);
+
+  useEffect(() => {
+    if (searchValue) {
+      const filteredChats = chats.filter((chat) =>
+        chat.name.toLowerCase().includes(searchValue.toLowerCase()),
+      );
+      setViewedChats(filteredChats);
+    } else {
+      setViewedChats(chats);
+    }
+  }, [searchValue, chats]);
+
   return (
     <div
       ref={containerRef}
-      className="chats-container flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white"
+      className="ViewedChats-container flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white"
     >
       <ul className="divide-y divide-gray-700">
-        {chats.map((chat) => (
+        {ViewedChats.map((chat) => (
           <li
             key={chat.id}
             className="flex w-full cursor-pointer items-center p-4 transition hover:bg-gray-700"
@@ -141,7 +162,8 @@ const Chats = () => {
         >
           <ul>
             {/* Render Mute or Unmute Options Dynamically */}
-            {chats.find((chat) => chat.id === contextMenu.chatId)?.isMuted ? (
+            {ViewedChats.find((chat) => chat.id === contextMenu.chatId)
+              ?.isMuted ? (
               <li
                 className="cursor-pointer p-2 hover:bg-gray-700"
                 onClick={() => handleUnmute(contextMenu.chatId)}

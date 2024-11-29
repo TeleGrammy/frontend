@@ -2,7 +2,6 @@ import { useSelector } from 'react-redux';
 
 import MyStories from './MyStories';
 import GroupOrChannelInfo from '../chat/GroupOrChannelInfo';
-import AddUsersList from '../leftSidebar/AddUsersList';
 
 function RightSidebar() {
   const { currentRightSidebar } = useSelector((state) => state.sidebar);
