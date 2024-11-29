@@ -10,15 +10,15 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route index element={<AuthCallback />} />
-        <Route path="/auth/*" element={<Auth />} />
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/signup/*" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forget-password" element={<ForgetPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/home" element={<Home />} />
+        =========
+        <Route path="/home" element={<Home />} />
+        <Route path="/register" element={<SignUp />} />
+        >>>>>>>>> Temporary merge branch 2
       </Routes>
     </BrowserRouter>
   );

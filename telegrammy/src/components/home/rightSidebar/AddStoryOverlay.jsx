@@ -206,7 +206,7 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
   }, [previewUrl, fileType]);
 
   return (
-    <div className="z-100 fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80">
       <div className="h-[90vh] w-full max-w-lg rounded-lg bg-transparent p-4 shadow-lg">
         {/* Close Button */}
         <button

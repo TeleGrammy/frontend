@@ -15,7 +15,7 @@ const SideBar = () => {
 
   return (
     <div
-      className="relative flex h-screen flex-col items-center bg-bg-primary"
+      className="no-scrollbar relative flex h-screen flex-col items-center bg-bg-primary"
       style={{ width: `${width}px` }}
     >
       {/* Components to render */}
