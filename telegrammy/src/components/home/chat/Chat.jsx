@@ -53,6 +53,7 @@ function Chat() {
   const [mentionIndex, setMentionIndex] = useState(0); // For navigating suggestions
   const [isMentioning, setIsMentioning] = useState(false);
   const messagesEndRef = useRef(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -87,7 +88,18 @@ function Chat() {
   };
 
   const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+    const file = event.target.files[0];
+
+    if (file && file.size > 26214400) {
+      setErrorMessage('The maximum file size is 25 MB.');
+      setSelectedFile(null);
+      setTimeout(() => {
+        setErrorMessage('');
+      }, 3000); 
+    } else {
+      setErrorMessage('');
+      setSelectedFile(file);
+    }
   };
 
   const handleSendMessage = () => {
@@ -430,8 +442,12 @@ function Chat() {
           );
         })}
         <div ref={messagesEndRef} />
+     
       </div>
       <div className="bg-bg-message-receiver p-4">
+      {errorMessage && (
+        <div className="error-message mb-2 text-red-500">{errorMessage}</div>
+      )}
         {replyToMessageId && (
           <div className="flex flex-row">
             <div className="mb-2 flex-grow rounded-lg border-l-[#d56e78] bg-[#fbf0f1] p-2">
@@ -700,6 +716,7 @@ function Chat() {
           </div>
         </div>
       )}
+      
     </div>
   );
 }
