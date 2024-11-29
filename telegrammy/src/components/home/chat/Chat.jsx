@@ -12,8 +12,8 @@ import {
   initialMessages1,
   initialMessages2,
   initialMessages3,
-} from './mockData.js';
-import { initialChatsLSB } from '../leftSidebar/mockData';
+} from './../../../mocks/mockDataChat';
+import { initialChatsLSB } from '../../../mocks/mockDataChatList';
 import ChatHeader from './ChatHeader';
 import { useSelector } from 'react-redux';
 function formatDate(date) {
