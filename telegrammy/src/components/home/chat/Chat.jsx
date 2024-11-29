@@ -454,7 +454,7 @@ function Chat() {
       )}
 
       <div className="flex-grow overflow-y-auto px-4">
-        {messages.map((message) => {
+        {messages.map((message,idx) => {
           const showDateDivider = message.date !== lastDate;
           lastDate = message.date;
 
@@ -489,28 +489,28 @@ function Chat() {
                     {message.type === 'sent' && (
                       <div className="flex flex-row space-x-2 pr-2">
                         <button
-                          data-test-id="file-forward-button"
+                          data-test-id={`${idx}-file-forward-button`}
                           onClick={() => handleClickForwardMessage(message.id)}
                           className="text-xs text-green-500 hover:underline"
                         >
                           Forward
                         </button>
                         <button
-                          data-test-id="file-edit-button"
+                          data-test-id={`${idx}-file-edit-button`}
                           onClick={() => handleEditMessage(message.id)}
                           className="mr-2 text-xs text-blue-500 hover:underline"
                         >
                           Edit
                         </button>
                         <button
-                          data-test-id="file-delete-button"
+                          data-test-id={`${idx}-file-delete-button`}
                           onClick={() => handleDeleteMessage(message.id)}
                           className="text-xs text-red-500 hover:underline"
                         >
                           Delete
                         </button>
                         <button
-                          data-test-id="file-pin-unpin-button"
+                          data-test-id={`${idx}-file-pin-unpin-button`}
                           onClick={() =>
                             handlePinMessage(message.id, message.pinned)
                           }
@@ -529,7 +529,7 @@ function Chat() {
                     >
                       {message.fileType.startsWith('image/') ? (
                         <img
-                          data-test-id="message-image"
+                          data-test-id={`${idx}-message-image`}
                           src={message.file}
                           alt={message.fileName}
                           className="h-auto max-w-full cursor-pointer rounded-lg"
@@ -545,7 +545,7 @@ function Chat() {
                         </video>
                       ) : (
                         <a
-                          data-test-id="document-link"
+                          data-test-id={`${idx}-document-link`}
                           href={message.file}
                           download={message.fileName}
                           className="text-blue-500 hover:underline"
@@ -568,7 +568,7 @@ function Chat() {
 
                     {message.type === 'received' && (
                       <button
-                        data-test-id="reply-button"
+                        data-test-id={`${idx}-reply-button`}
                         onClick={() => handleReplyToMessage(message.id)}
                         className="ml-2 text-xs text-blue-500 hover:underline"
                       >
@@ -585,28 +585,28 @@ function Chat() {
                     {message.type === 'sent' && (
                       <div className="flex flex-row space-x-2 pr-2">
                         <button
-                          data-test-id="message-forward-button"
+                          data-test-id={`${idx}-message-forward-button`}
                           onClick={() => handleClickForwardMessage(message.id)}
                           className="text-xs text-green-500 hover:underline"
                         >
                           Forward
                         </button>
                         <button
-                          data-test-id="message-edit-button"
+                          data-test-id={`${idx}-message-edit-button`}
                           onClick={() => handleEditMessage(message.id)}
                           className="mr-2 text-xs text-blue-500 hover:underline"
                         >
                           Edit
                         </button>
                         <button
-                          data-test-id="message-delete-button"
+                          data-test-id={`${idx}-message-delete-button`}
                           onClick={() => handleDeleteMessage(message.id)}
                           className="mr-2 text-xs text-red-500 hover:underline"
                         >
                           Delete
                         </button>
                         <button
-                          data-test-id="message-pin-unpin-button"
+                          data-test-id={`${idx}-message-pin-unpin-button`}
                           onClick={() =>
                             handlePinMessage(message.id, message.pinned)
                           }
@@ -626,7 +626,7 @@ function Chat() {
                       {message.replyTo && (
                         <div className="mb-2 border-l-4 border-blue-500 p-2">
                           <span
-                            data-test-id="replying-to-span"
+                            data-test-id={`${idx}-replying-to-span`}
                             className="text-xs text-gray-500"
                           >
                             Replying to:
@@ -650,21 +650,21 @@ function Chat() {
                     {message.type === 'received' && (
                       <>
                         <button
-                          data-test-id="recieved-forward-button"
+                          data-test-id={`${idx}-recieved-forward-button`}
                           onClick={() => handleClickForwardMessage(message.id)}
                           className="ml-2 text-xs text-green-500 hover:underline"
                         >
                           Forward
                         </button>
                         <button
-                          data-test-id="recieved-reply-button"
+                          data-test-id={`${idx}-recieved-reply-button`}
                           onClick={() => handleReplyToMessage(message.id)}
                           className="ml-2 text-xs text-blue-500 hover:underline"
                         >
                           Reply
                         </button>
                         <button
-                          data-test-id="recieved-pin-unpin-button"
+                          data-test-id={`${idx}-recieved-pin-unpin-button`}
                           onClick={() =>
                             handlePinMessage(message.id, message.pinned)
                           }
@@ -682,6 +682,7 @@ function Chat() {
         })}
         <div ref={messagesEndRef} />
       </div>
+
       <div className="bg-bg-message-receiver p-4">
         {errorMessage && (
           <div

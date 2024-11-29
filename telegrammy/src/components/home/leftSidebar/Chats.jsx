@@ -104,35 +104,55 @@ const Chats = ({ searchValue }) => {
     <div
       ref={containerRef}
       className="ViewedChats-container flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white"
+      data-test-id="viewed-chats-container"
     >
-      <ul className="divide-y divide-gray-700">
+      <ul className="divide-y divide-gray-700" data-test-id="chats-list">
         {ViewedChats.map((chat) => (
           <li
             key={chat.id}
             className="flex w-full cursor-pointer items-center p-4 transition hover:bg-gray-700"
             onContextMenu={(e) => handleContextMenu(e, chat.id)}
             onClick={() => handleClickChat(chat)}
+            data-test-id={`chat-item-${chat.id}`}
           >
             {/* Profile Picture */}
             <img
               src={chat.picture}
               alt={`${chat.name}'s avatar`}
               className="h-12 w-12 rounded-full object-cover"
+              data-test-id={`chat-avatar-${chat.id}`}
             />
             {/* Chat Details */}
-            <div className="ml-4 flex-1">
+            <div
+              className="ml-4 flex-1"
+              data-test-id={`chat-details-${chat.id}`}
+            >
               <div className="flex items-center justify-between">
-                <h3 className="truncate font-semibold">{chat.name}</h3>
-                <span className="text-sm text-gray-400">
+                <h3
+                  className="truncate font-semibold"
+                  data-test-id={`chat-name-${chat.id}`}
+                >
+                  {chat.name}
+                </h3>
+                <span
+                  className="text-sm text-gray-400"
+                  data-test-id={`chat-timestamp-${chat.id}`}
+                >
                   {chat.lastMessage.timeStamp}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <p className="truncate text-sm text-gray-400">
+                <p
+                  className="truncate text-sm text-gray-400"
+                  data-test-id={`chat-message-${chat.id}`}
+                >
                   {chat.lastMessage.content}
                 </p>
                 {chat.unreadCount > 0 && (
-                  <span className="ml-2 rounded-full bg-blue-500 px-2 py-1 text-xs text-white">
+                  <span
+                    className="ml-2 rounded-full bg-blue-500 px-2 py-1 text-xs text-white"
+                    data-test-id={`chat-unread-${chat.id}`}
+                  >
                     {chat.unreadCount}
                   </span>
                 )}
@@ -140,7 +160,10 @@ const Chats = ({ searchValue }) => {
             </div>
             {/* Muted Icon */}
             {chat.isMuted && (
-              <div className="ml-2 text-gray-400">
+              <div
+                className="ml-2 text-gray-400"
+                data-test-id={`chat-muted-icon-${chat.id}`}
+              >
                 <MuteIcon />
               </div>
             )}
@@ -157,14 +180,15 @@ const Chats = ({ searchValue }) => {
             top: contextMenu.y,
             left: contextMenu.x,
           }}
+          data-test-id="context-menu"
         >
           <ul>
-            {/* Render Mute or Unmute Options Dynamically */}
             {ViewedChats.find((chat) => chat.id === contextMenu.chatId)
               ?.isMuted ? (
               <li
                 className="cursor-pointer p-2 hover:bg-gray-700"
                 onClick={() => handleUnmute(contextMenu.chatId)}
+                data-test-id="context-unmute"
               >
                 Unmute
               </li>
@@ -175,6 +199,7 @@ const Chats = ({ searchValue }) => {
                   onClick={() =>
                     handleMute(contextMenu.chatId, 8 * 60 * 60 * 1000)
                   }
+                  data-test-id="context-mute-8h"
                 >
                   Mute for 8 Hours
                 </li>
@@ -183,12 +208,14 @@ const Chats = ({ searchValue }) => {
                   onClick={() =>
                     handleMute(contextMenu.chatId, 7 * 24 * 60 * 60 * 1000)
                   }
+                  data-test-id="context-mute-7d"
                 >
                   Mute for 7 Days
                 </li>
                 <li
                   className="cursor-pointer p-2 hover:bg-gray-700"
                   onClick={() => handleMute(contextMenu.chatId, null)}
+                  data-test-id="context-mute-permanent"
                 >
                   Mute Permanently
                 </li>
