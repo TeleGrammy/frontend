@@ -5,6 +5,7 @@ export const initialMessages1 = [
     type: 'sent',
     timestamp: '12:00 AM',
     date: '2024-11-10',
+    pinned: false
   },
   {
     id: 2,
@@ -12,6 +13,7 @@ export const initialMessages1 = [
     type: 'received',
     timestamp: '12:01 AM',
     date: '2024-11-10',
+    pinned: false
   },
 ];
 
@@ -22,6 +24,7 @@ export const initialMessages2 = [
     type: 'sent',
     timestamp: '12:00 AM',
     date: '2024-11-10',
+    pinned: false
   },
   {
     id: 2,
@@ -29,6 +32,7 @@ export const initialMessages2 = [
     type: 'received',
     timestamp: '12:01 AM',
     date: '2024-11-10',
+    pinned: false
   },
 ];
 
@@ -39,6 +43,7 @@ export const initialMessages3 = [
     type: 'sent',
     timestamp: '12:00 AM',
     date: '2024-11-10',
+    pinned: false
   },
   {
     id: 2,
@@ -46,5 +51,6 @@ export const initialMessages3 = [
     type: 'received',
     timestamp: '12:01 AM',
     date: '2024-11-10',
+    pinned: false
   },
 ];
