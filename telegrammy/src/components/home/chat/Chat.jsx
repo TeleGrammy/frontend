@@ -27,7 +27,7 @@ function formatDate(date) {
 }
 
 const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
-const trie = new Trie();
+let trie = new Trie();
 
 function Chat() {
   const isAdmin = false;
@@ -53,7 +53,17 @@ function Chat() {
   const [errorMessage, setErrorMessage] = useState('');
   const messagesEndRef = useRef(null);
   const messageRefs = useRef({});
+  const secretKey = 'your-secret-key';
   let it = 0;
+
+  const encryptMessage = (text) => {
+    return CryptoJS.AES.encrypt(text, secretKey).toString();
+  };
+
+  const decryptMessage = (cipherText) => {
+    const bytes = CryptoJS.AES.decrypt(cipherText, secretKey);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  };
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -85,12 +95,18 @@ function Chat() {
     }
     switch (openedChat.name) {
       case 'user1':
+        trie = new Trie();
+        initialMessages1.map(mess => trie.insert(mess.content, mess.id));
         setMessages(initialMessages1);
         break;
       case 'user2':
+        trie = new Trie();
+        initialMessages2.map(mess => trie.insert(mess.content, mess.id));
         setMessages(initialMessages2);
         break;
       case 'user3':
+        trie = new Trie();
+        initialMessages3.map(mess => trie.insert(mess.content, mess.id));
         setMessages(initialMessages3);
         break;
       default:
@@ -220,11 +236,16 @@ function Chat() {
     }
   };
 
-  const handleForwardMessage = (chat)=>{
+  const handleForwardMessage = (chat) => {
     const messageToForward = messages.find(
       (msg) => msg.id === forwardingMessageId,
     );
-    const length = chat.name === 'user1' ? initialMessages1.length : chat.name === 'user2' ? initialMessages2.length : initialMessages3.length;
+    const length =
+      chat.name === 'user1'
+        ? initialMessages1.length
+        : chat.name === 'user2'
+          ? initialMessages2.length
+          : initialMessages3.length;
     if (messageToForward) {
       const newMessage = {
         ...messageToForward,
@@ -250,7 +271,7 @@ function Chat() {
       }
       setForwardingMessageId(null);
     }
-  }
+  };
   const handleDeleteMessage = (id) => {
     const confirmDelete = window.confirm(
       'Are you sure you want to delete this message?',
@@ -427,7 +448,7 @@ function Chat() {
                     <div className="flex flex-row space-x-2 pr-2">
                       <button
                         onClick={() => handleClickForwardMessage(message.id)}
-                        className=" text-xs text-green-500 hover:underline"
+                        className="text-xs text-green-500 hover:underline"
                       >
                         Forward
                       </button>
@@ -517,7 +538,7 @@ function Chat() {
                       </button>
                       <button
                         onClick={() => handleDeleteMessage(message.id)}
-                        className="text-xs mr-2 text-red-500 hover:underline"
+                        className="mr-2 text-xs text-red-500 hover:underline"
                       >
                         Delete
                       </button>
@@ -860,19 +881,26 @@ function Chat() {
                 {initialChatsLSB.map((chat) => (
                   <div
                     key={chat.id}
-                    className="cursor-pointer p-2 hover:bg-gray-200 dark:hover:bg-gray-600 flex flex-row"
+                    className="flex cursor-pointer flex-row p-2 hover:bg-gray-200 dark:hover:bg-gray-600"
                     onClick={() => {
                       handleForwardMessage(chat);
                     }}
                   >
-                    <img src={chat.picture} alt={chat.name} className="h-8 w-8 rounded-full object-cover" />
+                    <img
+                      src={chat.picture}
+                      alt={chat.name}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
                     <span className="ml-2">{chat.name}</span>
                   </div>
                 ))}
               </div>
             </div>
             <button
-              onClick={()=>{setForwardingMessageId(null);setInputValue('')}}
+              onClick={() => {
+                setForwardingMessageId(null);
+                setInputValue('');
+              }}
               className="m-4 self-start rounded-full bg-black bg-opacity-50 p-2 text-2xl text-white hover:bg-opacity-75"
             >
               &times;
