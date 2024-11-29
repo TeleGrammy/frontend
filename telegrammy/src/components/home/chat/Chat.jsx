@@ -8,7 +8,12 @@ import axios from 'axios';
 import Picker from 'emoji-picker-react';
 import CryptoJS from 'crypto-js';
 import Trie from './Trie';
-
+import {
+  initialMessages1,
+  initialMessages2,
+  initialMessages3,
+} from './mockData.js';
+import { initialChatsLSB } from '../leftSidebar/mockData';
 import ChatHeader from './ChatHeader';
 import { useSelector } from 'react-redux';
 function formatDate(date) {
@@ -22,23 +27,7 @@ function formatDate(date) {
 }
 
 const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
-const trie = new Trie();
-const initialMessages = [
-  {
-    id: 1,
-    content: 'Hello',
-    type: 'sent',
-    timestamp: '12:00 AM',
-    date: '2024-11-10',
-  },
-  {
-    id: 2,
-    content: 'Hi',
-    type: 'received',
-    timestamp: '12:01 AM',
-    date: '2024-11-10',
-  },
-];
+let trie = new Trie();
 
 function Chat() {
   const isAdmin = false;
@@ -46,9 +35,10 @@ function Chat() {
     (state) => state.chats,
   );
   const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([initialMessages1]);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [replyToMessageId, setReplyToMessageId] = useState(null);
+  const [forwardingMessageId, setForwardingMessageId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewingImage, setViewingImage] = useState(null);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
@@ -63,10 +53,90 @@ function Chat() {
   const [errorMessage, setErrorMessage] = useState('');
   const messagesEndRef = useRef(null);
   const messageRefs = useRef({});
+  const [pinnedMsgs, setPinnedMsgs] = useState([]);
+  const secretKey = 'our-secret-key';
   let it = 0;
+  let it1 = 0;
+
+  const handleNavigateToPinned = () => {
+    messageRefs.current[pinnedMsgs[it1]].scrollIntoView({ behavior: 'smooth' });
+    it1++;
+    if (it1 >= pinnedMsgs.length) it1 = 0;
+  };
+
+  const handlePinMessage = (messageId, ispinned) => {
+    setMessages((prevMessages) =>
+      prevMessages.map((msg) =>
+        msg.id === messageId ? { ...msg, pinned: !msg.pinned } : msg,
+      ),
+    );
+    if (!ispinned) {
+      setPinnedMsgs([...pinnedMsgs, messageId]);
+    } else {
+      const newPinnedArr = pinnedMsgs.filter((el) => el != messageId);
+      setPinnedMsgs(newPinnedArr);
+    }
+    console.log(pinnedMsgs);
+  };
+
+  const encryptMessage = (text) => {
+    return CryptoJS.AES.encrypt(text, secretKey).toString();
+  };
+
+  const decryptMessage = (cipherText) => {
+    const bytes = CryptoJS.AES.decrypt(cipherText, secretKey);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  };
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+  const [prevChat, setPrevChat] = useState(null);
+  useEffect(() => {
+    console.log('Opened chat changed:', openedChat.name);
+    console.log(openedChat);
+    switch (prevChat) {
+      case 'user1':
+        let i = initialMessages1.length;
+        for (; i < messages.length; i++) {
+          initialMessages1.push(messages[i]);
+        }
+        break;
+      case 'user2':
+        let j = initialMessages2.length;
+        for (; j < messages.length; j++) {
+          initialMessages2.push(messages[j]);
+        }
+        break;
+      case 'user3':
+        let k = initialMessages3.length;
+        for (; k < messages.length; k++) {
+          initialMessages3.push(messages[k]);
+        }
+        break;
+      default:
+        break;
+    }
+    switch (openedChat.name) {
+      case 'user1':
+        trie = new Trie();
+        initialMessages1.map((mess) => trie.insert(mess.content, mess.id));
+        setMessages(initialMessages1);
+        break;
+      case 'user2':
+        trie = new Trie();
+        initialMessages2.map((mess) => trie.insert(mess.content, mess.id));
+        setMessages(initialMessages2);
+        break;
+      case 'user3':
+        trie = new Trie();
+        initialMessages3.map((mess) => trie.insert(mess.content, mess.id));
+        setMessages(initialMessages3);
+        break;
+      default:
+        setMessages([]);
+    }
+    setPrevChat(openedChat.name);
+  }, [openedChat]);
 
   const handleSearch = (text) => {
     const ids = trie.startsWith(text);
@@ -189,6 +259,42 @@ function Chat() {
     }
   };
 
+  const handleForwardMessage = (chat) => {
+    const messageToForward = messages.find(
+      (msg) => msg.id === forwardingMessageId,
+    );
+    const length =
+      chat.name === 'user1'
+        ? initialMessages1.length
+        : chat.name === 'user2'
+          ? initialMessages2.length
+          : initialMessages3.length;
+    if (messageToForward) {
+      const newMessage = {
+        ...messageToForward,
+        id: length + 1,
+        type: 'sent',
+        timestamp: new Date().toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: 'numeric',
+        }),
+      };
+      switch (chat.name) {
+        case 'user1':
+          initialMessages1.push(newMessage);
+          break;
+        case 'user2':
+          initialMessages2.push(newMessage);
+          break;
+        case 'user3':
+          initialMessages3.push(newMessage);
+          break;
+        default:
+          break;
+      }
+      setForwardingMessageId(null);
+    }
+  };
   const handleDeleteMessage = (id) => {
     const confirmDelete = window.confirm(
       'Are you sure you want to delete this message?',
@@ -197,7 +303,15 @@ function Chat() {
       setMessages((prevMessages) =>
         prevMessages.filter((msg) => msg.id !== id),
       );
+      setPinnedMsgs((prevMessages) =>
+        prevMessages.filter((msg) => msg.id !== id),
+      );
     }
+  };
+
+  const handleClickForwardMessage = (id) => {
+    setForwardingMessageId(id);
+    setInputValue(''); // Clear input if forwarding
   };
 
   const handleReplyToMessage = (id) => {
@@ -326,6 +440,18 @@ function Chat() {
       className={`relative flex flex-grow flex-col justify-between ${viewingImage ? '' : 'space-y-4'} overflow-y-auto text-black dark:text-white`}
     >
       <ChatHeader handleKey={handleKey} />
+      {pinnedMsgs.length > 0 && (
+        <div className="rounded-lg bg-bg-primary p-2 shadow-md">
+          <h2
+            className="flex cursor-pointer items-center space-x-2 pl-3 text-lg font-semibold text-white"
+            onClick={() => handleNavigateToPinned()}
+          >
+            <span className="text-base">📌</span>
+            <span className="text-sm">Pinned Messages</span>
+          </h2>
+        </div>
+      )}
+
       <div className="flex-grow overflow-y-auto px-4">
         {messages.map((message) => {
           const showDateDivider = message.date !== lastDate;
@@ -333,155 +459,206 @@ function Chat() {
 
           return (
             <React.Fragment key={message.id}>
-              {
-                <div
-                  ref={(el) => (messageRefs.current[message.id] = el)}
-                  key={message.id}
-                ></div>
-              }
-              {showDateDivider && (
-                <div className="my-2 flex justify-center">
-                  <span className="rounded-full bg-gray-200 px-3 py-1 text-xs dark:bg-gray-700">
-                    {formatDate(message.date)}
-                  </span>
-                </div>
-              )}
-              {message.voiceNote ? (
-                <VoiceNotePlayer
-                  src={message.voiceNote}
-                  time={message.timestamp}
-                  type={message.type}
-                />
-              ) : message.file ? (
-                <div
-                  className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} mb-5 items-center`}
-                >
-                  {message.type === 'sent' && (
-                    <div className="flex flex-row space-x-1 pr-2">
-                      <button
-                        onClick={() => handleEditMessage(message.id)}
-                        className="mr-2 text-xs text-blue-500 hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMessage(message.id)}
-                        className="text-xs text-red-500 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
+              <div>
+                {
                   <div
-                    className={`${
-                      message.type === 'sent'
-                        ? 'bg-bg-message-sender'
-                        : 'bg-bg-message-receiver'
-                    } max-w-sm rounded-lg p-2 text-text-primary`}
-                  >
-                    {message.fileType.startsWith('image/') ? (
-                      <img
-                        src={message.file}
-                        alt={message.fileName}
-                        className="h-auto max-w-full cursor-pointer rounded-lg"
-                        onClick={() => handleImageClick(message.file)}
-                      />
-                    ) : message.fileType.startsWith('video/') ? (
-                      <video controls className="h-auto max-w-full rounded-lg">
-                        <source src={message.file} type={message.fileType} />
-                        Your browser does not support the video tag.
-                      </video>
-                    ) : (
-                      <a
-                        href={message.file}
-                        download={message.fileName}
-                        className="text-blue-500 hover:underline"
-                        target="_blank"
-                      >
-                        {message.fileName}
-                      </a>
-                    )}
-
-                    {message.content && (
-                      <p className="mt-2">{message.content}</p>
-                    )}
-                    <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
-                      <span>{message.timestamp}</span>
-                      {message.type === 'sent' && (
-                        <span className="ml-1">✔✔</span>
-                      )}
-                    </div>
+                    ref={(el) => (messageRefs.current[message.id] = el)}
+                    key={message.id}
+                  ></div>
+                }
+                {showDateDivider && (
+                  <div className="my-2 flex justify-center">
+                    <span className="rounded-full bg-gray-200 px-3 py-1 text-xs dark:bg-gray-700">
+                      {formatDate(message.date)}
+                    </span>
                   </div>
-
-                  {message.type === 'received' && (
-                    <button
-                      onClick={() => handleReplyToMessage(message.id)}
-                      className="ml-2 text-xs text-blue-500 hover:underline"
-                    >
-                      Reply
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div
-                  className={`flex ${
-                    message.type === 'sent' ? 'justify-end' : 'justify-start'
-                  } mb-5 items-center`}
-                >
-                  {message.type === 'sent' && (
-                    <div className="flex flex-row space-x-1 pr-2">
-                      <button
-                        onClick={() => handleEditMessage(message.id)}
-                        className="mr-2 text-xs text-blue-500 hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMessage(message.id)}
-                        className="text-xs text-red-500 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
+                )}
+                {message.voiceNote ? (
+                  <div>
+                    <VoiceNotePlayer
+                      src={message.voiceNote}
+                      time={message.timestamp}
+                      type={message.type}
+                    />
+                  </div>
+                ) : message.file ? (
                   <div
-                    className={`${
-                      message.type === 'sent'
-                        ? 'bg-bg-message-sender'
-                        : 'bg-bg-message-receiver'
-                    } max-w-sm rounded-lg p-2 text-text-primary`}
+                    className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} mb-5 items-center`}
                   >
-                    {message.replyTo && (
-                      <div className="mb-2 border-l-4 border-blue-500 p-2">
-                        <span className="text-xs text-gray-500">
-                          Replying to:
-                        </span>
-                        <p className="text-sm">
-                          {
-                            messages.find((msg) => msg.id === message.replyTo)
-                              ?.content
+                    {message.type === 'sent' && (
+                      <div className="flex flex-row space-x-2 pr-2">
+                        <button
+                          onClick={() => handleClickForwardMessage(message.id)}
+                          className="text-xs text-green-500 hover:underline"
+                        >
+                          Forward
+                        </button>
+                        <button
+                          onClick={() => handleEditMessage(message.id)}
+                          className="mr-2 text-xs text-blue-500 hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMessage(message.id)}
+                          className="text-xs text-red-500 hover:underline"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          onClick={() =>
+                            handlePinMessage(message.id, message.pinned)
                           }
-                        </p>
+                          className="text-white-500 ml-2 text-xs hover:underline"
+                        >
+                          {message.pinned ? 'UnPin' : 'Pin'}
+                        </button>
                       </div>
                     )}
-                    <p>{message.content}</p>
-                    <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
-                      <span>{message.timestamp}</span>
-                      {message.type === 'sent' && (
-                        <span className="ml-1">✔✔</span>
-                      )}
-                    </div>
-                  </div>
-                  {message.type === 'received' && (
-                    <button
-                      onClick={() => handleReplyToMessage(message.id)}
-                      className="ml-2 text-xs text-blue-500 hover:underline"
+                    <div
+                      className={`${
+                        message.type === 'sent'
+                          ? 'bg-bg-message-sender'
+                          : 'bg-bg-message-receiver'
+                      } max-w-sm rounded-lg p-2 text-text-primary`}
                     >
-                      Reply
-                    </button>
-                  )}
-                </div>
-              )}
+                      {message.fileType.startsWith('image/') ? (
+                        <img
+                          src={message.file}
+                          alt={message.fileName}
+                          className="h-auto max-w-full cursor-pointer rounded-lg"
+                          onClick={() => handleImageClick(message.file)}
+                        />
+                      ) : message.fileType.startsWith('video/') ? (
+                        <video
+                          controls
+                          className="h-auto max-w-full rounded-lg"
+                        >
+                          <source src={message.file} type={message.fileType} />
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <a
+                          href={message.file}
+                          download={message.fileName}
+                          className="text-blue-500 hover:underline"
+                          target="_blank"
+                        >
+                          {message.fileName}
+                        </a>
+                      )}
+
+                      {message.content && (
+                        <p className="mt-2">{message.content}</p>
+                      )}
+                      <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
+                        <span>{message.timestamp}</span>
+                        {message.type === 'sent' && (
+                          <span className="ml-1">✔✔</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {message.type === 'received' && (
+                      <button
+                        onClick={() => handleReplyToMessage(message.id)}
+                        className="ml-2 text-xs text-blue-500 hover:underline"
+                      >
+                        Reply
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    className={`flex ${
+                      message.type === 'sent' ? 'justify-end' : 'justify-start'
+                    } mb-5 items-center`}
+                  >
+                    {message.type === 'sent' && (
+                      <div className="flex flex-row space-x-2 pr-2">
+                        <button
+                          onClick={() => handleClickForwardMessage(message.id)}
+                          className="text-xs text-green-500 hover:underline"
+                        >
+                          Forward
+                        </button>
+                        <button
+                          onClick={() => handleEditMessage(message.id)}
+                          className="mr-2 text-xs text-blue-500 hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMessage(message.id)}
+                          className="mr-2 text-xs text-red-500 hover:underline"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          onClick={() =>
+                            handlePinMessage(message.id, message.pinned)
+                          }
+                          className="text-white-500 ml-2 text-xs hover:underline"
+                        >
+                          {message.pinned ? 'UnPin' : 'Pin'}
+                        </button>
+                      </div>
+                    )}
+                    <div
+                      className={`${
+                        message.type === 'sent'
+                          ? 'bg-bg-message-sender'
+                          : 'bg-bg-message-receiver'
+                      } max-w-sm rounded-lg p-2 text-text-primary`}
+                    >
+                      {message.replyTo && (
+                        <div className="mb-2 border-l-4 border-blue-500 p-2">
+                          <span className="text-xs text-gray-500">
+                            Replying to:
+                          </span>
+                          <p className="text-sm">
+                            {
+                              messages.find((msg) => msg.id === message.replyTo)
+                                ?.content
+                            }
+                          </p>
+                        </div>
+                      )}
+                      <p>{message.content}</p>
+                      <div className="mt-1 flex items-center justify-end text-xs text-gray-500 dark:text-gray-400">
+                        <span>{message.timestamp}</span>
+                        {message.type === 'sent' && (
+                          <span className="ml-1">✔✔</span>
+                        )}
+                      </div>
+                    </div>
+                    {message.type === 'received' && (
+                      <>
+                        <button
+                          onClick={() => handleClickForwardMessage(message.id)}
+                          className="ml-2 text-xs text-green-500 hover:underline"
+                        >
+                          Forward
+                        </button>
+                        <button
+                          onClick={() => handleReplyToMessage(message.id)}
+                          className="ml-2 text-xs text-blue-500 hover:underline"
+                        >
+                          Reply
+                        </button>
+                        <button
+                          onClick={() =>
+                            handlePinMessage(message.id, message.pinned)
+                          }
+                          className="text-white-500 ml-2 text-xs hover:underline"
+                        >
+                          {message.pinned ? 'UnPin' : 'Pin'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </React.Fragment>
           );
         })}
@@ -758,6 +935,45 @@ function Chat() {
           <div className="flex items-center space-x-2">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-t-4 border-gray-200 border-t-transparent"></div>
             <span className="text-white">Uploading...</span>
+          </div>
+        </div>
+      )}
+      {forwardingMessageId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center space-y-0 bg-black bg-opacity-40">
+          <div className="relative flex flex-row items-center justify-center">
+            {/* Center this image */}
+            <div className="z-50 w-64 rounded-lg bg-white shadow-lg dark:bg-gray-800">
+              <div className="p-4">
+                <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
+                  Forward to:
+                </h3>
+                {initialChatsLSB.map((chat) => (
+                  <div
+                    key={chat.id}
+                    className="flex cursor-pointer flex-row p-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    onClick={() => {
+                      handleForwardMessage(chat);
+                    }}
+                  >
+                    <img
+                      src={chat.picture}
+                      alt={chat.name}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                    <span className="ml-2">{chat.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setForwardingMessageId(null);
+                setInputValue('');
+              }}
+              className="m-4 self-start rounded-full bg-black bg-opacity-50 p-2 text-2xl text-white hover:bg-opacity-75"
+            >
+              &times;
+            </button>
           </div>
         </div>
       )}

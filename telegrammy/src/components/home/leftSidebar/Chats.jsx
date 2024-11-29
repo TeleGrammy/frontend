@@ -4,66 +4,12 @@ import { useDispatch } from 'react-redux';
 import MuteIcon from '../../icons/MuteIcon';
 
 import { setOpenedChat } from '../../../slices/chatsSlice';
-
-const initialChats = [
-  {
-    id: '1',
-    name: 'user1',
-    type: 'Group',
-    lastMessage: {
-      sender: 'user1',
-      content: 'Hey, how are you?',
-      timeStamp: '9:45 PM',
-    },
-    unreadCount: 2,
-    picture: 'https://picsum.photos/50/50',
-    isMuted: false,
-  },
-  {
-    id: '2',
-    name: 'user2 ',
-    type: 'User',
-    lastMessage: {
-      sender: 'youssef',
-      content: 'Remember to buy groceries!',
-      timeStamp: '8:33 PM',
-    },
-    unreadCount: 0,
-    picture: 'https://picsum.photos/seed/sports/50/50',
-    isMuted: true,
-  },
-  {
-    id: '3',
-    name: 'user3',
-    type: 'User',
-    lastMessage: {
-      sender: 'user3',
-      content: 'hiii',
-      timeStamp: '9:35 PM',
-    },
-    unreadCount: 3,
-    picture: 'https://picsum.photos/seed/nature/50/50',
-    isMuted: false,
-  },
-  {
-    id: '4',
-    name: 'My Channel',
-    type: 'Channel',
-    lastMessage: {
-      sender: 'user3',
-      content: 'hiii',
-      timeStamp: '9:35 PM',
-    },
-    unreadCount: 3,
-    picture: 'https://picsum.photos/seed/nature/50/50',
-    isMuted: false,
-  },
-];
+import { initialChatsLSB } from './mockData.js';
 
 const Chats = ({ searchValue }) => {
   const dispatch = useDispatch();
 
-  const [chats, setChats] = useState(initialChats);
+  const [chats, setChats] = useState(initialChatsLSB);
   const [ViewedChats, setViewedChats] = useState(chats);
 
   const [contextMenu, setContextMenu] = useState({

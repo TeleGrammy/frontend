@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   openedChat: {
     id: '2',
-    name: 'user2 ',
+    name: 'user2',
     type: 'User',
     description: 'hello',
     lastMessage: {
@@ -16,7 +16,7 @@ const initialState = {
     isMuted: true,
   },
   searchVisible: false,
-  searchText: ''
+  searchText: '',
 };
 
 const chatsSlice = createSlice({
@@ -26,15 +26,16 @@ const chatsSlice = createSlice({
     setOpenedChat(state, action) {
       state.openedChat = action.payload;
     },
-    setSearchVisible (state, action) {
+    setSearchVisible(state, action) {
       state.searchVisible = action.payload;
     },
-    setSearchText (state, action) {
+    setSearchText(state, action) {
       state.searchText = action.payload;
-    }
+    },
   },
 });
 
-export const { setOpenedChat, setSearchVisible, setSearchText } = chatsSlice.actions;
+export const { setOpenedChat, setSearchVisible, setSearchText } =
+  chatsSlice.actions;
 
 export default chatsSlice.reducer;
