@@ -556,7 +556,7 @@ function Chat() {
                     <Picker
                       set="google" // Use Google's emoji set
                       showPreview={false} // Disable the preview
-                      className="custom-picker"
+                      className={styles['custom-picker']}
                       style={{
                         backgroundColor: '#1f2937',
                         border: 'none',
