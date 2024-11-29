@@ -5,7 +5,7 @@ import { setOpenedChat } from '../../../slices/chatsSlice';
 const Chats = () => {
   const dispatch = useDispatch();
 
-  const chats = [
+  const initialChats = [
     {
       id: '1',
       name: 'user1',
@@ -64,7 +64,6 @@ const Chats = () => {
     dispatch(setOpenedChat(chat));
   };
 
-const Chats = () => {
   const [chats, setChats] = useState(initialChats);
   const [contextMenu, setContextMenu] = useState({
     visible: false,
