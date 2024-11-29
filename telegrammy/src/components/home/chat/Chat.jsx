@@ -8,7 +8,11 @@ import axios from 'axios';
 import Picker from 'emoji-picker-react';
 import CryptoJS from 'crypto-js';
 import Trie from './Trie';
-
+import {
+  initialMessages1,
+  initialMessages2,
+  initialMessages3,
+} from './mockData.js';
 import ChatHeader from './ChatHeader';
 import { useSelector } from 'react-redux';
 function formatDate(date) {
@@ -23,22 +27,6 @@ function formatDate(date) {
 
 const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
 const trie = new Trie();
-const initialMessages = [
-  {
-    id: 1,
-    content: 'Hello',
-    type: 'sent',
-    timestamp: '12:00 AM',
-    date: '2024-11-10',
-  },
-  {
-    id: 2,
-    content: 'Hi',
-    type: 'received',
-    timestamp: '12:01 AM',
-    date: '2024-11-10',
-  },
-];
 
 function Chat() {
   const isAdmin = false;
@@ -46,7 +34,7 @@ function Chat() {
     (state) => state.chats,
   );
   const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([initialMessages1]);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [replyToMessageId, setReplyToMessageId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -67,6 +55,47 @@ function Chat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+  const [prevChat, setPrevChat] = useState(null);
+  useEffect(() => {
+    console.log('Opened chat changed:', openedChat.name);
+    console.log(openedChat);
+    switch (prevChat) {
+      case 'user1':
+        let i = initialMessages1.length;
+        for (; i < messages.length; i++) {
+          initialMessages1.push(messages[i]);
+        }
+        break;
+      case 'user2':
+        let j = initialMessages2.length;
+        for (; j < messages.length; j++) {
+          initialMessages2.push(messages[j]);
+        }
+        break;
+      case 'user3':
+        let k = initialMessages3.length;
+        for (; k < messages.length; k++) {
+          initialMessages3.push(messages[k]);
+        }
+        break;
+      default:
+        break;
+    }
+    switch (openedChat.name) {
+      case 'user1':
+        setMessages(initialMessages1);
+        break;
+      case 'user2':
+        setMessages(initialMessages2);
+        break;
+      case 'user3':
+        setMessages(initialMessages3);
+        break;
+      default:
+        setMessages([]);
+    }
+    setPrevChat(openedChat.name);
+  }, [openedChat]);
 
   const handleSearch = (text) => {
     const ids = trie.startsWith(text);
@@ -199,6 +228,8 @@ function Chat() {
       );
     }
   };
+
+  const handleForwardMessage = (id) => {};
 
   const handleReplyToMessage = (id) => {
     setReplyToMessageId(id);
