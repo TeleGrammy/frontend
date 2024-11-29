@@ -7,6 +7,7 @@ import styles from './Chat.module.css';
 import axios from 'axios';
 import Picker from 'emoji-picker-react';
 import CryptoJS from 'crypto-js';
+import Trie from './Trie';
 
 import ChatHeader from './ChatHeader';
 import { useSelector } from 'react-redux';
@@ -21,7 +22,7 @@ function formatDate(date) {
 }
 
 const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
-
+const trie = new Trie();
 const initialMessages = [
   {
     id: 1,
@@ -41,7 +42,9 @@ const initialMessages = [
 
 function Chat() {
   const isAdmin = false;
-  const { openedChat } = useSelector((state) => state.chats);
+  const { openedChat, searchVisible, searchText } = useSelector(
+    (state) => state.chats,
+  );
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState(initialMessages);
   const [editingMessageId, setEditingMessageId] = useState(null);
@@ -59,10 +62,29 @@ function Chat() {
   const [isMentioning, setIsMentioning] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const messagesEndRef = useRef(null);
-
+  const messageRefs = useRef({});
+  let it = 0;
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleSearch = (text) => {
+    const ids = trie.startsWith(text);
+    if (ids.length > 0) {
+      console.log('yes');
+      if (it >= ids.length) it = 0;
+      console.log(it);
+      messageRefs.current[ids[it]].scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  useEffect(() => {
+    if (searchText) {
+      console.log(`Search text changed: ${searchText}`);
+
+      // Example: Scroll to a message or filter messages based on searchText
+      handleSearch(searchText);
+    }
+  }, [searchText]);
 
   const handleInputChange = (event) => {
     const value = event.target.value;
@@ -129,16 +151,19 @@ function Chat() {
       }
 
       if (editingMessageId) {
-        // Edit the existing message
         setMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.id === editingMessageId ? { ...msg, ...newMessage } : msg,
-          ),
+          prevMessages.map((msg) => {
+            if (msg.id === editingMessageId) {
+              trie.delete(msg.content, msg.id);
+              return { ...msg, ...newMessage };
+            }
+            return msg;
+          }),
         );
-        // Reset after editing
+        trie.insert(newMessage.content, editingMessageId);
         setEditingMessageId(null);
       } else {
-        // Add a new message
+        trie.insert(newMessage.content, messages.length + 1);
         setMessages([
           ...messages,
           {
@@ -288,13 +313,19 @@ function Chat() {
     }
   };
 
+  const handleKey = (event) => {
+    if (event.key === 'Enter' && searchVisible) {
+      it++;
+      handleSearch(searchText);
+    }
+  };
   let lastDate = null;
 
   return (
     <div
       className={`relative flex flex-grow flex-col justify-between ${viewingImage ? '' : 'space-y-4'} overflow-y-auto text-black dark:text-white`}
     >
-      <ChatHeader />
+      <ChatHeader handleKey={handleKey} />
       <div className="flex-grow overflow-y-auto px-4">
         {messages.map((message) => {
           const showDateDivider = message.date !== lastDate;
@@ -302,6 +333,12 @@ function Chat() {
 
           return (
             <React.Fragment key={message.id}>
+              {
+                <div
+                  ref={(el) => (messageRefs.current[message.id] = el)}
+                  key={message.id}
+                ></div>
+              }
               {showDateDivider && (
                 <div className="my-2 flex justify-center">
                   <span className="rounded-full bg-gray-200 px-3 py-1 text-xs dark:bg-gray-700">
@@ -364,6 +401,7 @@ function Chat() {
                         {message.fileName}
                       </a>
                     )}
+
                     {message.content && (
                       <p className="mt-2">{message.content}</p>
                     )}
