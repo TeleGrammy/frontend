@@ -10,10 +10,21 @@ function ChannelList({ channelOrGroup }) {
   const [description, setDescription] = useState('');
   const [addedMembers, setAddedMembers] = useState([]);
   const dispatch = useDispatch();
+
+  const [image, setImage] = useState(null);
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file); // Create a preview URL
+      setImage(imageUrl);
+    }
+  };
+
   return (
-    <div className="no-scrollbar flex min-h-screen w-full flex-col items-center overflow-auto bg-bg-primary p-4 text-white sm:p-6">
+    <div className="no-scrollbar flex w-full flex-col items-center overflow-auto bg-bg-primary p-4 text-white sm:p-6">
       {view == 'newChannel' && (
-        <div className="flex min-h-screen w-full flex-col items-center p-4 text-text-primary sm:p-6">
+        <div className="flex w-full flex-col items-center p-4 text-text-primary sm:p-6">
           <div className="w-full bg-bg-primary">
             <div className="mb-4 flex w-full items-center justify-between sm:mb-6">
               <button
@@ -43,46 +54,38 @@ function ChannelList({ channelOrGroup }) {
               <div></div>
             </div>
 
-            <div className="mb-4 flex w-full flex-col items-center sm:mb-6">
+            <div className="m-10 flex items-center justify-center">
               <div className="relative">
-                {/* <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#FF8C00] to-[#FF6347] text-2xl text-text-primary sm:h-24 sm:w-24 sm:text-3xl">
-                  {preview ? (
-                    <img
-                      src={preview}
-                      alt="Profile Preview"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    initials
-                  )}
-                </div>
-                <button
-                  onClick={() => fileInputRef.current.click()}
-                  className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-white p-1 text-black"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15.232 5.232l3.536 3.536M9 19l6.364-6.364a1 1 0 011.414 0l2.121 2.121a1 1 0 01-1.414 1.414L11 16l-4 1 1-4z"
-                    />
-                  </svg>
-                </button> 
                 <input
                   type="file"
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  onChange={handleFileChange}
-                  accept="image/*,video/*"
-                  data-test-id="add-story-file-input"
-                />*/}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                />
+                <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-gradient-to-b from-purple-500 to-purple-700 text-white">
+                  {image ? (
+                    <img
+                      src={image}
+                      alt="Uploaded"
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-12 w-12"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  )}
+                </div>
               </div>
             </div>
 
