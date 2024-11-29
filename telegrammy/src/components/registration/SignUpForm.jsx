@@ -71,7 +71,7 @@ function reducer(state, action) {
   }
 }
 
-// export { reducer, initialState };
+// export { reducer, initialState };            /// for unit testing
 
 const SignUpForm = ({ setVerificationEmail }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
