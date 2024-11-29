@@ -58,12 +58,19 @@ function Chat() {
   let it = 0;
   let it1 = 0;
 
+ 
   const handleNavigateToPinned = () => {
-    messageRefs.current[pinnedMsgs[it1]].scrollIntoView({ behavior: 'smooth' });
+    const msg = messageRefs.current[pinnedMsgs[it1]];
+    msg.classList.add("bg-yellow-200");
+
+    msg.scrollIntoView({ behavior: 'smooth' });
+
+    setTimeout(() => {
+      msg.classList.remove("bg-yellow-200");
+    }, 1000);
     it1++;
     if (it1 >= pinnedMsgs.length) it1 = 0;
   };
-
   const handlePinMessage = (messageId, ispinned) => {
     setMessages((prevMessages) =>
       prevMessages.map((msg) =>
@@ -144,7 +151,16 @@ function Chat() {
       console.log('yes');
       if (it >= ids.length) it = 0;
       console.log(it);
-      messageRefs.current[ids[it]].scrollIntoView({ behavior: 'smooth' });
+      const msg = messageRefs.current[ids[it]];
+      msg.classList.add("bg-yellow-200");
+
+      msg.scrollIntoView({ behavior: 'smooth' });
+  
+      setTimeout(() => {
+        msg.classList.remove("bg-yellow-200");
+      }, 1000);
+      it1++;
+      if (it1 >= pinnedMsgs.length) it1 = 0;
     }
   };
   useEffect(() => {
@@ -459,13 +475,10 @@ function Chat() {
 
           return (
             <React.Fragment key={message.id}>
-              <div>
-                {
-                  <div
-                    ref={(el) => (messageRefs.current[message.id] = el)}
+              <div ref={(el) => (messageRefs.current[message.id] = el)}
                     key={message.id}
-                  ></div>
-                }
+                    className= ''>
+               
                 {showDateDivider && (
                   <div className="my-2 flex justify-center">
                     <span className="rounded-full bg-gray-200 px-3 py-1 text-xs dark:bg-gray-700">

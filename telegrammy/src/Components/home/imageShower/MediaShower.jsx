@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import CloseButton from '../rightSidebar/CloseButton';
+import CloseButton from '../../../components/home/rightSidebar/CloseButton';
 import {
   setShowedMyStoryIndex,
   setShowedOtherStoryIndex,
