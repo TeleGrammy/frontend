@@ -1,3 +1,44 @@
+import React from 'react';
+import MuteIcon from '../../icons/MuteIcon';
+
+const chats = [
+  {
+    id: '1',
+    name: 'user1',
+    lastMessage: {
+      sender: 'user1',
+      content: 'Hey, how are you?',
+      timeStamp: '9:45 PM',
+    },
+    unreadCount: 2,
+    picture: 'https://picsum.photos/50/50',
+    isMuted: false,
+  },
+  {
+    id: '2',
+    name: 'user2 ',
+    lastMessage: {
+      sender: 'youssef',
+      content: 'Remember to buy groceries!',
+      timeStamp: '8:33 PM',
+    },
+    unreadCount: 0,
+    picture: 'https://picsum.photos/seed/sports/50/50',
+    isMuted: true,
+  },
+  {
+    id: '3',
+    name: 'user3',
+    lastMessage: {
+      sender: 'user3',
+      content: 'hiii',
+      timeStamp: '9:35 PM',
+    },
+    unreadCount: 3,
+    picture: 'https://picsum.photos/seed/nature/50/50',
+    isMuted: false,
+  },
+];
 import React, { useState, useRef, useEffect } from 'react';
 import MuteIcon from '../../icons/MuteIcon';
 
@@ -116,6 +157,7 @@ const Chats = () => {
     };
   }, [contextMenu]);
 
+const Chats = () => {
   return (
     <div ref={containerRef} className="chats-container flex flex-col bg-bg-primary text-white h-full overflow-y-auto w-full">
       <ul className="divide-y divide-gray-700">
@@ -129,20 +171,22 @@ const Chats = () => {
             <img
               src={chat.picture}
               alt={`${chat.name}'s avatar`}
-              className="w-12 h-12 rounded-full object-cover"
+              className="h-12 w-12 rounded-full object-cover"
             />
             {/* Chat Details */}
             <div className="ml-4 flex-1">
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold truncate">{chat.name}</h3>
-                <span className="text-sm text-gray-400">{chat.lastMessage.timeStamp}</span>
+              <div className="flex items-center justify-between">
+                <h3 className="truncate font-semibold">{chat.name}</h3>
+                <span className="text-sm text-gray-400">
+                  {chat.lastMessage.timeStamp}
+                </span>
               </div>
-              <div className="flex justify-between items-center">
-                <p className="text-gray-400 text-sm truncate">
+              <div className="flex items-center justify-between">
+                <p className="truncate text-sm text-gray-400">
                   {chat.lastMessage.content}
                 </p>
                 {chat.unreadCount > 0 && (
-                  <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1">
+                  <span className="ml-2 rounded-full bg-blue-500 px-2 py-1 text-xs text-white">
                     {chat.unreadCount}
                   </span>
                 )}

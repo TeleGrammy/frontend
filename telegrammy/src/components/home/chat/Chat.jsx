@@ -3,7 +3,7 @@ import VoiceNoteButton from './VoiceNoteButton';
 import VoiceNotePlayer from './VoiceNotePlayer';
 import StickerIcon from '../../icons/StickerIcon';
 import GifIcon from '../../icons/GIFIcon';
-import '../../../../public/css/picker.css';
+import styles from './Chat.module.css';
 import axios from 'axios';
 import Picker from 'emoji-picker-react';
 import CryptoJS from 'crypto-js';
@@ -513,7 +513,7 @@ function Chat() {
                     <Picker
                       set="google" // Use Google's emoji set
                       showPreview={false} // Disable the preview
-                      className="custom-picker"
+                      className={styles['custom-picker']}
                       style={{
                         backgroundColor: '#1f2937',
                         border: 'none',
