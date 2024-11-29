@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import MuteIcon from '../../icons/MuteIcon';
 import { useDispatch } from 'react-redux';
 import { setOpenedChat } from '../../../slices/chatsSlice';
@@ -64,13 +64,89 @@ const Chats = () => {
     dispatch(setOpenedChat(chat));
   };
 
+const Chats = () => {
+  const [chats, setChats] = useState(initialChats);
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    chatId: null,
+  });
+  const contextMenuRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const handleContextMenu = (e, chatId) => {
+    e.preventDefault();
+
+    const containerWidth = e.target.closest('.chats-container').offsetWidth;
+    const menuWidth = 200;
+
+    const xPos = Math.min(e.pageX, containerWidth - menuWidth);
+
+    setContextMenu({
+      visible: true,
+      chatId: chatId,
+      x: xPos,
+      y: e.pageY,
+    });
+  };
+
+  const handleMute = (chatId, duration) => {
+    const updatedChats = chats.map((chat) => {
+      if (chat.id === chatId) {
+        return { ...chat, isMuted: true, muteDuration: duration };
+      }
+      return chat;
+    });
+
+    setChats(updatedChats);
+    setContextMenu({ ...contextMenu, visible: false });
+  };
+
+  const handleUnmute = (chatId) => {
+    const updatedChats = chats.map((chat) => {
+      if (chat.id === chatId) {
+        return { ...chat, isMuted: false, muteDuration: null };
+      }
+      return chat;
+    });
+
+    setChats(updatedChats);
+    setContextMenu({ ...contextMenu, visible: false });
+  };
+
+  const handleClickOutside = (e) => {
+    if (contextMenuRef.current && !contextMenuRef.current.contains(e.target)) {
+      setContextMenu({ ...contextMenu, visible: false });
+    }
+  };
+
+  const handleClickInside = (e) => {
+    if (contextMenu.visible && containerRef.current.contains(e.target)) {
+      setContextMenu({ ...contextMenu, visible: false });
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('click', handleClickInside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('click', handleClickInside);
+    };
+  }, [contextMenu]);
   return (
-    <div className="flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white">
+    <div
+      ref={containerRef}
+      className="chats-container flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white"
+    >
       <ul className="divide-y divide-gray-700">
         {chats.map((chat) => (
           <li
             key={chat.id}
-            className="flex w-full items-center p-4 transition hover:bg-gray-700"
+            className="flex w-full cursor-pointer items-center p-4 transition hover:bg-gray-700"
+            onContextMenu={(e) => handleContextMenu(e, chat.id)}
             onClick={() => handleClickChat(chat)}
           >
             {/* Profile Picture */}
@@ -107,6 +183,55 @@ const Chats = () => {
           </li>
         ))}
       </ul>
+
+      {/* Context Menu */}
+      {contextMenu.visible && (
+        <div
+          ref={contextMenuRef}
+          className="absolute z-50 w-48 rounded bg-gray-800 text-white shadow-lg"
+          style={{
+            top: contextMenu.y,
+            left: contextMenu.x,
+          }}
+        >
+          <ul>
+            {/* Render Mute or Unmute Options Dynamically */}
+            {chats.find((chat) => chat.id === contextMenu.chatId)?.isMuted ? (
+              <li
+                className="cursor-pointer p-2 hover:bg-gray-700"
+                onClick={() => handleUnmute(contextMenu.chatId)}
+              >
+                Unmute
+              </li>
+            ) : (
+              <>
+                <li
+                  className="cursor-pointer p-2 hover:bg-gray-700"
+                  onClick={() =>
+                    handleMute(contextMenu.chatId, 8 * 60 * 60 * 1000)
+                  }
+                >
+                  Mute for 8 Hours
+                </li>
+                <li
+                  className="cursor-pointer p-2 hover:bg-gray-700"
+                  onClick={() =>
+                    handleMute(contextMenu.chatId, 7 * 24 * 60 * 60 * 1000)
+                  }
+                >
+                  Mute for 7 Days
+                </li>
+                <li
+                  className="cursor-pointer p-2 hover:bg-gray-700"
+                  onClick={() => handleMute(contextMenu.chatId, null)}
+                >
+                  Mute Permanently
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };

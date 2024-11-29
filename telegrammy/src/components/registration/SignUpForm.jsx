@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useRef } from 'react';
 import SocialLogin from './SocialLogin';
 import UserNameIcon from '../icons/UserNameIcon';
 import EmailIcon from '../icons/EmailIcon';
@@ -71,11 +71,22 @@ function reducer(state, action) {
   }
 }
 
-export { reducer, initialState };
+// export { reducer, initialState };
 
 const SignUpForm = ({ setVerificationEmail }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const captchaRef = useRef(null); // Ref for the reCAPTCHA component
+
   const navigate = useNavigate();
+
+  const resetCaptcha = () => {
+    if (captchaRef.current) {
+      captchaRef.current.reset(); // Reset the reCAPTCHA widget
+      dispatch({ type: 'captchaVerified', payload: false });
+      dispatch({ type: 'captchaToken', payload: null });
+    }
+  };
+
   const handlePasswordMatch = () => {
     if (state.password !== state.confirmPassword) {
       dispatch({
@@ -129,6 +140,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
       dispatch({ type: 'error', payload: error.message });
     } finally {
       dispatch({ type: 'loading', payload: false });
+      resetCaptcha();
     }
   };
   return (
@@ -295,7 +307,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
         </div>
         {/* Checkbox */}
         <div className="mb-4 flex items-center">
-          <RobotVerification dispatch={dispatch} />
+          <RobotVerification dispatch={dispatch} captchaRef={captchaRef} />
         </div>
         {/* Sign Up Button */}
         <button
