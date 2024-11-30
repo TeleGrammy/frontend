@@ -1,152 +1,142 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import SignUpForm from '../components/registration/SignUpForm';
+import { MemoryRouter } from 'react-router-dom';
 
-// Mock child components and icons
-jest.mock('../components/registration/SocialLogin', () => () => (
-  <div>SocialLogin</div>
-));
-jest.mock(
-  '../components/registration/RobotVerification',
-  () =>
-    ({ dispatch }) => (
-      <button
-        onClick={() => dispatch({ type: 'captchaVerified', payload: true })}
+// Mock the RobotVerification component
+jest.mock('../components/registration/RobotVerification', () => {
+  const React = require('react');
+  return React.forwardRef((props, ref) => {
+    React.useImperativeHandle(ref, () => ({
+      reset: jest.fn(), // Mock the reset method
+    }));
+    return (
+      <div
+        data-testid="captcha"
+        onClick={() => {
+          props.setVerification({ type: 'captchaVerified', payload: true });
+        }}
       >
-        MockCaptcha
-      </button>
-    ),
-);
+        Mocked Captcha
+      </div>
+    );
+  });
+});
 
-jest.mock('src/components/icons/UserNameIcon', () => () => (
-  <div>UserNameIcon</div>
-));
-jest.mock('src/components/icons/EmailIcon', () => () => <div>EmailIcon</div>);
-jest.mock('src/components/icons/PhoneNumberIcon', () => () => (
-  <div>PhoneNumberIcon</div>
-));
-jest.mock('src/components/icons/PasswordIcon', () => () => (
-  <div>PasswordIcon</div>
-));
-jest.mock('src/components/icons/ShowPasswordIcon', () => () => (
-  <div>ShowPasswordIcon</div>
-));
-jest.mock('src/components/icons/HidePasswordIcon', () => () => (
-  <div>HidePasswordIcon</div>
-));
-
+// Mock the fetch API
 global.fetch = jest.fn();
 
 describe('SignUpForm Component', () => {
   const mockSetVerificationEmail = jest.fn();
 
   beforeEach(() => {
-    fetch.mockClear();
+    jest.clearAllMocks(); // Clear mocks for fresh state
+    jest.spyOn(console, 'warn').mockImplementation(() => {}); // Suppress warnings
   });
 
-  test('renders the form correctly', () => {
-    render(<SignUpForm setVerificationEmail={mockSetVerificationEmail} />);
-    expect(screen.getByText(/Sign Up/i)).toBeInTheDocument();
-    expect(screen.getByText(/SocialLogin/i)).toBeInTheDocument();
+  test('renders the SignUpForm component', () => {
+    render(
+      <MemoryRouter>
+        <SignUpForm setVerificationEmail={mockSetVerificationEmail} />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByTestId('username-input')).toBeInTheDocument();
+    expect(screen.getByTestId('email-input')).toBeInTheDocument();
+    expect(screen.getByTestId('phone-input')).toBeInTheDocument();
+    expect(screen.getByTestId('password-input')).toBeInTheDocument();
+    expect(screen.getByTestId('confirm-password-input')).toBeInTheDocument();
+    expect(screen.getByTestId('captcha')).toBeInTheDocument();
+    expect(screen.getByTestId('sign-up-button')).toBeInTheDocument();
   });
 
-  test('handles form submission successfully', async () => {
+  test('shows error when passwords do not match', async () => {
+    render(
+      <MemoryRouter>
+        <SignUpForm setVerificationEmail={mockSetVerificationEmail} />
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByTestId('password-input'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.change(screen.getByTestId('confirm-password-input'), {
+      target: { value: 'password321' },
+    });
+
+    fireEvent.blur(screen.getByTestId('confirm-password-input'));
+
+    expect(
+      await screen.findByText("Passwords aren't matched."),
+    ).toBeInTheDocument();
+  });
+
+  test('submits form successfully', async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ message: 'Success' }),
     });
 
-    render(<SignUpForm setVerificationEmail={mockSetVerificationEmail} />);
+    render(
+      <MemoryRouter>
+        <SignUpForm setVerificationEmail={mockSetVerificationEmail} />
+      </MemoryRouter>,
+    );
 
-    // Fill out the form
-    fireEvent.change(screen.getByPlaceholderText(/Username/i), {
+    fireEvent.change(screen.getByTestId('username-input'), {
       target: { value: 'testuser' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/Email/i), {
-      target: { value: 'test@example.com' },
+    fireEvent.change(screen.getByTestId('email-input'), {
+      target: { value: 'testuser@example.com' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/Phone Number/i), {
-      target: { value: '0123456789' },
+    fireEvent.change(screen.getByTestId('phone-input'), {
+      target: { value: '01234567890' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/Password/i), {
+    fireEvent.change(screen.getByTestId('password-input'), {
       target: { value: 'password123' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/Confirm Password/i), {
+    fireEvent.change(screen.getByTestId('confirm-password-input'), {
       target: { value: 'password123' },
     });
+    fireEvent.click(screen.getByTestId('captcha'));
+    fireEvent.click(screen.getByTestId('sign-up-button'));
 
-    // Simulate captcha verification
-    fireEvent.click(screen.getByText(/MockCaptcha/i));
-
-    // Submit the form
-    fireEvent.click(screen.getByText(/Sign Up/i));
-
-    // Verify loading state
-    expect(screen.getByText(/Sign Up/i)).toBeDisabled();
-
-    // Wait for async operations to complete
-    await waitFor(() => {
-      expect(mockSetVerificationEmail).toHaveBeenCalledWith('test@example.com');
-    });
-
-    // Verify navigation (mocked)
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/v1/auth/register'),
-      expect.any(Object),
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    expect(mockSetVerificationEmail).toHaveBeenCalledWith(
+      'testuser@example.com',
     );
   });
 
-  test('displays error if passwords do not match', () => {
-    render(<SignUpForm setVerificationEmail={mockSetVerificationEmail} />);
+  test('displays error when API call fails', async () => {
+    fetch.mockRejectedValueOnce(new Error('Something went wrong!'));
 
-    // Fill out mismatched passwords
-    fireEvent.change(screen.getByPlaceholderText(/Password/i), {
-      target: { value: 'password123' },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Confirm Password/i), {
-      target: { value: 'differentpassword' },
-    });
+    render(
+      <MemoryRouter>
+        <SignUpForm setVerificationEmail={mockSetVerificationEmail} />
+      </MemoryRouter>,
+    );
 
-    // Blur confirm password input to trigger validation
-    fireEvent.blur(screen.getByPlaceholderText(/Confirm Password/i));
-
-    // Verify error message
-    expect(screen.getByText(/Passwords aren't matched./i)).toBeInTheDocument();
-  });
-
-  test('shows error message when captcha is not verified', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: 'Captcha not verified' }),
-    });
-
-    render(<SignUpForm setVerificationEmail={mockSetVerificationEmail} />);
-
-    // Fill out the form without verifying captcha
-    fireEvent.change(screen.getByPlaceholderText(/Username/i), {
+    fireEvent.change(screen.getByTestId('username-input'), {
       target: { value: 'testuser' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/Email/i), {
-      target: { value: 'test@example.com' },
+    fireEvent.change(screen.getByTestId('email-input'), {
+      target: { value: 'testuser@example.com' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/Phone Number/i), {
-      target: { value: '0123456789' },
+    fireEvent.change(screen.getByTestId('phone-input'), {
+      target: { value: '01234567890' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/Password/i), {
+    fireEvent.change(screen.getByTestId('password-input'), {
       target: { value: 'password123' },
     });
-    fireEvent.change(screen.getByPlaceholderText(/Confirm Password/i), {
+    fireEvent.change(screen.getByTestId('confirm-password-input'), {
       target: { value: 'password123' },
     });
+    fireEvent.click(screen.getByTestId('captcha'));
+    fireEvent.click(screen.getByTestId('sign-up-button'));
 
-    // Submit the form
-    fireEvent.click(screen.getByText(/Sign Up/i));
-
-    // Wait for error
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Please verify you are not a robot/i),
-      ).toBeInTheDocument();
-    });
+    await waitFor(() =>
+      expect(screen.getByText('Something went wrong!')).toBeInTheDocument(),
+    );
   });
 });

@@ -12,6 +12,9 @@ describe('ForgetPassword Component', () => {
     jest.clearAllMocks();
     jest.useFakeTimers(); // Use fake timers
 
+    // Suppress warnings in the console
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+
     // Mock fetch response based on input email
     fetch.mockImplementation((url, options) => {
       const { body } = options;
@@ -40,6 +43,10 @@ describe('ForgetPassword Component', () => {
     });
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks(); // Restore mocked console methods
+  });
+
   const renderForgetPassword = () => {
     return render(
       <MemoryRouter>
@@ -53,8 +60,12 @@ describe('ForgetPassword Component', () => {
     expect(screen.getByText(/Find your account/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Email/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Search/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Resend Message/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Resend Message/i })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /Resend Message/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Resend Message/i }),
+    ).toBeDisabled();
   });
 
   test('updates email field', () => {
@@ -93,7 +104,6 @@ describe('ForgetPassword Component', () => {
       );
       expect(screen.getByText(/Email does not exist./i)).toBeInTheDocument();
     });
-
   });
 
   test('successfully submits with valid email', async () => {
@@ -116,8 +126,5 @@ describe('ForgetPassword Component', () => {
       );
       expect(screen.getByText(/Please check your email./i)).toBeInTheDocument();
     });
-
-   
-
   });
 });
