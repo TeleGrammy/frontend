@@ -3,6 +3,7 @@ import googleIcon from '../../assets/google.png';
 import facebookIcon from '../../assets/facebook.png';
 import githubIcon from '../../assets/github.png';
 import ImagedButton from '../shared/ImagedButton';
+
 const apiUrl = import.meta.env.VITE_API_URL;
 const images = [
   {
@@ -33,13 +34,17 @@ const SocialLogin = () => {
         <span className="mx-4 text-gray-500">OR</span>
         <hr className="w-full border-gray-300" />
       </div>
-      <div className="mt-4 flex justify-between space-x-4">
+      <div
+        className="mt-4 flex justify-between space-x-4"
+        data-testid="social-login-buttons"
+      >
         {images.map((el, idx) => (
           <ImagedButton
             icon={el.icon}
             alt={el.alt}
             key={idx}
             onClick={() => el.onClick(setData)}
+            data-testid={`social-login-button-${el.alt.toLowerCase()}`} // Added data-testid for each button
           />
         ))}
       </div>
