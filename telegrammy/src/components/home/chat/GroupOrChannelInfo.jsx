@@ -9,18 +9,78 @@ import SelectedInfo from '../rightSidebar/SelectedInfo';
 import Header from '../leftSidebar/Header';
 
 const initialGroupMembers = [
-  { username: 'Alice', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: false },
-  { username: 'Bob', photo: 'https://picsum.photos/50/50', canComment: true, canDownload: false },
-  { username: 'Charlie', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: true },
-  { username: 'David', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: false },
-  { username: 'Eve', photo: 'https://picsum.photos/50/50', canComment: true, canDownload: false },
-  { username: 'Frank', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: true },
-  { username: 'Grace', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: false },
-  { username: 'Hannah', photo: 'https://picsum.photos/50/50', canComment: true, canDownload: false },
-  { username: 'Isaac', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: true },
-  { username: 'Jack', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: false },
-  { username: 'Karen', photo: 'https://picsum.photos/50/50', canComment: true, canDownload: false },
-  { username: 'Leo', photo: 'https://picsum.photos/50/50', canComment: false, canDownload: true },
+  {
+    username: 'Alice',
+    photo: 'https://picsum.photos/50/50',
+    canComment: false,
+    canDownload: false,
+  },
+  {
+    username: 'Bob',
+    photo: 'https://picsum.photos/50/50',
+    canComment: true,
+    canDownload: false,
+  },
+  {
+    username: 'Charlie',
+    photo: 'https://picsum.photos/50/50',
+    canComment: false,
+    canDownload: true,
+  },
+  {
+    username: 'David',
+    photo: 'https://picsum.photos/50/50',
+    canComment: false,
+    canDownload: false,
+  },
+  {
+    username: 'Eve',
+    photo: 'https://picsum.photos/50/50',
+    canComment: true,
+    canDownload: false,
+  },
+  {
+    username: 'Frank',
+    photo: 'https://picsum.photos/50/50',
+    canComment: false,
+    canDownload: true,
+  },
+  {
+    username: 'Grace',
+    photo: 'https://picsum.photos/50/50',
+    canComment: false,
+    canDownload: false,
+  },
+  {
+    username: 'Hannah',
+    photo: 'https://picsum.photos/50/50',
+    canComment: true,
+    canDownload: false,
+  },
+  {
+    username: 'Isaac',
+    photo: 'https://picsum.photos/50/50',
+    canComment: false,
+    canDownload: true,
+  },
+  {
+    username: 'Jack',
+    photo: 'https://picsum.photos/50/50',
+    canComment: false,
+    canDownload: false,
+  },
+  {
+    username: 'Karen',
+    photo: 'https://picsum.photos/50/50',
+    canComment: true,
+    canDownload: false,
+  },
+  {
+    username: 'Leo',
+    photo: 'https://picsum.photos/50/50',
+    canComment: false,
+    canDownload: true,
+  },
 ];
 
 const initialGroupPhoto = 'https://picsum.photos/50/50';
@@ -40,9 +100,8 @@ function GroupOrChannelInfo() {
 
   // Filtered members based on search query
   const filteredMembers = groupMembers.filter((member) =>
-    member.username.toLowerCase().includes(searchQuery.toLowerCase())
+    member.username.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
 
   const makeAdmin = (username) => {
     if (!admins.includes(username)) {
@@ -82,8 +141,8 @@ function GroupOrChannelInfo() {
       prevMembers.map((member) =>
         member.username === username
           ? { ...member, [permissionType]: !member[permissionType] }
-          : member
-      )
+          : member,
+      ),
     );
     console.log(`Toggled ${permissionType} permission for ${username}`);
   };
@@ -97,14 +156,15 @@ function GroupOrChannelInfo() {
         <div className="ml-auto flex flex-row gap-2">
           {openedChat.type === 'Channel' && (
             <div
+              data-test-id="invite-link-button"
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-bg-secondary text-3xl hover:bg-bg-button-hover"
               onClick={GenerateInviteLink}
-              data-test-id="invite-link-button"
             >
               <FaCreativeCommonsShare className="text-text-primary opacity-70" />
             </div>
           )}
           <button
+            data-test-id="toggle-edit-info-button"
             className="rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
             onClick={toggleView}
           >
@@ -135,7 +195,7 @@ function GroupOrChannelInfo() {
             <div
               className="fixed bottom-8 right-8 flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-full bg-bg-button text-2xl hover:bg-bg-button-hover"
               onClick={handleSubmitAddedUsers}
-              data-test-id="create-button"
+              data-test-id="submit-add-users-button"
             >
               <FaAngleRight className="text-text-primary opacity-70" />
             </div>
@@ -157,14 +217,15 @@ function GroupOrChannelInfo() {
             {/* Search bar */}
             <div className="p-4">
               <input
+                data-test-id="search-in-members-input"
                 type="text"
                 placeholder="Search users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full p-2 rounded bg-bg-secondary text-text-primary outline-none"
+                className="w-full rounded bg-bg-secondary p-2 text-text-primary outline-none"
               />
             </div>
-        
+
             {/* Display filtered members */}
             <ul className="no-scrollbar mb-4 h-[100%] overflow-y-scroll">
               {filteredMembers.map((member, index) => (
@@ -172,7 +233,11 @@ function GroupOrChannelInfo() {
                   key={index}
                   className="mb-2 flex flex-col items-start rounded p-2 hover:bg-bg-secondary"
                 >
-                  <div className="flex items-center justify-center cursor-pointer" onClick={() => toggleUserOptions(member.username)}>
+                  <div
+                    data-test-id={`${member.username}-toggle-options-button`}
+                    className="flex cursor-pointer items-center justify-center"
+                    onClick={() => toggleUserOptions(member.username)}
+                  >
                     <img
                       src={member.photo}
                       alt={member.username}
@@ -190,6 +255,7 @@ function GroupOrChannelInfo() {
                     >
                       {!admins.includes(member.username) && (
                         <button
+                          data-test-id={`${member.username}-make-admin-button`}
                           className="text-text-primary"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -200,24 +266,31 @@ function GroupOrChannelInfo() {
                         </button>
                       )}
                       <button
+                        data-test-id={`${member.username}-allow-comments-button`}
                         className="text-text-primary"
                         onClick={(e) => {
                           e.stopPropagation();
                           togglePermission(member.username, 'canComment');
                         }}
                       >
-                        {member.canComment ? 'Revoke Comments' : 'Allow Comments'}
+                        {member.canComment
+                          ? 'Revoke Comments'
+                          : 'Allow Comments'}
                       </button>
                       <button
+                        data-test-id={`${member.username}-allow-download-button`}
                         className="text-text-primary"
                         onClick={(e) => {
                           e.stopPropagation();
                           togglePermission(member.username, 'canDownload');
                         }}
                       >
-                        {member.canDownload ? 'Revoke Download' : 'Allow Download'}
+                        {member.canDownload
+                          ? 'Revoke Download'
+                          : 'Allow Download'}
                       </button>
                       <button
+                        data-test-id={`${member.username}-remove-member-button`}
                         className="text-red-500"
                         onClick={(e) => {
                           e.stopPropagation();

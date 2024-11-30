@@ -105,21 +105,37 @@ const AddUsersList = ({ addedMembers, setAddedMembers }) => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)} // Update search term
           className="w-full rounded-lg bg-bg-secondary p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          data-test-id="search-input"
         />
       </div>
-      <ul className="no-scrollbar flex h-[90%] flex-col overflow-y-auto">
+      <ul
+        className="no-scrollbar flex h-[90%] flex-col overflow-y-auto"
+        data-test-id="user-list"
+      >
         {filteredContacts.length > 0 ? (
           filteredContacts.map((user) => (
             <li
               key={user.id}
               className="flex items-center space-x-3 rounded-lg p-2 hover:bg-bg-hover"
+              data-test-id={`user-item-${user.id}`}
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white">
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white"
+                data-test-id={`user-avatar-${user.id}`}
+              >
                 {user.avatar}
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-gray-400">
+                <p
+                  className="text-sm font-medium"
+                  data-test-id={`user-name-${user.id}`}
+                >
+                  {user.name}
+                </p>
+                <p
+                  className="text-xs text-gray-400"
+                  data-test-id={`user-last-seen-${user.id}`}
+                >
                   last seen {user.lastSeen}
                 </p>
               </div>
@@ -128,11 +144,17 @@ const AddUsersList = ({ addedMembers, setAddedMembers }) => {
                 checked={addedMembers.includes(user)}
                 onChange={() => handleCheckboxChange(user)}
                 className="h-5 w-5 text-blue-500 focus:ring-blue-400"
+                data-test-id={`user-checkbox-${user.id}`}
               />
             </li>
           ))
         ) : (
-          <p className="text-center text-gray-400">No users found</p>
+          <p
+            className="text-center text-gray-400"
+            data-test-id="no-users-message"
+          >
+            No users found
+          </p>
         )}
       </ul>
     </div>

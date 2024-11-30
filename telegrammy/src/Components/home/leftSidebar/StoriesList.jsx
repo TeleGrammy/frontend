@@ -18,38 +18,6 @@ function StoriesList() {
     dispatch(setShowedOtherStoryIndex(0));
   };
 
-//   useEffect(() => {
-//     const fetchStories = async () => {
-//       setLoading(true);
-//       setError('');
-//       try {
-//         const response = await fetch(
-//           'http://localhost:8080/api/v1/user/stories/contacts?page=1&limit=10',
-//           {
-//             method: 'GET',
-//             headers: {
-//               Accept: 'application/json', // Specify JSON response expected
-//             },
-//             credentials: 'include', // Include credentials (cookies)
-//           },
-//         );
-//         if (!response.ok) {
-//           throw new Error('Failed to fetch stories');
-//         }
-//         const data = await response.json();
-//         const stories = data.data;
-//         console.log(stories);
-//         dispatch(setOtherStories(stories));
-//       } catch (error) {
-//         setError(error.message);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchStories();
-//   }, [dispatch, setError, setLoading]);
-
   useEffect(() => {
     const scrollableDiv = scrollRef.current;
     const handleWheel = (event) => {
@@ -70,14 +38,16 @@ function StoriesList() {
     };
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error loading stories: {error}</p>;
+  if (loading) return <p data-test-id="loading-indicator">Loading...</p>;
+  if (error)
+    return <p data-test-id="error-message">Error loading stories: {error}</p>;
 
   return (
-    <div className="relative mt-4 w-full">
+    <div className="relative mt-4 w-full" data-test-id="stories-list-container">
       <div
         ref={scrollRef}
         className="scrollable flex flex-row-reverse gap-3 overflow-x-scroll px-4 py-2"
+        data-test-id="scrollable-stories-container"
       >
         {otherStories &&
           otherStories.map((collection, index) => {
@@ -90,12 +60,14 @@ function StoriesList() {
                 key={index}
                 className="relative shrink-0"
                 onClick={() => handleOpenStory(index)}
+                data-test-id={`${index}-story-item`}
               >
                 {/* SVG Border with Dashes */}
                 <svg
                   className="absolute left-0 top-0 overflow-visible"
                   width="60"
                   height="60"
+                  data-test-id={`${index}-story-border`}
                 >
                   <circle
                     cx="28"
@@ -113,12 +85,16 @@ function StoriesList() {
                   src={collection.stories[0].media}
                   className="h-14 w-14 rounded-full"
                   alt={`story${index}`}
+                  data-test-id={`${index}-story-image`}
                 />
               </div>
             );
           })}
       </div>
-      <div className="pointer-events-none absolute left-0 top-0 h-full w-32 bg-gradient-to-r from-bg-primary to-transparent"></div>
+      <div
+        className="pointer-events-none absolute left-0 top-0 h-full w-32 bg-gradient-to-r from-bg-primary to-transparent"
+        data-test-id="gradient-overlay"
+      ></div>
     </div>
   );
 }

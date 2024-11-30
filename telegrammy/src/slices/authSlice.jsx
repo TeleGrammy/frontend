@@ -30,11 +30,11 @@ export const loginUser = createAsyncThunk(
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
 
       const user = data.data.updatedUser;
       return user;

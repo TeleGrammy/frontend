@@ -9,6 +9,7 @@ import HidePasswordIcon from '../icons/HidePasswordIcon';
 import { ClipLoader } from 'react-spinners';
 import { useNavigate } from 'react-router-dom';
 import RobotVerification from './RobotVerification';
+
 const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   showPassword: false,
@@ -74,7 +75,6 @@ function reducer(state, action) {
 const SignUpForm = ({ setVerificationEmail }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const captchaRef = useRef(null); // Ref for the reCAPTCHA component
-
   const navigate = useNavigate();
 
   const resetCaptcha = () => {
@@ -99,7 +99,6 @@ const SignUpForm = ({ setVerificationEmail }) => {
 
   const handleSubmitForm = async (e) => {
     e.preventDefault();
-    // const { HOSTNAME, PORT } = process.env;
     dispatch({ type: 'error', payload: '' });
     if (state.password !== state.confirmPassword) return;
     if (!state.captchaVerified) {
@@ -129,7 +128,6 @@ const SignUpForm = ({ setVerificationEmail }) => {
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong!');
       }
-      // await new Promise((resolve) => setTimeout(resolve, 5000));
       console.log(response.status);
       console.log('User registered successfully');
       setVerificationEmail(state.email);
@@ -141,6 +139,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
       resetCaptcha();
     }
   };
+
   return (
     <div className="w-full p-6 md:w-1/2 md:p-7">
       <h2 className="mb-6 text-2xl font-semibold text-gray-700 md:mb-8">
@@ -150,7 +149,6 @@ const SignUpForm = ({ setVerificationEmail }) => {
       <form onSubmit={handleSubmitForm}>
         {/* Username */}
         <div className="mb-4">
-          {/* <label className="block text-gray-600">Username</label> */}
           <div
             className={`flex items-center border ${
               Math.abs(state.focusOnUserName) === 1
@@ -164,6 +162,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
             <input
               id="username"
               type="text"
+              data-test-id="username-input"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Username"
               onChange={(e) =>
@@ -176,7 +175,6 @@ const SignUpForm = ({ setVerificationEmail }) => {
         </div>
         {/* Email */}
         <div className="mb-4">
-          {/* <label className="block text-gray-600">Email</label> */}
           <div
             className={`flex items-center border ${
               Math.abs(state.focusOnEmail) === 1
@@ -190,6 +188,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
             <input
               id="email"
               type="email"
+              data-test-id="email-input"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Email"
               onFocus={() => dispatch({ type: 'focusEmail', payload: 1 })}
@@ -202,7 +201,6 @@ const SignUpForm = ({ setVerificationEmail }) => {
         </div>
         {/* Phone Number */}
         <div className="mb-4">
-          {/* <label className="block text-gray-600">Phone Number</label> */}
           <div
             className={`flex items-center border ${
               Math.abs(state.focusOnPhoneNumber) === 1
@@ -216,6 +214,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
             <input
               id="phone"
               type="tel"
+              data-test-id="phone-input"
               pattern="01\d{9}"
               title="Phone number should be in the format 01XXXXXXXXX"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -230,7 +229,6 @@ const SignUpForm = ({ setVerificationEmail }) => {
         </div>
         {/* Password */}
         <div className="mb-4">
-          {/* <label className="block text-gray-600">Password</label> */}
           <div
             className={`flex items-center border ${
               Math.abs(state.focusOnPassword) === 1
@@ -244,27 +242,27 @@ const SignUpForm = ({ setVerificationEmail }) => {
             <input
               id="password"
               type={state.showPassword ? 'text' : 'password'}
-              className="flex-1 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" // Add padding-right for the icon
+              data-test-id="password-input"
+              className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Password"
+              onFocus={() => dispatch({ type: 'focusPass', payload: 1 })}
+              onBlur={() => dispatch({ type: 'focusPass', payload: 0 })}
               onChange={(e) =>
                 dispatch({ type: 'password', payload: e.target.value })
               }
-              onFocus={() => dispatch({ type: 'focusPass', payload: 1 })}
-              onBlur={() => dispatch({ type: 'focusPass', payload: 0 })}
             />
             <button
-              id="show-hide-password"
               type="button"
+              data-test-id="toggle-password-visibility-button"
               onClick={() => dispatch({ type: 'togglePass' })}
-              className="absolute right-2 top-1/2 -translate-y-1/2 transform focus:outline-none"
+              className="absolute right-2"
             >
-              {state.showPassword ? <ShowPasswordIcon /> : <HidePasswordIcon />}
+              {state.showPassword ? <HidePasswordIcon /> : <ShowPasswordIcon />}
             </button>
           </div>
         </div>
         {/* Confirm Password */}
         <div className="mb-4">
-          {/* <label className="block text-gray-600">Password</label> */}
           <div
             className={`flex items-center border ${
               Math.abs(state.focusOnConfirmPassword) === 1
@@ -276,52 +274,57 @@ const SignUpForm = ({ setVerificationEmail }) => {
           >
             <PasswordIcon />
             <input
-              id="confirm-password"
+              id="confirmPassword"
               type={state.showConfirmPassword ? 'text' : 'password'}
-              className="flex-1 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" // Add padding-right for the icon
+              data-test-id="confirm-password-input"
+              className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Confirm Password"
-              onChange={(e) =>
-                dispatch({ type: 'confirmPassword', payload: e.target.value })
-              }
               onFocus={() => dispatch({ type: 'focusConfirmPass', payload: 1 })}
-              onBlur={handlePasswordMatch}
+              onBlur={() => dispatch({ type: 'focusConfirmPass', payload: 0 })}
+              onChange={(e) => {
+                dispatch({ type: 'confirmPassword', payload: e.target.value });
+                handlePasswordMatch();
+              }}
             />
             <button
-              id="show-hide-confirm-password"
               type="button"
+              data-test-id="toggle-confirm-password-visibility-button"
               onClick={() => dispatch({ type: 'toggleConfirmPass' })}
-              className="absolute right-2 top-1/2 -translate-y-1/2 transform focus:outline-none"
+              className="absolute right-2"
             >
               {state.showConfirmPassword ? (
-                <ShowPasswordIcon />
-              ) : (
                 <HidePasswordIcon />
+              ) : (
+                <ShowPasswordIcon />
               )}
             </button>
           </div>
-          <span className="text-xs font-semibold text-red-500">
-            {state.errorPasswordMatch}
-          </span>
+          {state.errorPasswordMatch && (
+            <p className="mt-1 text-sm text-red-500">
+              {state.errorPasswordMatch}
+            </p>
+          )}
         </div>
-        {/* Checkbox */}
-        <div className="mb-4 flex items-center">
-          <RobotVerification dispatch={dispatch} captchaRef={captchaRef} />
-        </div>
-        {/* Sign Up Button */}
+        {/* Recaptcha */}
+        <RobotVerification
+          data-test-id="captcha"
+          ref={captchaRef}
+          setVerification={dispatch}
+        />
+        {/* Submit Button */}
         <button
           type="submit"
-          id="sign-up"
+          data-test-id="sign-up-button"
           disabled={state.loading}
-          className={`w-full rounded-md ${state.loading ? 'bg-sky-800' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
+          className={`mt-6 flex w-full items-center justify-center rounded-md border-2 border-blue-500 bg-blue-500 py-2 font-semibold text-white hover:bg-blue-600 focus:outline-none ${
+            state.loading ? 'cursor-not-allowed opacity-50' : ''
+          }`}
         >
-          {state.loading ? (
-            <ClipLoader color="#ffffff" size={20} /> // Render the spinner when loading
-          ) : (
-            'Sign Up'
-          )}
+          {state.loading ? <ClipLoader color="#fff" size={20} /> : 'Sign Up'}
         </button>
+        {/* Social Login */}
+        <SocialLogin />
       </form>
-      <SocialLogin />
     </div>
   );
 };

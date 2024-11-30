@@ -106,6 +106,7 @@ function Menu() {
         <div
           ref={menuRef}
           className={`absolute left-4 top-[4rem] z-10 min-w-60 rounded-2xl border border-border bg-bg-primary opacity-80 shadow-xl`}
+          data-test-id="menu-container"
         >
           <ul className="text-l flex flex-col items-start justify-start space-y-2 p-2 px-4">
             {Menuitems.map((item) => (
@@ -114,9 +115,15 @@ function Menu() {
                 isRightSidebar={item.isRightSidebar}
                 setIsMenuOpen={setIsMenuOpen}
                 newMenu={item.newMenu}
+                data-test-id={`menu-item-${item.Name.replace(' ', '-').toLowerCase()}`}
               >
                 {item.icon}
-                <span className="ml-4">{item.Name}</span>
+                <span
+                  className="ml-4"
+                  data-test-id={`menu-item-label-${item.Name.replace(' ', '-').toLowerCase()}`}
+                >
+                  {item.Name}
+                </span>
               </MenuItem>
             ))}
             <li
@@ -142,7 +149,10 @@ function Menu() {
               <span className="ml-4">Log Out</span>
             </li>
           </ul>
-          <p className="p-4 text-center text-xxs text-[rgb(172,167,167)]">
+          <p
+            className="p-4 text-center text-xxs text-[rgb(172,167,167)]"
+            data-test-id="menu-footer"
+          >
             TeleGrammmy Web A 1
           </p>
         </div>

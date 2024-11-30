@@ -72,6 +72,7 @@ function ChannelSettings({ toggleView, isAdmin }) {
         {isAdmin && (
           <>
             <button
+              data-test-id="select-photo-button"
               onClick={() => fileInputRef.current.click()}
               className="mb-2 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary"
             >
@@ -90,6 +91,7 @@ function ChannelSettings({ toggleView, isAdmin }) {
       <div className="mb-4 flex w-full flex-col items-center">
         {isAdmin ? (
           <input
+            data-test-id="description-input"
             type="text"
             value={channelDescription}
             onChange={handleDescriptionChange}
@@ -108,6 +110,7 @@ function ChannelSettings({ toggleView, isAdmin }) {
         </label>
         {isAdmin ? (
           <select
+            data-test-id="privacy-select"
             value={privacy}
             onChange={handlePrivacyChange}
             className="w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary"
@@ -121,6 +124,7 @@ function ChannelSettings({ toggleView, isAdmin }) {
       </div>
       {isAdmin && (
         <button
+          data-test-id="save-changes-button"
           className="mb-4 w-3/4 rounded-lg bg-green-500 px-2 py-1 text-white hover:bg-green-600"
           onClick={saveChanges}
         >
@@ -128,6 +132,7 @@ function ChannelSettings({ toggleView, isAdmin }) {
         </button>
       )}
       <button
+        data-test-id="leave-channel-button"
         className="mb-4 w-3/4 rounded-lg bg-red-500 px-2 py-1 text-white hover:bg-red-600"
         onClick={leaveChannel}
       >
@@ -135,6 +140,7 @@ function ChannelSettings({ toggleView, isAdmin }) {
       </button>
       {isAdmin && (
         <button
+          data-test-id="delete-channel-button"
           className="w-3/4 rounded-lg bg-red-700 px-2 py-1 text-white hover:bg-red-800"
           onClick={deleteChannel}
         >

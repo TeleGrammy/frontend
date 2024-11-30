@@ -143,7 +143,7 @@ const ForgetPassword = () => {
           <div>
             <input
               type="email"
-              data-test-id="email"
+              data-test-id="email-input"
               value={state.email}
               onChange={handleEmailChange}
               required
