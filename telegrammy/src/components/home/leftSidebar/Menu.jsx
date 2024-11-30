@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'; // Import hooks
+import { useNavigate } from 'react-router-dom';
 
 import { ToggleDarkMode } from '../../../slices/darkModeSlice';
-
 import { logout } from '../../../slices/authSlice';
 
 import MenuItem from './MenuItem';
 
+import { ClipLoader } from 'react-spinners';
 import {
   FaCog,
   FaMoon,
@@ -16,7 +17,6 @@ import {
   FaBullseye,
   FaSignOutAlt,
 } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -43,6 +43,10 @@ const Menuitems = [
 
 function Menu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isloggingOut, setIsloggingOut] = useState(false);
+
+  const menuRef = useRef(null);
+  const barsRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -51,6 +55,7 @@ function Menu() {
 
   const Logout = async () => {
     try {
+      setIsloggingOut(true);
       const response = await fetch(`${apiUrl}/v1/auth/logout`, {
         method: 'POST',
         headers: {
@@ -61,17 +66,36 @@ function Menu() {
 
       if (response.ok) {
         console.log('Logout Success');
-        await dispatch(logout());
+        dispatch(logout());
         navigate('/');
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsloggingOut(false);
     }
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current &&
+        !barsRef.current.contains(event.target) &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
       <div
+        ref={barsRef}
         className="flex min-h-8 min-w-8 cursor-pointer items-center justify-center rounded-full hover:bg-bg-secondary"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         data-test-id="menu-button"
@@ -80,7 +104,9 @@ function Menu() {
       </div>
       {isMenuOpen && (
         <div
-          className={`absolute left-4 top-[4rem] min-w-60 rounded-2xl border border-border bg-bg-primary opacity-80 shadow-xl`}
+          ref={menuRef}
+          className={`absolute left-4 top-[4rem] z-10 min-w-60 rounded-2xl border border-border bg-bg-primary opacity-80 shadow-xl`}
+          data-test-id="menu-container"
         >
           <ul className="text-l flex flex-col items-start justify-start space-y-2 p-2 px-4">
             {Menuitems.map((item) => (
@@ -89,9 +115,15 @@ function Menu() {
                 isRightSidebar={item.isRightSidebar}
                 setIsMenuOpen={setIsMenuOpen}
                 newMenu={item.newMenu}
+                data-test-id={`menu-item-${item.Name.replace(' ', '-').toLowerCase()}`}
               >
                 {item.icon}
-                <span className="ml-4">{item.Name}</span>
+                <span
+                  className="ml-4"
+                  data-test-id={`menu-item-label-${item.Name.replace(' ', '-').toLowerCase()}`}
+                >
+                  {item.Name}
+                </span>
               </MenuItem>
             ))}
             <li
@@ -109,11 +141,18 @@ function Menu() {
               className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
               data-test-id="logout-button"
             >
-              <FaSignOutAlt />
+              {isloggingOut ? (
+                <ClipLoader size={17} color={'text-text-primary'} />
+              ) : (
+                <FaSignOutAlt />
+              )}
               <span className="ml-4">Log Out</span>
             </li>
           </ul>
-          <p className="p-4 text-center text-xxs text-[rgb(172,167,167)]">
+          <p
+            className="p-4 text-center text-xxs text-[rgb(172,167,167)]"
+            data-test-id="menu-footer"
+          >
             TeleGrammmy Web A 1
           </p>
         </div>

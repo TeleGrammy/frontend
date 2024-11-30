@@ -58,7 +58,6 @@ const SignInForm = () => {
       <form onSubmit={handleSubmitForm}>
         {/* Email */}
         <div className="mb-4">
-          {/* <label className="block text-gray-600">Email</label> */}
           <div
             className={`flex items-center border ${
               Math.abs(state.focusOnEmail) === 1
@@ -72,6 +71,7 @@ const SignInForm = () => {
             <input
               id="email"
               type="email"
+              data-test-id="email-input" // Added data-test-id
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Email"
               onFocus={() => dispatch({ type: 'focusEmail', payload: 1 })}
@@ -85,12 +85,11 @@ const SignInForm = () => {
 
         {/* Password */}
         <div className="mb-4">
-          {/* <label className="block text-gray-600">Password</label> */}
           <div
             className={`flex items-center border ${
               Math.abs(state.focusOnPassword) === 1
                 ? 'border-sky-500'
-                : state.password === '' || state.errorPasswordMatch
+                : state.password === ''
                   ? 'border-red-500'
                   : 'border-green-400'
             } relative mt-2 rounded-md`}
@@ -99,7 +98,8 @@ const SignInForm = () => {
             <input
               id="password"
               type={state.showPassword ? 'text' : 'password'}
-              className="flex-1 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" // Add padding-right for the icon
+              data-test-id="password-input" // Added data-test-id
+              className="flex-1 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Password"
               onChange={(e) =>
                 dispatch({ type: 'password', payload: e.target.value })
@@ -110,6 +110,7 @@ const SignInForm = () => {
             <button
               id="show-hide-password"
               type="button"
+              data-test-id="toggle-password-visibility" // Added data-test-id
               onClick={() => dispatch({ type: 'togglePass' })}
               className="absolute right-2 top-1/2 -translate-y-1/2 transform focus:outline-none"
             >
@@ -122,15 +123,17 @@ const SignInForm = () => {
         <div className="mb-4 flex items-center justify-end">
           <Link
             to="/auth/forget-password"
+            data-test-id="forgot-password-link" // Added data-test-id
             className="text-sm text-blue-500 hover:underline"
           >
             Forgot your password?
           </Link>
         </div>
-        {/* Sign Up Button */}
+        {/* Sign In Button */}
         <button
           type="submit"
-          id="sign-up"
+          id="sign-in"
+          data-test-id="sign-in-button" // Added data-test-id
           disabled={loading}
           className={`w-full rounded-md ${loading ? 'bg-sky-800' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
         >

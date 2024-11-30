@@ -28,6 +28,8 @@ function reducer(state, action) {
       return { ...state, message: action.payload };
     case 'resendDisable':
       return { ...state, resendDisable: action.payload };
+    default:
+      return state;
   }
 }
 const ForgetPassword = () => {
@@ -141,7 +143,7 @@ const ForgetPassword = () => {
           <div>
             <input
               type="email"
-              id="email"
+              data-test-id="email-input"
               value={state.email}
               onChange={handleEmailChange}
               required

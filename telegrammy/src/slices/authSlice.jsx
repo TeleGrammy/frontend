@@ -13,18 +13,6 @@ const initialState = {
   error: '',
 };
 
-const clearTokenFromCookie = () => {
-  document.cookie =
-    'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Strict';
-};
-
-const setTokenInCookie = (token) => {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days expiration
-
-  document.cookie = `accessToken=${token}; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
-};
-
 // Create an async thunk for the login request
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
@@ -32,6 +20,7 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await fetch(`${apiUrl}/v1/auth/login`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -41,16 +30,13 @@ export const loginUser = createAsyncThunk(
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
 
-      const token = data.data.accessToken;
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
       const user = data.data.updatedUser;
-      clearTokenFromCookie();
-      setTokenInCookie(token);
       return user;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -62,17 +48,16 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login(state, { payload }) {},
+    login(state, action) {},
     logout(state) {
-      clearTokenFromCookie();
       localStorage.removeItem('user');
       state.user = null;
       state.isLogin = false;
     },
-    loginWithCallback(state, { payload }) {
-      setTokenInCookie(payload.token);
-      state.user = payload.user;
+    loginWithCallback(state, action) {
+      state.user = action.payload.user;
       state.isLogin = true;
+
       localStorage.setItem('user', JSON.stringify(state.user));
     },
   },

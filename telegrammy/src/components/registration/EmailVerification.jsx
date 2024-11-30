@@ -1,6 +1,5 @@
 import React, { useReducer, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
 const apiUrl = import.meta.env.VITE_API_URL;
 const initialState = {
   code: new Array(6).fill(''),
@@ -32,13 +31,14 @@ function reducer(state, action) {
       return { ...state, success: action.payload };
     case 'resendMessage':
       return { ...state, resendMessage: action.payload };
+    default:
+      return state;
   }
 }
 
 const EmailVerification = ({ email }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
-  const Email = email;
 
   // Function to handle changes in each code input field
   const handleCodeChange = (element, index) => {
@@ -61,7 +61,7 @@ const EmailVerification = ({ email }) => {
   // Check if all code inputs are filled
   const isCodeComplete = () => state.code.every((digit) => digit !== '');
 
-  // responses errors handlers
+  // Response errors handlers
   const handleVerifyError = (response) => {
     switch (response.status) {
       case 400:
@@ -119,7 +119,6 @@ const EmailVerification = ({ email }) => {
     }
 
     try {
-      console.log(verificationCode);
       const response = await fetch(`${apiUrl}/v1/auth/verify`, {
         method: 'POST',
         headers: {
@@ -131,15 +130,13 @@ const EmailVerification = ({ email }) => {
         }),
       });
 
-      console.log(email);
-
       if (response.ok) {
         const data = await response.json();
         dispatch({ type: 'success', payload: true });
         dispatch({ type: 'error', payload: '' });
-        console.log('Verification successful:', data);
+        console.log('Verification successful:');
 
-        navigate('/login');
+        navigate('/auth/login');
       } else {
         const data = await response.json();
         dispatch({ type: 'error', payload: data.message });
@@ -167,16 +164,13 @@ const EmailVerification = ({ email }) => {
     dispatch({ type: 'timer', payload: 30 });
 
     try {
-      const response = await fetch(
-        `${apiUrl}/v1/auth/resend-verification`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email }),
+      const response = await fetch(`${apiUrl}/v1/auth/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({ email }),
+      });
 
       if (response.ok) {
         dispatch({
@@ -208,8 +202,6 @@ const EmailVerification = ({ email }) => {
         clearInterval(countdown);
         dispatch({ type: 'resend', payload: false });
       }
-
-      console.log(isCodeComplete());
 
       return () => clearInterval(countdown);
     }
@@ -247,6 +239,7 @@ const EmailVerification = ({ email }) => {
                 value={digit}
                 onChange={(e) => handleCodeChange(e.target, index)}
                 className="h-12 w-12 rounded-lg border border-blue-300 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 sm:h-14 sm:w-14"
+                data-test-id={`${index}-code-input`} // Added data-test-id
               />
             ))}
           </div>
@@ -259,6 +252,7 @@ const EmailVerification = ({ email }) => {
                 : 'cursor-not-allowed bg-gray-400'
             }`} // Change background color based on button state
             disabled={!isCodeComplete()} // Disable button if code is not complete
+            data-test-id="submit-button" // Added data-test-id
           >
             Submit
           </button>
@@ -274,6 +268,7 @@ const EmailVerification = ({ email }) => {
             }`}
             onClick={handleResendCode}
             disabled={state.isResendDisabled}
+            data-test-id="resend-code-button" // Added data-test-id
           >
             {state.isResendDisabled
               ? `Resend Code (${state.timer}s)`

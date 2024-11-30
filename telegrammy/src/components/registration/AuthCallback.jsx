@@ -13,9 +13,10 @@ const AuthCallback = () => {
     const token = params.get('accessToken');
 
     if (token) {
-      dispatch(
-        loginWithCallback({ user: { email: 's7tot@gmail.com' }, token }),
-      ); // need to change to the user object from the response
+      //clearTokenFromCookie(); // Clear the old token
+      //setTokenInCookie(token); // Store the token securely
+
+      dispatch(loginWithCallback({ user: { email: 's7tot@gmail.com' } })); // need to change to the user object from the response
     }
 
     navigate('/home'); // Redirect to a secure page
