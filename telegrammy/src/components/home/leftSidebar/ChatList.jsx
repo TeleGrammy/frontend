@@ -13,7 +13,7 @@ function ChatList() {
   return (
     <>
       {/* Sidebar */}
-      <Header>
+      <Header className={'pt-5'}>
         <Menu />
         <Searchbar setSearchValue={setSearchValue} searchValue={searchValue} />
       </Header>

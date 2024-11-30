@@ -424,6 +424,8 @@ function Chat() {
         setIsMentioning(false);
         setFilteredUsers([]);
       }
+    } else {
+      if (event.key === 'Enter') handleSendMessage();
     }
   };
 
@@ -453,8 +455,8 @@ function Chat() {
         </div>
       )}
 
-      <div className="flex-grow overflow-y-auto px-4">
-        {messages.map((message,idx) => {
+      <div className="no-scrollbar flex-grow overflow-y-auto px-4">
+        {messages.map((message, idx) => {
           const showDateDivider = message.date !== lastDate;
           lastDate = message.date;
 

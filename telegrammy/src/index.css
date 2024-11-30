@@ -89,7 +89,7 @@
 }
 
 .scrollable::-webkit-scrollbar {
-  @apply h-2; /* Scrollbar width */
+  @apply h-[5px]; /* Scrollbar width */
 }
 
 .scrollable::-webkit-scrollbar-track {
