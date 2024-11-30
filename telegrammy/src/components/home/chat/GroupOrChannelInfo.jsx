@@ -134,7 +134,9 @@ function GroupOrChannelInfo() {
 
   const GenerateInviteLink = () => {};
 
-  const handleSubmitAddedUsers = () => {};
+  const handleSubmitAddedUsers = () => {
+    setView('info');
+  };
 
   const togglePermission = (username, permissionType) => {
     setGroupMembers((prevMembers) =>
