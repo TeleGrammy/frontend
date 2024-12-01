@@ -339,7 +339,7 @@ function Chat() {
     const newMessage = {
       id: messages.length + 1,
       content: 'Voice Note Sent',
-      type: 'received',
+      type: 'recieved',
       timestamp: new Date().toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: 'numeric',

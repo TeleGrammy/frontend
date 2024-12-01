@@ -86,6 +86,8 @@ const SignUpForm = ({ setVerificationEmail }) => {
   };
 
   const handlePasswordMatch = () => {
+    console.log(state.password);
+    console.log(state.confirmPassword);
     if (state.password !== state.confirmPassword) {
       dispatch({
         type: 'errorPasswordMatch',
@@ -109,6 +111,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
 
     try {
       dispatch({ type: 'loading', payload: true });
+      console.log(state.captchaToken);
       const response = await fetch(`${apiUrl}/v1/auth/register`, {
         method: 'POST',
         headers: {
@@ -125,6 +128,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
       });
       const data = await response.json();
       console.log(response);
+      console.log(state.captchaToken);
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong!');
       }
@@ -283,7 +287,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
               onBlur={() => dispatch({ type: 'focusConfirmPass', payload: 0 })}
               onChange={(e) => {
                 dispatch({ type: 'confirmPassword', payload: e.target.value });
-                handlePasswordMatch();
+                
               }}
             />
             <button
@@ -308,8 +312,8 @@ const SignUpForm = ({ setVerificationEmail }) => {
         {/* Recaptcha */}
         <RobotVerification
           data-test-id="captcha"
-          ref={captchaRef}
-          setVerification={dispatch}
+          captchaRef={captchaRef}
+          dispatch={dispatch}
         />
         {/* Submit Button */}
         <button
