@@ -3,6 +3,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 
 const ReCaptchaForm = ({ dispatch, captchaRef }) => {
   const handleCaptchaChange = (captchaToken) => {
+    console.log(captchaToken);
     if (captchaToken !== null) {
       dispatch({ type: 'captchaVerified', payload: true });
       dispatch({ type: 'captchaToken', payload: captchaToken });

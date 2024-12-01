@@ -16,7 +16,9 @@ const PrivacySettings = ({ setView }) => {
         `${apiUrl}/v1/privacy/settings/profile-visibility`,
         {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+          },
           credentials: 'include',
           body: JSON.stringify(newSettings),
         },
@@ -33,6 +35,9 @@ const PrivacySettings = ({ setView }) => {
   };
 
   const updateReadReceipts = async (isEnabled) => {
+    const updatedData = {
+      isEnabled: isEnabled,
+    };
     try {
       const response = await fetch(
         `${apiUrl}/v1/privacy/settings/read-receipts`,
@@ -43,7 +48,7 @@ const PrivacySettings = ({ setView }) => {
             Accept: 'application/json',
           },
           credentials: 'include',
-          body: JSON.stringify({ isEnabled }),
+          body: JSON.stringify(updatedData),
         },
       );
 
@@ -58,14 +63,19 @@ const PrivacySettings = ({ setView }) => {
   };
 
   const updateGroupControl = async (addToGroups) => {
+    const updatedData = {
+      newPolicy: addToGroups,
+    };
     try {
       const response = await fetch(
         `${apiUrl}/v1/privacy/settings/group-control`,
         {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+          },
           credentials: 'include',
-          body: JSON.stringify({ newPolicy: addToGroups }),
+          body: JSON.stringify(updatedData),
         },
       );
 
@@ -106,13 +116,23 @@ const PrivacySettings = ({ setView }) => {
     });
   };
 
+  const handleBlockUser = (username) => {
+    blockUser(username);
+  };
+
+  const handleUnblockUser = (username) => {
+    unblockUser(username);
+  };
+
   const blockUser = async (username) => {
     try {
       const response = await fetch(
         `${apiUrl}/v1/privacy/settings/blocking-status/block`,
         {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+          },
           credentials: 'include',
           body: JSON.stringify({ userId: username }),
         },
@@ -135,7 +155,9 @@ const PrivacySettings = ({ setView }) => {
         `${apiUrl}/v1/privacy/settings/blocking-status/unblock`,
         {
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+          },
           credentials: 'include',
           body: JSON.stringify({ userName: username }),
         },
@@ -164,24 +186,54 @@ const PrivacySettings = ({ setView }) => {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center bg-bg-primary p-4 text-text-primary sm:p-6">
-      <div className="w-full max-w-md sm:max-w-lg">
-        <div className="mb-4 flex w-full items-center justify-between">
-          <button onClick={() => setView('settings')} className="text-primary">
-            Back
+    <div className="no-scrollbar flex min-h-screen w-full flex-col items-center overflow-auto bg-bg-primary p-4 text-text-primary sm:p-6">
+      <div className="w-full max-w-md bg-bg-primary sm:max-w-lg">
+        <div className="mb-4 flex w-full items-center justify-between sm:mb-6">
+          <button
+            data-test-id="privacy-go-back"
+            onClick={() => setView('settings')}
+            className="text-text-primary hover:text-gray-300"
+            aria-label="Go Back"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
           </button>
-          <h2 className="text-xl font-semibold">Privacy Settings</h2>
-          <div />
+          <h2
+            data-test-id="privacy-title"
+            className="text-xl font-semibold text-text-primary sm:text-2xl"
+          >
+            Privacy Settings
+          </h2>
+          <div></div>
         </div>
 
         {/* Profile Picture Visibility */}
-        <div>
-          <label>Profile Picture Visibility</label>
+        <div className="mb-3 sm:mb-4">
+          <label
+            className="block text-sm text-text-primary"
+            htmlFor="profile-picture-visibility"
+          >
+            Profile Picture Visibility
+          </label>
           <select
+            data-test-id="profile-picture-visibility"
             value={profilePictureVisibility}
             onChange={(e) =>
               handleProfilePictureVisibilityChange(e.target.value)
             }
+            className="w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
           >
             <option value="EveryOne">Everyone</option>
             <option value="Contacts">Contacts</option>
@@ -190,11 +242,18 @@ const PrivacySettings = ({ setView }) => {
         </div>
 
         {/* Stories Visibility */}
-        <div>
-          <label>Stories Visibility</label>
+        <div className="mb-3 sm:mb-4">
+          <label
+            className="block text-sm text-text-primary"
+            htmlFor="stories-visibility"
+          >
+            Stories Visibility
+          </label>
           <select
+            data-test-id="stories-visibility"
             value={storiesVisibility}
             onChange={(e) => handleStoriesVisibilityChange(e.target.value)}
+            className="w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
           >
             <option value="EveryOne">Everyone</option>
             <option value="Contacts">Contacts</option>
@@ -203,11 +262,18 @@ const PrivacySettings = ({ setView }) => {
         </div>
 
         {/* Last Seen Visibility */}
-        <div>
-          <label>Last Seen Visibility</label>
+        <div className="mb-3 sm:mb-4">
+          <label
+            className="block text-sm text-text-primary"
+            htmlFor="last-seen-visibility"
+          >
+            Last Seen Visibility
+          </label>
           <select
+            data-test-id="last-seen-visibility"
             value={lastSeenVisibility}
             onChange={(e) => handleLastSeenVisibilityChange(e.target.value)}
+            className="w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
           >
             <option value="EveryOne">Everyone</option>
             <option value="Contacts">Contacts</option>
@@ -216,22 +282,52 @@ const PrivacySettings = ({ setView }) => {
         </div>
 
         {/* Blocked Users */}
-        <div>
-          <label>Blocked Users</label>
-          <ul>
-            {blockedUsers.map((user, index) => (
-              <li key={index}>
-                {user}
-                <button onClick={() => unblockUser(user)}>Unblock</button>
-              </li>
-            ))}
-          </ul>
+        <div className="mb-3 sm:mb-4">
+          <label
+            className="block text-sm text-text-primary"
+            htmlFor="blocked-users"
+          >
+            Blocked Users
+          </label>
+          <div
+            data-test-id="blocked-users-list"
+            className="rounded-lg bg-bg-secondary p-3"
+          >
+            {blockedUsers.length > 0 ? (
+              <ul className="space-y-2">
+                {blockedUsers.map((user, index) => (
+                  <li
+                    key={index}
+                    className="flex items-center justify-between rounded-md bg-bg-primary p-2"
+                  >
+                    <span data-test-id={`blocked-user-${index}`}>{user}</span>
+                    <button
+                      data-test-id={`unblock-user-${index}`}
+                      onClick={() => handleUnblockUser(user)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Unblock
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p
+                data-test-id="no-blocked-users"
+                className="text-sm text-gray-500"
+              >
+                No blocked users
+              </p>
+            )}
+          </div>
           <input
             type="text"
-            placeholder="Block user by username"
+            placeholder="Enter username to block"
+            className="mt-2 w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
+            data-test-id="block-user-input"
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                blockUser(e.target.value);
+              if (e.key === 'Enter' && e.target.value) {
+                handleBlockUser(e.target.value);
                 e.target.value = '';
               }
             }}
@@ -239,21 +335,37 @@ const PrivacySettings = ({ setView }) => {
         </div>
 
         {/* Read Receipts */}
-        <div>
-          <label>Read Receipts</label>
-          <input
-            type="checkbox"
-            checked={readReceiptsEnabled}
-            onChange={handleReadReceiptsChange}
-          />
+        <div className="mb-3 sm:mb-4">
+          <label className="block text-sm text-text-primary">
+            Read Receipts
+          </label>
+          <div className="flex items-center text-text-primary">
+            <input
+              type="checkbox"
+              data-test-id="read-receipts-checkbox"
+              checked={readReceiptsEnabled}
+              onChange={handleReadReceiptsChange}
+              className="mr-2"
+            />
+            <span data-test-id="read-receipts-status">
+              {readReceiptsEnabled ? 'Enabled' : 'Disabled'}
+            </span>
+          </div>
         </div>
 
         {/* Group Add Permission */}
-        <div>
-          <label>Who Can Add Me to Groups</label>
+        <div className="mb-3 sm:mb-4">
+          <label
+            className="block text-sm text-text-primary"
+            htmlFor="group-add-permission"
+          >
+            Who Can Add Me to Groups/Channels
+          </label>
           <select
+            data-test-id="group-add-permission"
             value={groupAddPermission}
             onChange={(e) => handleGroupAddPermissionChange(e.target.value)}
+            className="w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
           >
             <option value="EveryOne">Everyone</option>
             <option value="Admins">Admins</option>
