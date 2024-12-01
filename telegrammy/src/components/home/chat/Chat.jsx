@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import VoiceNoteButton from './VoiceNoteButton';
-import VoiceNotePlayer from './VoiceNotePlayer';
 
 import CryptoJS from 'crypto-js';
 import Trie from './Trie';
@@ -12,15 +11,14 @@ import {
 import { initialChatsLSB } from '../../../mocks/mockDataChatList';
 import ChatHeader from './ChatHeader';
 import { useSelector } from 'react-redux';
-import { MessageItem } from './messages/MessageItem';
 import { MessagesList } from './messages/MessagesList';
-import AttachmentsMenu from './messagingSpace/AttachmentsMenu';
-import AttachMedia from './messagingSpace/AttachMedia';
+import AttachMedia from './messagingSpace/attachment/AttachMedia';
 import ViewedImage from './messages/ViewedImage';
 import { ClipLoader } from 'react-spinners';
 import ReplyToSpace from './messagingSpace/ReplyToSpace';
-import ReactionPicker from './messagingSpace/ReactionPicker';
+import ReactionPicker from './messagingSpace/pickerReaction/ReactionPicker';
 import LoadingScreen from './messagingSpace/LoadingScreen';
+import PinnedMessagesBar from './PinnedMessagesBar';
 
 const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
 let trie = new Trie();
@@ -45,6 +43,7 @@ function Chat() {
   const messagesEndRef = useRef(null);
   const messageRefs = useRef({});
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
+  const [prevChat, setPrevChat] = useState(null);
   const secretKey = 'our-secret-key';
   let it = 0;
   let it1 = 0;
@@ -87,7 +86,6 @@ function Chat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  const [prevChat, setPrevChat] = useState(null);
   useEffect(() => {
     console.log('Opened chat changed:', openedChat.name);
     console.log(openedChat);
@@ -391,7 +389,6 @@ function Chat() {
       handleSearch(searchText);
     }
   };
-  let lastDate = null;
 
   return (
     <div
@@ -399,16 +396,7 @@ function Chat() {
     >
       <ChatHeader handleKey={handleKey} />
       {pinnedMsgs.length > 0 && (
-        <div className="rounded-lg bg-bg-primary p-2 shadow-md">
-          <h2
-            data-test-id="navigate-to-pinned-h2"
-            className="flex cursor-pointer items-center space-x-2 pl-3 text-lg font-semibold text-white"
-            onClick={() => handleNavigateToPinned()}
-          >
-            <span className="text-base">📌</span>
-            <span className="text-sm">Pinned Messages</span>
-          </h2>
-        </div>
+        <PinnedMessagesBar handleNavigateToPinned={handleNavigateToPinned} />
       )}
 
       <MessagesList
@@ -422,8 +410,6 @@ function Chat() {
         messagesEndRef={messagesEndRef}
         messageRefs={messageRefs}
       />
-      {/*----------------------------------شمع احمر------------------------------------------- */}
-      {/*----------------------------------يا شيخ مطــــاوع------------------------------------------- */}
       <div className="bg-bg-message-receiver p-4">
         {errorMessage && (
           <div
@@ -507,7 +493,6 @@ function Chat() {
           )}
         </div>
       </div>
-      {/*----------------------------------شمع احمر------------------------------------------- */}
       {viewingImage && (
         <ViewedImage
           viewingImage={viewingImage}
