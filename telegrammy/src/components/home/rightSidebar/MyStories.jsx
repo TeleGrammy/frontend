@@ -12,6 +12,8 @@ import {
   setMyStories,
 } from '../../../slices/storiesSlice';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 function MyStories() {
   const { myStories } = useSelector((state) => state.stories);
   const [error, setError] = useState('');
@@ -28,16 +30,13 @@ function MyStories() {
       setLoading(true);
       setError('');
       try {
-        const response = await fetch(
-          'http://localhost:8080/api/v1/user/stories/',
-          {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json', // Specify JSON response expected
-            },
-            credentials: 'include', // Include credentials (cookies)
+        const response = await fetch(`${apiUrl}/v1/user/stories/`, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json', // Specify JSON response expected
           },
-        );
+          credentials: 'include', // Include credentials (cookies)
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch stories');
         }
