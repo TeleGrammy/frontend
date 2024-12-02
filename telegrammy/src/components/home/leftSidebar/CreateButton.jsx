@@ -1,13 +1,19 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'; // Import hooks
 
-import { FaPen, FaPodcast, FaUsers } from 'react-icons/fa';
+import { FaPen, FaPodcast, FaUser, FaUsers } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import MenuItem from './MenuItem';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const CreateButtonitems = [
+  {
+    Name: 'New Contact',
+    icon: <FaUser />,
+    newMenu: 'ContactList',
+    isRightSidebar: false,
+  },
   {
     Name: 'New Group',
     icon: <FaUsers />,
