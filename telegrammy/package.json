@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "jest"
+    "test": "jest --config jest.config.mjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.3.0",
