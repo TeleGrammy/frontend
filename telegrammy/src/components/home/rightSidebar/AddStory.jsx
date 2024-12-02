@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import AddStoryOverlay from './AddStoryOverlay';
 
@@ -51,7 +51,7 @@ function AddStory() {
       <button
         className="absolute bottom-4 right-4 rounded-full bg-bg-button p-2 text-text-primary shadow-lg hover:bg-bg-button-hover"
         onClick={handleAddStory}
-        data-test-id="add-story-button"
+        data-testid="add-story-button"
       >
         <IoAdd className="text-2xl" />
       </button>
@@ -62,7 +62,7 @@ function AddStory() {
         style={{ display: 'none' }}
         onChange={handleFileChange}
         accept="image/*,video/*"
-        data-test-id="add-story-file-input"
+        data-testid="add-story-file-input"
       />
 
       {showOverlay && (

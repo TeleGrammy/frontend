@@ -85,24 +85,30 @@ const SignUpForm = ({ setVerificationEmail }) => {
     }
   };
 
-  const handlePasswordMatch = () => {
-    console.log(state.password);
-    console.log(state.confirmPassword);
-    if (state.password !== state.confirmPassword) {
-      dispatch({
-        type: 'errorPasswordMatch',
-        payload: "Passwords aren't matched.",
-      });
-    } else {
-      dispatch({ type: 'errorPasswordMatch', payload: '' });
-    }
-    dispatch({ type: 'focusConfirmPass', payload: 0 });
-  };
+  // const handlePasswordMatch = () => {
+  //   console.log(state.password);
+  //   console.log(state.confirmPassword);
+  //   if (state.password !== state.confirmPassword) {
+  //     dispatch({
+  //       type: 'errorPasswordMatch',
+  //       payload: "Passwords aren't matched.",
+  //     });
+  //   } else {
+  //     dispatch({ type: 'errorPasswordMatch', payload: '' });
+  //   }
+  //   dispatch({ type: 'focusConfirmPass', payload: 0 });
+  // };
 
   const handleSubmitForm = async (e) => {
     e.preventDefault();
     dispatch({ type: 'error', payload: '' });
-    if (state.password !== state.confirmPassword) return;
+    if (state.password !== state.confirmPassword) {
+      dispatch({
+        type: 'error',
+        payload: "Passwords aren't matched.",
+      });
+      return;
+    }
     if (!state.captchaVerified) {
       dispatch({ type: 'error', payload: 'Please verify you are not a robot' });
       return;
@@ -166,7 +172,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
             <input
               id="username"
               type="text"
-              data-test-id="username-input"
+              data-testid="username-input"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Username"
               onChange={(e) =>
@@ -192,7 +198,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
             <input
               id="email"
               type="email"
-              data-test-id="email-input"
+              data-testid="email-input"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Email"
               onFocus={() => dispatch({ type: 'focusEmail', payload: 1 })}
@@ -218,7 +224,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
             <input
               id="phone"
               type="tel"
-              data-test-id="phone-input"
+              data-testid="phone-input"
               pattern="01\d{9}"
               title="Phone number should be in the format 01XXXXXXXXX"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -246,7 +252,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
             <input
               id="password"
               type={state.showPassword ? 'text' : 'password'}
-              data-test-id="password-input"
+              data-testid="password-input"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Password"
               onFocus={() => dispatch({ type: 'focusPass', payload: 1 })}
@@ -257,7 +263,7 @@ const SignUpForm = ({ setVerificationEmail }) => {
             />
             <button
               type="button"
-              data-test-id="toggle-password-visibility-button"
+              data-testid="toggle-password-visibility-button"
               onClick={() => dispatch({ type: 'togglePass' })}
               className="absolute right-2"
             >
@@ -280,19 +286,18 @@ const SignUpForm = ({ setVerificationEmail }) => {
             <input
               id="confirmPassword"
               type={state.showConfirmPassword ? 'text' : 'password'}
-              data-test-id="confirm-password-input"
+              data-testid="confirm-password-input"
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Confirm Password"
               onFocus={() => dispatch({ type: 'focusConfirmPass', payload: 1 })}
               onBlur={() => dispatch({ type: 'focusConfirmPass', payload: 0 })}
               onChange={(e) => {
                 dispatch({ type: 'confirmPassword', payload: e.target.value });
-                
               }}
             />
             <button
               type="button"
-              data-test-id="toggle-confirm-password-visibility-button"
+              data-testid="toggle-confirm-password-visibility-button"
               onClick={() => dispatch({ type: 'toggleConfirmPass' })}
               className="absolute right-2"
             >
@@ -311,14 +316,14 @@ const SignUpForm = ({ setVerificationEmail }) => {
         </div>
         {/* Recaptcha */}
         <RobotVerification
-          data-test-id="captcha"
+          data-testid="captcha"
           captchaRef={captchaRef}
           dispatch={dispatch}
         />
         {/* Submit Button */}
         <button
           type="submit"
-          data-test-id="sign-up-button"
+          data-testid="sign-up-button"
           disabled={state.loading}
           className={`mt-6 flex w-full items-center justify-center rounded-md border-2 border-blue-500 bg-blue-500 py-2 font-semibold text-white hover:bg-blue-600 focus:outline-none ${
             state.loading ? 'cursor-not-allowed opacity-50' : ''

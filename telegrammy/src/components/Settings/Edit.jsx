@@ -244,7 +244,7 @@ const Edit = ({
         <div className="mb-4 flex w-full items-center justify-between sm:mb-6">
           {/* Back Button */}
           <button
-            data-test-id="settings-view"
+            data-testid="settings-view"
             onClick={() => setView('settings')}
             className="text-text-primary hover:text-gray-300"
             aria-label="Go Back"
@@ -266,7 +266,7 @@ const Edit = ({
           </button>
           {/* Title */}
           <h2
-            data-test-id="edit-profile-title"
+            data-testid="edit-profile-title"
             className="mr-5 text-xl font-semibold text-text-primary"
           >
             Edit Profile
@@ -278,12 +278,12 @@ const Edit = ({
           <div className="relative">
             {/* Profile Picture */}
             <div
-              data-test-id="profile-picture"
+              data-testid="profile-picture"
               className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#FF8C00] to-[#FF6347] text-2xl text-text-primary sm:h-24 sm:w-24 sm:text-3xl"
             >
               {preview ? (
                 <img
-                  data-test-id="profile-preview"
+                  data-testid="profile-preview"
                   src={preview}
                   alt="Profile Preview"
                   className="h-full w-full object-cover"
@@ -294,7 +294,7 @@ const Edit = ({
             </div>
             {/* Upload Button */}
             <button
-              data-test-id="upload-button"
+              data-testid="upload-button"
               onClick={() => fileInputRef.current.click()}
               className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-white p-1 text-black"
             >
@@ -319,7 +319,7 @@ const Edit = ({
               style={{ display: 'none' }}
               onChange={handleFileChange}
               accept="image/*,video/*"
-              data-test-id="add-story-file-input"
+              data-testid="add-story-file-input"
             />
           </div>
         </div>
@@ -330,12 +330,12 @@ const Edit = ({
             <label
               className="block text-sm text-text-primary"
               htmlFor="fullName"
-              data-test-id="full-name-label"
+              data-testid="full-name-label"
             >
               Full Name
             </label>
             <input
-              data-test-id="full-name"
+              data-testid="full-name"
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -345,7 +345,7 @@ const Edit = ({
             />
             {error && (
               <p
-                data-test-id="full-name-error"
+                data-testid="full-name-error"
                 className="mt-1 text-sm text-red-500"
               >
                 {error}
@@ -358,12 +358,12 @@ const Edit = ({
             <label
               className="block text-sm text-text-primary"
               htmlFor="username"
-              data-test-id="username-label"
+              data-testid="username-label"
             >
               Username
             </label>
             <input
-              data-test-id="user-name"
+              data-testid="user-name"
               type="text"
               value={currentUsername}
               onChange={(e) => setCurrentUsername(e.target.value)}
@@ -373,7 +373,7 @@ const Edit = ({
             />
             {usernameError && (
               <p
-                data-test-id="username-error"
+                data-testid="username-error"
                 className="mt-1 text-sm text-red-500"
               >
                 {usernameError}
@@ -386,12 +386,12 @@ const Edit = ({
             <label
               className="block text-sm text-text-primary"
               htmlFor="email"
-              data-test-id="email-label"
+              data-testid="email-label"
             >
               Email
             </label>
             <input
-              data-test-id="email"
+              data-testid="email"
               type="email"
               value={currentEmail}
               onChange={(e) => {
@@ -406,7 +406,7 @@ const Edit = ({
             />
             {emailError && (
               <p
-                data-test-id="email-error"
+                data-testid="email-error"
                 className="mt-1 text-sm text-red-500"
               >
                 {emailError}
@@ -419,12 +419,12 @@ const Edit = ({
             <label
               className="block text-sm text-text-primary"
               htmlFor="phone"
-              data-test-id="phone-label"
+              data-testid="phone-label"
             >
               Phone Number
             </label>
             <input
-              data-test-id="phone"
+              data-testid="phone"
               id="phone"
               type="tel"
               value={currentPhone}
@@ -440,7 +440,7 @@ const Edit = ({
             />
             {phoneError && (
               <p
-                data-test-id="phone-error"
+                data-testid="phone-error"
                 className="mt-1 text-sm text-red-500"
               >
                 {phoneError}
@@ -453,12 +453,12 @@ const Edit = ({
             <label
               className="block text-sm text-text-primary"
               htmlFor="bio"
-              data-test-id="bio-label"
+              data-testid="bio-label"
             >
               Bio
             </label>
             <textarea
-              data-test-id="bio"
+              data-testid="bio"
               id="bio"
               value={bioText}
               onChange={(e) => setBioText(e.target.value)}
@@ -472,7 +472,7 @@ const Edit = ({
 
         {/* Save Button */}
         <button
-          data-test-id="save"
+          data-testid="save"
           onClick={handleSave}
           className="mt-4 w-full rounded-lg bg-[#FF6347] px-3 py-2 text-white hover:bg-[#FF4500] sm:mt-6 sm:px-4 sm:py-2"
           aria-label="Save Changes"
