@@ -58,15 +58,14 @@ function Chat() {
   let it = 0;
   let it1 = 0;
 
- 
   const handleNavigateToPinned = () => {
     const msg = messageRefs.current[pinnedMsgs[it1]];
-    msg.classList.add("bg-yellow-200");
+    msg.classList.add('bg-yellow-200');
 
     msg.scrollIntoView({ behavior: 'smooth' });
 
     setTimeout(() => {
-      msg.classList.remove("bg-yellow-200");
+      msg.classList.remove('bg-yellow-200');
     }, 1000);
     it1++;
     if (it1 >= pinnedMsgs.length) it1 = 0;
@@ -126,17 +125,23 @@ function Chat() {
     switch (openedChat.name) {
       case 'user1':
         trie = new Trie();
-        initialMessages1.map((mess) => trie.insert(mess.content, mess.id));
+        initialMessages1.map((mess) => {
+          trie.insert(mess.content, mess.id);
+        });
         setMessages(initialMessages1);
         break;
       case 'user2':
         trie = new Trie();
-        initialMessages2.map((mess) => trie.insert(mess.content, mess.id));
+        initialMessages2.map((mess) => {
+          trie.insert(mess.content, mess.id);
+        });
         setMessages(initialMessages2);
         break;
       case 'user3':
         trie = new Trie();
-        initialMessages3.map((mess) => trie.insert(mess.content, mess.id));
+        initialMessages3.map((mess) => {
+          trie.insert(mess.content, mess.id);
+        });
         setMessages(initialMessages3);
         break;
       default:
@@ -152,12 +157,12 @@ function Chat() {
       if (it >= ids.length) it = 0;
       console.log(it);
       const msg = messageRefs.current[ids[it]];
-      msg.classList.add("bg-yellow-200");
+      msg.classList.add('bg-yellow-200');
 
       msg.scrollIntoView({ behavior: 'smooth' });
-  
+
       setTimeout(() => {
-        msg.classList.remove("bg-yellow-200");
+        msg.classList.remove('bg-yellow-200');
       }, 1000);
       it1++;
       if (it1 >= pinnedMsgs.length) it1 = 0;
@@ -478,10 +483,11 @@ function Chat() {
 
           return (
             <React.Fragment key={message.id}>
-              <div ref={(el) => (messageRefs.current[message.id] = el)}
-                    key={message.id}
-                    className= ''>
-               
+              <div
+                ref={(el) => (messageRefs.current[message.id] = el)}
+                key={message.id}
+                className=""
+              >
                 {showDateDivider && (
                   <div className="my-2 flex justify-center">
                     <span className="rounded-full bg-gray-200 px-3 py-1 text-xs dark:bg-gray-700">
