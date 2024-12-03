@@ -19,7 +19,7 @@ import ReplyToSpace from './messagingSpace/ReplyToSpace';
 import ReactionPicker from './messagingSpace/pickerReaction/ReactionPicker';
 import LoadingScreen from './messagingSpace/LoadingScreen';
 import PinnedMessagesBar from './PinnedMessagesBar';
-
+import socket from './utils/Socket';
 const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
 let trie = new Trie();
 
@@ -44,6 +44,7 @@ function Chat() {
   const messageRefs = useRef({});
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
   const [prevChat, setPrevChat] = useState(null);
+  const [ack, setAck] = useState(null);
   const secretKey = 'our-secret-key';
   let it = 0;
   let it1 = 0;
@@ -83,6 +84,34 @@ function Chat() {
     const bytes = CryptoJS.AES.decrypt(cipherText, secretKey);
     return bytes.toString(CryptoJS.enc.Utf8);
   };
+
+  // useEffects for socket
+
+  useEffect(() => {
+    socket.connect();
+    console.log('Attempting to connect to the socket...');
+    socket.on('message:send', (message) => {
+      console.log('Message received:', message);
+      const ackPayload = {
+        chatId: 'chat123',
+        eventIndex: message.eventIndex, // Required
+      };
+      socket.emit('ack_event', ackPayload);
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    return () => {
+      socket.disconnect();
+      console.log('dscnnctd');
+    };
+  }, [openedChat.id]);
+
+  useEffect(() => {
+    if (ack) {
+      console.log('Acknowledgment received:', ack);
+    }
+  }, [ack]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -223,14 +252,31 @@ function Chat() {
         setEditingMessageId(null);
       } else {
         trie.insert(newMessage.content, messages.length + 1);
-        setMessages([
-          ...messages,
-          {
-            id: messages.length + 1,
-            ...newMessage,
-            type: 'sent',
-          },
-        ]);
+        const sentMessage = {
+          id: messages.length + 1,
+          ...newMessage,
+          content: encryptMessage(newMessage.content),
+          chatId: openedChat.id,
+          messageType: 'text',
+          type: 'sent',
+        };
+        socket.emit('send_message', newMessage, (response) => {
+          // Callback handles server response
+          if (response.status === 'success') {
+            console.log('Server acknowledgment:', response);
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              {
+                id: response.messageId,
+                content: inputMessage,
+                timestamp: response.metadata.timestamp,
+              },
+            ]);
+            setInputValue(''); // Clear the input field
+          } else {
+            console.error('Error:', response.message || 'Unknown error');
+          }
+        });
       }
 
       // Clear input and reset reply state after sending

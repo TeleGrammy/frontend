@@ -3,6 +3,7 @@ import { setcurrentMenu } from '../../../slices/sidebarSlice';
 import { useState } from 'react';
 import AddUsersList from './AddUsersList';
 import { FaAngleRight } from 'react-icons/fa';
+import axios from 'axios';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -28,17 +29,19 @@ function ContactList() {
     const addContact = async () => {
       console.log(input);
       try {
-        const response = await fetch(`${apiUrl}/v1/chats/fetch-contacts/`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
+        const response = await axios.post(
+          `${apiUrl}/v1/chats/fetch-contacts`,
+          {
             contacts: [`${input}`],
-          }),
-          credentials: 'include',
-        });
-        const data = await response.json();
+          },
+          {
+            headers: {
+              Accept: 'application/json',
+            },
+            withCredentials: true, // Equivalent to 'credentials: include' in fetch
+          },
+        );
+        const data = response.data;
         console.log(data);
       } catch (error) {
         console.error('Error creating group or channel:', error.message);

@@ -8,7 +8,7 @@ const initialState = {
     description: 'hello',
     lastMessage: {
       sender: 'youssef',
-      content: 'Remember to buy groceries!',
+      content: 'Hi',
       timeStamp: '8:33 PM',
     },
     unreadCount: 0,
