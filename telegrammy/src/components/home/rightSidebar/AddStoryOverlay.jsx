@@ -210,7 +210,7 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
       <div className="h-[90vh] w-full max-w-lg rounded-lg bg-transparent p-4 shadow-lg">
         {/* Close Button */}
         <button
-          data-test-id="close-story-overlay-button"
+          data-testid="close-story-overlay-button"
           className="absolute right-4 top-4 text-text-primary"
           onClick={onClose}
         >
@@ -334,13 +334,13 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Add caption"
               className="w-[80%] rounded-full border border-border bg-bg-secondary px-4 py-2 text-text-primary focus:outline-none"
-              data-test-id="caption-story-input"
+              data-testid="caption-story-input"
             />
             <button
               onClick={handleExport}
               className={`rounded-full px-4 py-2 text-white ${isLoading ? 'bg-black' : 'bg-bg-button hover:bg-bg-button-hover'}`}
               disabled={isLoading}
-              data-test-id="upload-story-button"
+              data-testid="upload-story-button"
             >
               {isLoading ? (
                 <ClipLoader color="#ffffff" size={20} />

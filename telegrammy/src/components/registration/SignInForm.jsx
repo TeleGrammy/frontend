@@ -59,6 +59,7 @@ const SignInForm = () => {
         {/* Email */}
         <div className="mb-4">
           <div
+            data-testid="email-div"
             className={`flex items-center border ${
               Math.abs(state.focusOnEmail) === 1
                 ? 'border-sky-500'
@@ -71,7 +72,7 @@ const SignInForm = () => {
             <input
               id="email"
               type="email"
-              data-test-id="email-input" // Added data-test-id
+              data-testid="email-input" // Added data-testid
               className="flex-1 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Email"
               onFocus={() => dispatch({ type: 'focusEmail', payload: 1 })}
@@ -86,6 +87,7 @@ const SignInForm = () => {
         {/* Password */}
         <div className="mb-4">
           <div
+            data-testid="password-div"
             className={`flex items-center border ${
               Math.abs(state.focusOnPassword) === 1
                 ? 'border-sky-500'
@@ -98,7 +100,7 @@ const SignInForm = () => {
             <input
               id="password"
               type={state.showPassword ? 'text' : 'password'}
-              data-test-id="password-input" // Added data-test-id
+              data-testid="password-input" // Added data-testid
               className="flex-1 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Password"
               onChange={(e) =>
@@ -110,7 +112,7 @@ const SignInForm = () => {
             <button
               id="show-hide-password"
               type="button"
-              data-test-id="toggle-password-visibility" // Added data-test-id
+              data-testid="toggle-password-visibility" // Added data-testid
               onClick={() => dispatch({ type: 'togglePass' })}
               className="absolute right-2 top-1/2 -translate-y-1/2 transform focus:outline-none"
             >
@@ -123,7 +125,7 @@ const SignInForm = () => {
         <div className="mb-4 flex items-center justify-end">
           <Link
             to="/auth/forget-password"
-            data-test-id="forgot-password-link" // Added data-test-id
+            data-testid="forgot-password-link" // Added data-testid
             className="text-sm text-blue-500 hover:underline"
           >
             Forgot your password?
@@ -133,7 +135,7 @@ const SignInForm = () => {
         <button
           type="submit"
           id="sign-in"
-          data-test-id="sign-in-button" // Added data-test-id
+          data-testid="sign-in-button" // Added data-testid
           disabled={loading}
           className={`w-full rounded-md ${loading ? 'bg-sky-800' : 'bg-sky-950'} px-4 py-2 text-white transition-colors duration-300 ease-in-out hover:bg-sky-800`}
         >

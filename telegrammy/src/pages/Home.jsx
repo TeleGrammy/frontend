@@ -7,8 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Sidebar from '../components/home/leftSidebar/Sidebar';
 import Chat from '../components/home/chat/Chat';
 import RightSidebar from '../components/home/rightSidebar/RightSidebar';
-import MediaShower from '../Components/home/imageShower/MediaShower';
-
+import MediaShower from '../components/home/imageShower/MediaShower';
 
 function Home() {
   const {
