@@ -6,7 +6,7 @@ import {
   setShowedOtherUserIndex,
 } from '../../../slices/storiesSlice';
 import Progressbar from './Progressbar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { FaEllipsisVertical, FaTrash } from 'react-icons/fa6';
 
@@ -39,6 +39,10 @@ function MediaShower({ medias, initialStoryIndex }) {
       handleCloseStory();
     }
   };
+
+  useEffect(() => {
+    console.log('3mnaaaa', medias[currentStoryIndex].media);
+  }, []);
 
   return (
     <div
@@ -79,7 +83,10 @@ function MediaShower({ medias, initialStoryIndex }) {
           }}
         ></div>
         <p className="mb-5 ml-4 self-start text-lg font-bold text-text-secondary">
-          {medias[currentStoryIndex].viewersCount} views
+          {medias[currentStoryIndex].viewersCount
+            ? medias[currentStoryIndex].viewersCount
+            : 0}{' '}
+          views
         </p>
         <div className="absolute left-14 top-9 text-base font-semibold text-text-primary">
           <p>
@@ -106,7 +113,7 @@ function MediaShower({ medias, initialStoryIndex }) {
 
         {isOptionsOpen && (
           <div
-            className={`border-border absolute right-5 top-20 w-[50%] min-w-40 rounded-lg border bg-bg-primary opacity-80 shadow-xl`}
+            className={`absolute right-5 top-20 w-[50%] min-w-40 rounded-lg border border-border bg-bg-primary opacity-80 shadow-xl`}
           >
             <ul className="text-l flex w-full flex-col justify-start space-y-2 p-2">
               <li className="mx-2 rounded-lg hover:bg-bg-hover">

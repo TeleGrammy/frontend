@@ -6,6 +6,8 @@ import {
 } from '../../../slices/storiesSlice';
 import { useEffect, useRef, useState } from 'react';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 function StoriesList() {
   const dispatch = useDispatch();
   const scrollRef = useRef();
@@ -17,6 +19,33 @@ function StoriesList() {
     dispatch(setShowedOtherUserIndex(index));
     dispatch(setShowedOtherStoryIndex(0));
   };
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/v1/user/stories/contacts/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch stories.');
+        } else {
+          console.log('stories have been fetched successfully.');
+        }
+        const data = await response.json();
+        const fetchedStories = data.data;
+        console.log(fetchedStories);
+        dispatch(setOtherStories(fetchedStories));
+      } catch (error) {
+        console.error('Error fetching stories:', error);
+      }
+    };
+
+    fetchStories();
+  }, []);
 
   useEffect(() => {
     const scrollableDiv = scrollRef.current;
