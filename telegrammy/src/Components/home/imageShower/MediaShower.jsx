@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import CloseButton from '../../../components/home/rightSidebar/CloseButton';
 import {
+  setMyStories,
   setShowedMyStoryIndex,
   setShowedOtherStoryIndex,
   setShowedOtherUserIndex,
@@ -31,6 +32,7 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
   ];
 
   const seen = viewerIds.includes(user._id);
+  const storyCreator = profile.username === user.username;
 
   const handleCloseStory = () => {
     dispatch(setShowedMyStoryIndex(null));
@@ -38,10 +40,10 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
     dispatch(setShowedOtherUserIndex(null));
   };
 
-  const handleSeen = async (storyId) => {
+  const handleSeen = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/v1/user/stories/${storyId}/view`,
+        `${apiUrl}/v1/user/stories/${medias[currentStoryIndex]._id}/view`,
         {
           method: 'PATCH',
           headers: {
@@ -57,6 +59,37 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
       }
       const data = await response.json();
       console.log(data);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+    }
+  };
+
+  const handleDeleteStory = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/v1/user/stories/${medias[currentStoryIndex]._id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+      );
+      if (!response.ok) {
+        throw new Error('Failed to fetch stories.');
+      } else {
+        console.log('stories have been fetched successfully.');
+      }
+      const data = await response.json();
+      console.log(data);
+      const updatedStories = stories.filter(
+        (_, index) => index !== currentStoryIndex,
+      );
+
+      dispatch(setMyStories(updatedStories));
+
+      handleCloseStory();
     } catch (error) {
       console.error('Error fetching stories:', error);
     }
@@ -79,7 +112,7 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
   };
 
   useEffect(() => {
-    if (!seen) handleSeen(medias[currentStoryIndex]._id);
+    if (!seen) handleSeen();
   }, [medias, currentStoryIndex]);
 
   return (
@@ -145,16 +178,17 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
             </span>
           </p>
         </div>
-        <div
-          className="absolute right-5 top-10 rounded-full p-2 text-text-primary duration-300 hover:bg-gray-600"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsOptionsOpen((isOptionsOpen) => !isOptionsOpen);
-          }}
-        >
-          <FaEllipsisVertical />
-        </div>
-
+        {storyCreator && (
+          <div
+            className="absolute right-5 top-10 rounded-full p-2 text-text-primary duration-300 hover:bg-gray-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOptionsOpen((isOptionsOpen) => !isOptionsOpen);
+            }}
+          >
+            <FaEllipsisVertical />
+          </div>
+        )}
         {isOptionsOpen && (
           <div
             className={`absolute right-5 top-20 w-[50%] min-w-40 rounded-lg border border-border bg-bg-primary opacity-80 shadow-xl`}
@@ -162,10 +196,7 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
             <ul className="text-l flex w-full flex-col justify-start space-y-2 p-2">
               <li className="mx-2 rounded-lg hover:bg-bg-hover">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    /*deleteMyStory*/
-                  }}
+                  onClick={handleDeleteStory}
                   className="flex w-full flex-row items-center text-text-primary hover:text-gray-300"
                 >
                   <FaTrash />

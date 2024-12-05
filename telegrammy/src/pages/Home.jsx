@@ -18,6 +18,8 @@ function Home() {
     showedOtherUserIndex,
   } = useSelector((state) => state.stories);
 
+  const { user } = useSelector((state) => state.auth);
+
   const { isDarkTheme } = useSelector((state) => state.darkMode);
 
   const { isRightSidebarOpen } = useSelector((state) => state.sidebar);
@@ -41,6 +43,7 @@ function Home() {
       {showedMyStoryIndex !== null && (
         <MediaShower
           medias={myStories}
+          profile={user}
           initialStoryIndex={showedMyStoryIndex}
         />
       )}
