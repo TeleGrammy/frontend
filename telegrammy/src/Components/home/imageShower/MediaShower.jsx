@@ -144,9 +144,6 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
               • {currentStoryIndex + 1} / {medias.length}
             </span>
           </p>
-          <p>
-            <span className="text-sm font-normal text-text-secondary">7h</span>
-          </p>
         </div>
         <div
           className="absolute right-5 top-10 rounded-full p-2 text-text-primary duration-300 hover:bg-gray-600"
