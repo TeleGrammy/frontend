@@ -90,8 +90,6 @@ function StoriesList() {
                 return Object.keys(story.viewers).map((viewerId) => viewerId);
               }
             });
-
-            console.log(viewerIds);
             const seen = viewerIds.includes(user._id);
 
             return (

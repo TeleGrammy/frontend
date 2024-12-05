@@ -16,6 +16,21 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
   const dispatch = useDispatch();
 
   const { user } = useSelector((state) => state.auth);
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isViewerListOpen, setIsViewerListOpen] = useState(false);
+
+  const viewerIds = [
+    ...new Set(
+      medias.flatMap((story) => {
+        if (story.viewers) {
+          return Object.keys(story.viewers).map((viewerId) => viewerId);
+        }
+      }),
+    ),
+  ];
+
+  const seen = viewerIds.includes(user._id);
 
   const handleCloseStory = () => {
     dispatch(setShowedMyStoryIndex(null));
@@ -47,9 +62,6 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
     }
   };
 
-  const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);
-  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-
   const handleFinishTimer = () => {
     if (currentStoryIndex < medias.length - 1) {
       setCurrentStoryIndex(currentStoryIndex + 1);
@@ -67,13 +79,6 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
   };
 
   useEffect(() => {
-    const viewerIds = medias.flatMap((story) => {
-      if (story.viewers) {
-        return Object.keys(story.viewers).map((viewerId) => viewerId);
-      }
-    });
-
-    const seen = viewerIds.includes(user._id);
     if (!seen) handleSeen(medias[currentStoryIndex]._id);
   }, [medias, currentStoryIndex]);
 
@@ -104,22 +109,27 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
           alt={medias[currentStoryIndex].content}
         />
         <div
-          className="absolute left-0 top-0 h-full w-[30%]"
+          className="absolute left-0 top-0 h-[80%] w-[30%]"
           onClick={(e) => {
+            e.stopPropagation();
             handleGoBack();
           }}
         ></div>
         <div
-          className="absolute right-0 top-0 h-full w-[30%]"
+          className="absolute right-0 top-0 h-[80%] w-[30%]"
           onClick={(e) => {
+            e.stopPropagation();
             handleFinishTimer();
           }}
         ></div>
-        <p className="mb-5 ml-4 self-start text-lg font-bold text-text-secondary">
-          {medias[currentStoryIndex].viewersCount
-            ? medias[currentStoryIndex].viewersCount
-            : 0}{' '}
-          views
+        <p
+          className="mb-5 ml-4 cursor-pointer self-start text-lg font-bold text-text-secondary"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent the click event from propagating to the parent
+            setIsViewerListOpen(!isViewerListOpen); // Toggle the viewer list
+          }}
+        >
+          {viewerIds.length} views
         </p>
         <img
           className="absolute left-5 top-10 size-11 rounded-full"
@@ -165,6 +175,25 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
                   <span className="ml-4">Delete Story</span>
                 </button>
               </li>
+            </ul>
+          </div>
+        )}
+        {isViewerListOpen && (
+          <div className="absolute left-[-250px] top-0 h-full w-[200px] overflow-y-auto p-4 text-text-primary shadow-md">
+            <h3 className="mb-4 text-lg font-bold">Viewers</h3>
+            <ul>
+              {Object.values(medias[currentStoryIndex].viewers || {}).map(
+                (viewer, index) => (
+                  <li key={index} className="mb-2">
+                    <img
+                      src={viewer.profile.picture || 'default-avatar.jpg'}
+                      alt={viewer.profile.username}
+                      className="mr-2 inline-block h-8 w-8 rounded-full"
+                    />
+                    {viewer.profile.username}
+                  </li>
+                ),
+              )}
             </ul>
           </div>
         )}
