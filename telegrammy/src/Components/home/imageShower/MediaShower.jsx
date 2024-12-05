@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 
 import { FaEllipsisVertical, FaTrash } from 'react-icons/fa6';
 
-function MediaShower({ medias, initialStoryIndex }) {
+function MediaShower({ medias, initialStoryIndex, profile }) {
   const dispatch = useDispatch();
 
   const { user } = useSelector((state) => state.auth);
@@ -88,7 +88,11 @@ function MediaShower({ medias, initialStoryIndex }) {
             : 0}{' '}
           views
         </p>
-        <div className="absolute left-14 top-9 text-base font-semibold text-text-primary">
+        <img
+          className="absolute left-5 top-9 size-11 rounded-full"
+          src="anonymous.png"
+        />
+        <div className="absolute left-20 top-9 text-base font-semibold text-text-primary">
           <p>
             {/* {user._id === medias[currentStoryIndex].userId
               ? 'Your story'

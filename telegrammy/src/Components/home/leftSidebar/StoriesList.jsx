@@ -81,7 +81,7 @@ function StoriesList() {
         {otherStories &&
           otherStories.map((collection, index) => {
             const numStories = collection.stories.length;
-            const dashLength = (2 * Math.PI * 20) / numStories; // circumference divided by number of stories
+            const dashLength = (2 * Math.PI * 28) / numStories; // circumference divided by number of stories
             const gapLength = numStories > 1 ? 5 : 0; // Adjust as needed for spacing
 
             return (
@@ -106,6 +106,7 @@ function StoriesList() {
                     stroke="green"
                     strokeWidth="3"
                     strokeDasharray={`${dashLength} ${gapLength}`}
+                    strokeDashoffset="43"
                   />
                 </svg>
 

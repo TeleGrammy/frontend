@@ -9,7 +9,6 @@ import Chat from '../components/home/chat/Chat';
 import RightSidebar from '../components/home/rightSidebar/RightSidebar';
 import MediaShower from '../Components/home/imageShower/MediaShower';
 
-
 function Home() {
   const {
     myStories,
@@ -48,6 +47,7 @@ function Home() {
       {showedOtherStoryIndex !== null && (
         <MediaShower
           medias={otherStories[showedOtherUserIndex].stories}
+          profile={otherStories[showedOtherStoryIndex].profile}
           initialStoryIndex={showedOtherStoryIndex}
         />
       )}
