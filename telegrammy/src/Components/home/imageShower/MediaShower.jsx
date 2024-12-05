@@ -10,6 +10,8 @@ import { useEffect, useState } from 'react';
 
 import { FaEllipsisVertical, FaTrash } from 'react-icons/fa6';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 function MediaShower({ medias, initialStoryIndex, profile }) {
   const dispatch = useDispatch();
 
@@ -19,6 +21,30 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
     dispatch(setShowedMyStoryIndex(null));
     dispatch(setShowedOtherStoryIndex(null));
     dispatch(setShowedOtherUserIndex(null));
+  };
+
+  const handleSeen = async (storyId) => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/v1/user/stories/${storyId}/view`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+      );
+      if (!response.ok) {
+        throw new Error('Failed to fetch stories.');
+      } else {
+        console.log('stories have been fetched successfully.');
+      }
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+    }
   };
 
   const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);
@@ -41,8 +67,15 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
   };
 
   useEffect(() => {
-    console.log('3mnaaaa', medias[currentStoryIndex].media);
-  }, []);
+    const viewerIds = medias.flatMap((story) => {
+      if (story.viewers) {
+        return Object.keys(story.viewers).map((viewerId) => viewerId);
+      }
+    });
+
+    const seen = viewerIds.includes(user._id);
+    if (!seen) handleSeen(medias[currentStoryIndex]._id);
+  }, [medias, currentStoryIndex]);
 
   return (
     <div
@@ -89,8 +122,8 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
           views
         </p>
         <img
-          className="absolute left-5 top-9 size-11 rounded-full"
-          src="anonymous.png"
+          className="absolute left-5 top-10 size-11 rounded-full"
+          src={profile.picture}
         />
         <div className="absolute left-20 top-9 text-base font-semibold text-text-primary">
           <p>

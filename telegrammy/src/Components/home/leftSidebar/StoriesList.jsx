@@ -12,6 +12,7 @@ function StoriesList() {
   const dispatch = useDispatch();
   const scrollRef = useRef();
   const { otherStories } = useSelector((state) => state.stories);
+  const { user } = useSelector((state) => state.auth);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -84,6 +85,15 @@ function StoriesList() {
             const dashLength = (2 * Math.PI * 28) / numStories; // circumference divided by number of stories
             const gapLength = numStories > 1 ? 5 : 0; // Adjust as needed for spacing
 
+            const viewerIds = collection.stories.flatMap((story) => {
+              if (story.viewers) {
+                return Object.keys(story.viewers).map((viewerId) => viewerId);
+              }
+            });
+
+            console.log(viewerIds);
+            const seen = viewerIds.includes(user._id);
+
             return (
               <div
                 key={index}
@@ -103,7 +113,7 @@ function StoriesList() {
                     cy="28"
                     r="30"
                     fill="none"
-                    stroke="green"
+                    stroke={seen ? 'gray' : 'green'}
                     strokeWidth="3"
                     strokeDasharray={`${dashLength} ${gapLength}`}
                     strokeDashoffset="43"
