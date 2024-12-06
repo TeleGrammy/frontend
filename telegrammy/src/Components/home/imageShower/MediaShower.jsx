@@ -23,11 +23,9 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
 
   const viewerIds = [
     ...new Set(
-      medias.flatMap((story) => {
-        if (story.viewers) {
-          return Object.keys(story.viewers).map((viewerId) => viewerId);
-        }
-      }),
+      Object.keys(medias[currentStoryIndex].viewers).map(
+        (viewerId) => viewerId,
+      ),
     ),
   ];
 

@@ -81,12 +81,12 @@ function StoriesList() {
     <div className="relative mt-4 w-full" data-test-id="stories-list-container">
       <div
         ref={scrollRef}
-        className="scrollable flex h-20 flex-row-reverse items-center gap-3 overflow-x-scroll px-4 py-2"
+        className="scrollable flex flex-row-reverse items-center gap-3 overflow-x-scroll px-4 py-2"
         data-test-id="scrollable-stories-container"
       >
         {loading && (
-          <div className="m-auto">
-            <BeatLoader color="gray" size={15} margin={10} />{' '}
+          <div className="m-auto h-20">
+            <BeatLoader color="gray" size={15} margin={10} />
           </div>
         )}
         {!loading &&
