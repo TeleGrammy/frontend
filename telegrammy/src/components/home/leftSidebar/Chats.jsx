@@ -6,8 +6,7 @@ import MuteIcon from '../../icons/MuteIcon';
 import { setOpenedChat } from '../../../slices/chatsSlice';
 import { initialChatsLSB } from '../../../mocks/mockDataChatList';
 const apiUrl = import.meta.env.VITE_API_URL;
-const userId = localStorage.getItem('user')._id;
-
+const userId = JSON.parse(localStorage.getItem('user'))._id
 const Chats = ({ searchValue }) => {
   const dispatch = useDispatch();
 
@@ -118,7 +117,7 @@ const Chats = ({ searchValue }) => {
           console.log('Chats have been fetched successfully.');
         }
         const data = await response.json();
-        console.log(data);
+        console.log(data.chats);
         setChats(data.chats);
         // setChats(data.data.chats);
       } catch (error) {
@@ -137,6 +136,7 @@ const Chats = ({ searchValue }) => {
     >
       <ul className="divide-y divide-gray-700" data-test-id="chats-list">
         {ViewedChats.map((chat) => {
+   
           let otherUser = chat.participants.find(
             (participant) => participant.userId._id !== userId,
           );

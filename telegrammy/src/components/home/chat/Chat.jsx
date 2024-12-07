@@ -20,6 +20,9 @@ import ReactionPicker from './messagingSpace/pickerReaction/ReactionPicker';
 import LoadingScreen from './messagingSpace/LoadingScreen';
 import PinnedMessagesBar from './PinnedMessagesBar';
 import socket from './utils/Socket';
+const userId = JSON.parse(localStorage.getItem('user'))._id;
+const apiUrl = import.meta.env.VITE_API_URL;
+
 const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
 let trie = new Trie();
 
@@ -128,52 +131,44 @@ function Chat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  // useEffect(() => {
-  //   console.log('Opened chat changed:', openedChat._id);
-  //   console.log(openedChat);
-  //   switch (prevChat) {
-  //     case 'user1':
-  //       let i = initialMessages1.length;
-  //       for (; i < messages.length; i++) {
-  //         initialMessages1.push(messages[i]);
-  //       }
-  //       break;
-  //     case 'user2':
-  //       let j = initialMessages2.length;
-  //       for (; j < messages.length; j++) {
-  //         initialMessages2.push(messages[j]);
-  //       }
-  //       break;
-  //     case 'user3':
-  //       let k = initialMessages3.length;
-  //       for (; k < messages.length; k++) {
-  //         initialMessages3.push(messages[k]);
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  //   switch (openedChat.name) {
-  //     case 'user1':
-  //       trie = new Trie();
-  //       initialMessages1.map((mess) => trie.insert(mess.content, mess.id));
-  //       setMessages(initialMessages1);
-  //       break;
-  //     case 'user2':
-  //       trie = new Trie();
-  //       initialMessages2.map((mess) => trie.insert(mess.content, mess.id));
-  //       setMessages(initialMessages2);
-  //       break;
-  //     case 'user3':
-  //       trie = new Trie();
-  //       initialMessages3.map((mess) => trie.insert(mess.content, mess.id));
-  //       setMessages(initialMessages3);
-  //       break;
-  //     default:
-  //       setMessages([]);
-  //   }
-  //   setPrevChat(openedChat.name);
-  // }, [openedChat]);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch(
+          `${apiUrl}/v1/chats/chat/${openedChat._id}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          },
+        );
+        if (!response.ok) {
+          console.error('Failed to fetch chats.');
+        } else {
+          console.log('Chats have been fetched successfully.');
+        }
+        const data = await response.json();
+        console.log(data.messages.data);
+        let tempMessages = data.messages.data;
+        tempMessages.map((msg) => {
+          if (msg.senderId._id === userId) {
+            msg['type'] = 'sent';
+          } else {
+            msg['type'] = 'received';
+          }
+        });
+        setMessages(tempMessages);
+       
+      } catch (error) {
+        console.error('Error fetching Chats:', error);
+      }
+    };
+
+    fetchMessages();
+  }, [openedChat]);
 
   const handleSearch = (text) => {
     const ids = trie.startsWith(text);
@@ -244,7 +239,7 @@ function Chat() {
         }),
         date: new Date().toISOString().slice(0, 10),
         replyTo: replyToMessageId || null, // Link the reply if there's any
-        type:'sent'
+        type: 'sent',
       };
 
       if (selectedFile) {
@@ -280,7 +275,6 @@ function Chat() {
         try {
           console.log(newMessage);
           socket.emit('message:send', newMessage, (response) => {
-
             // Callback handles server response
             if (response.status === 'ok') {
               console.log('Server acknowledgment:', response);
@@ -290,7 +284,7 @@ function Chat() {
                   id: response.messageId,
                   content: newMessage.content,
                   type: newMessage.type,
-                  timestamp: newMessage.timestamp
+                  timestamp: newMessage.timestamp,
                 },
               ]);
 
