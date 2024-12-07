@@ -53,7 +53,7 @@ export const MessageItem = ({
                 {/* Edit button */}
                 <button
                   data-test-id={`${idx}-message-edit-button`}
-                  onClick={() => handleEditMessage(message._id)}
+                  onClick={() => handleEditMessage(message)}
                   className="mr-2 text-xs text-blue-500 hover:underline"
                 >
                   Edit
@@ -61,7 +61,7 @@ export const MessageItem = ({
                 {/* Delete button */}
                 <button
                   data-test-id={`${idx}-message-delete-button`}
-                  onClick={() => handleDeleteMessage(message._id)}
+                  onClick={() => handleDeleteMessage(message)}
                   className="mr-2 text-xs text-red-500 hover:underline"
                 >
                   Delete
@@ -69,7 +69,7 @@ export const MessageItem = ({
                 {/* Pin/Unpin button */}
                 <button
                   data-test-id={`${idx}-message-pin-unpin-button`}
-                  onClick={() => handlePinMessage(message._id, message.pinned)}
+                  onClick={() => handlePinMessage(message._id)}
                   className="text-white-500 ml-2 text-xs hover:underline"
                 >
                   {message.pinned ? 'UnPin' : 'Pin'}

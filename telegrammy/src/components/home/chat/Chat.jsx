@@ -20,6 +20,8 @@ import ReactionPicker from './messagingSpace/pickerReaction/ReactionPicker';
 import LoadingScreen from './messagingSpace/LoadingScreen';
 import PinnedMessagesBar from './PinnedMessagesBar';
 import socket from './utils/Socket';
+import { GiConsoleController } from 'react-icons/gi';
+import { setOpenedChat } from '../../../slices/chatsSlice';
 const userId = JSON.parse(localStorage.getItem('user'))._id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -64,17 +66,58 @@ function Chat() {
     it1++;
     if (it1 >= pinnedMsgs.length) it1 = 0;
   };
-  const handlePinMessage = (messageId, ispinned) => {
-    setMessages((prevMessages) =>
-      prevMessages.map((msg) =>
-        msg.id === messageId ? { ...msg, pinned: !msg.pinned } : msg,
-      ),
-    );
-    if (!ispinned) {
-      setPinnedMsgs([...pinnedMsgs, messageId]);
+  const handlePinMessage = (messageId) => {
+    // setMessages((prevMessages) =>
+    //   prevMessages.map((msg) =>
+    //     msg.id === messageId ? { ...msg, pinned: !msg.pinned } : msg,
+    //   ),
+    // );
+    // if (!ispinned) {
+    //   setPinnedMsgs([...pinnedMsgs, messageId]);
+    // } else {
+    //   const newPinnedArr = pinnedMsgs.filter((el) => el != messageId);
+    //   setPinnedMsgs(newPinnedArr);
+    // }
+
+    let isPinned = false;
+
+    openedChat.pinnedMessages.map((msg) => {
+      if (msg._id === messageId) {
+        isPinned = true;
+      }
+    });
+
+    if (!isPinned) {
+      socket.emit(
+        'message:pin',
+        {
+          chatId: openedChat._id,
+          messageId: messageId,
+        },
+        (res) => {
+         
+          let newPinnedArr = [...pinnedMsgs, messageId];
+          dispatch(
+            setOpenedChat({ ...openedChat, pinnedMessages: newPinnedArr }),
+          );
+          setPinnedMsgs([...pinnedMsgs, messageId]);
+        },
+      );
     } else {
-      const newPinnedArr = pinnedMsgs.filter((el) => el != messageId);
-      setPinnedMsgs(newPinnedArr);
+      socket.emit(
+        'message:unpin',
+        {
+          chatId: openedChat._id,
+          messageId: messageId,
+        },
+        (res) => {
+          const newPinnedArr = pinnedMsgs.filter((el) => el != messageId);
+          dispatch(
+            setOpenedChat({ ...openedChat, pinnedMessages: newPinnedArr }),
+          );
+          setPinnedMsgs(newPinnedArr);
+        },
+      );
     }
     console.log(pinnedMsgs);
   };
@@ -91,6 +134,8 @@ function Chat() {
   // useEffects for socket
 
   useEffect(() => {
+    console.log(openedChat.draft);
+    setInputValue(openedChat.draft);
     try {
       socket.connect();
       console.log('Attempting to connect to the socket...');
@@ -103,7 +148,7 @@ function Chat() {
       socket.on('connect_error', (err) => {
         console.log(err);
       });
-      socket.on('message:send', (message) => {
+      socket.on('message:sent', (message) => {
         console.log('Message received:', message);
         const ackPayload = {
           chatId: openedChat._id,
@@ -133,6 +178,7 @@ function Chat() {
   }, [messages]);
 
   useEffect(() => {
+    // setInputValue(openedChat.draft);
     const fetchMessages = async () => {
       try {
         const response = await fetch(
@@ -160,8 +206,11 @@ function Chat() {
             msg['type'] = 'received';
           }
         });
+
+        tempMessages.sort(
+          (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+        );
         setMessages(tempMessages);
-       
       } catch (error) {
         console.error('Error fetching Chats:', error);
       }
@@ -200,6 +249,9 @@ function Chat() {
   const handleInputChange = (event) => {
     const value = event.target.value;
     setInputValue(value);
+    socket.emit('draft', { chatId: openedChat._id, draft: value }, (res) => {
+      console.log(res);
+    });
 
     const mentionMatch = value.match(/@(\w*)$/); // Match `@` followed by optional text
     if (mentionMatch) {
@@ -250,17 +302,34 @@ function Chat() {
       }
 
       if (editingMessageId) {
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) => {
-            if (msg.id === editingMessageId) {
-              trie.delete(msg.content, msg.id);
-              return { ...msg, ...newMessage };
+        socket.emit(
+          'message:update',
+          {
+            messageId: editingMessageId,
+            content: newMessage.content,
+          },
+          (response) => {
+            if (response.status === 'ok') {
+              setMessages((prevMessages) =>
+                prevMessages.map((msg) => {
+                  if (msg._id === editingMessageId) {
+                    trie.delete(msg.content, msg.id);
+                    return { ...msg, ...newMessage };
+                  }
+                  return msg;
+                }),
+              );
+              trie.insert(newMessage.content, editingMessageId);
+              setEditingMessageId(null);
+            } else {
+              console.log(response);
+              console.error('Error:', response.message || 'Unknown error');
             }
-            return msg;
-          }),
+          },
         );
         trie.insert(newMessage.content, editingMessageId);
         setEditingMessageId(null);
+        setInputValue(''); // Clear the input field
       } else {
         trie.insert(newMessage.content, messages.length + 1);
         const sentMessage = {
@@ -306,11 +375,11 @@ function Chat() {
     }
   };
 
-  const handleEditMessage = (id) => {
-    const messageToEdit = messages.find((msg) => msg.id === id);
+  const handleEditMessage = (message) => {
+    const messageToEdit = messages.find((msg) => msg._id === message._id);
     if (messageToEdit) {
       setInputValue(messageToEdit.content);
-      setEditingMessageId(id);
+      setEditingMessageId(message._id);
     }
   };
 
@@ -350,18 +419,24 @@ function Chat() {
       setForwardingMessageId(null);
     }
   };
-  const handleDeleteMessage = (id) => {
-    const confirmDelete = window.confirm(
-      'Are you sure you want to delete this message?',
-    );
-    if (confirmDelete) {
-      setMessages((prevMessages) =>
-        prevMessages.filter((msg) => msg.id !== id),
-      );
-      setPinnedMsgs((prevMessages) =>
-        prevMessages.filter((msg) => msg.id !== id),
-      );
-    }
+  const handleDeleteMessage = (message) => {
+    // const confirmDelete = window.confirm(
+    //   'Are you sure you want to delete this message?',
+    // );
+    // if (confirmDelete) {
+    //   setMessages((prevMessages) =>
+    //     prevMessages.filter((msg) => msg.id !== id),
+    //   );
+    //   setPinnedMsgs((prevMessages) =>
+    //     prevMessages.filter((msg) => msg.id !== id),
+    //   );
+    // }
+
+    console.log(message._id);
+
+    socket.emit('message:delete', message._id, (response) => {
+      console.log(response);
+    });
   };
 
   const handleClickForwardMessage = (id) => {
