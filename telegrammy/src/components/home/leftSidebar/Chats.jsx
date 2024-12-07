@@ -23,6 +23,7 @@ const Chats = ({ searchValue }) => {
   const containerRef = useRef(null);
 
   const handleClickChat = (chat) => {
+    
     dispatch(setOpenedChat(chat));
   };
 

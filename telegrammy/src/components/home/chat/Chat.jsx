@@ -88,23 +88,36 @@ function Chat() {
   // useEffects for socket
 
   useEffect(() => {
-    socket.connect();
-    console.log('Attempting to connect to the socket...');
-    socket.on('message:send', (message) => {
-      console.log('Message received:', message);
-      const ackPayload = {
-        chatId: 'chat123',
-        eventIndex: message.eventIndex, // Required
-      };
-      socket.emit('ack_event', ackPayload);
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
+    try {
+      socket.connect();
+      console.log('Attempting to connect to the socket...');
+      socket.on('error', (err) => {
+        console.log(err);
+      });
+      socket.on('connect', () => {
+        console.log('Connected to Socket.IO server');
+      });
+      socket.on('connect_error', (err) => {
+        console.log(err);
+      });
+      socket.on('message:send', (message) => {
+        console.log('Message received:', message);
+        const ackPayload = {
+          chatId: openedChat._id,
+          eventIndex: message.eventIndex, // Required
+        };
+        socket.emit('ack_event', ackPayload);
+        setMessages((prevMessages) => [...prevMessages, message]);
+      });
+    } catch (err) {
+      console.log(err);
+    }
 
     return () => {
       socket.disconnect();
       console.log('dscnnctd');
     };
-  }, [openedChat.id]);
+  }, [openedChat._id]);
 
   useEffect(() => {
     if (ack) {
@@ -115,52 +128,52 @@ function Chat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  useEffect(() => {
-    console.log('Opened chat changed:', openedChat.name);
-    console.log(openedChat);
-    switch (prevChat) {
-      case 'user1':
-        let i = initialMessages1.length;
-        for (; i < messages.length; i++) {
-          initialMessages1.push(messages[i]);
-        }
-        break;
-      case 'user2':
-        let j = initialMessages2.length;
-        for (; j < messages.length; j++) {
-          initialMessages2.push(messages[j]);
-        }
-        break;
-      case 'user3':
-        let k = initialMessages3.length;
-        for (; k < messages.length; k++) {
-          initialMessages3.push(messages[k]);
-        }
-        break;
-      default:
-        break;
-    }
-    switch (openedChat.name) {
-      case 'user1':
-        trie = new Trie();
-        initialMessages1.map((mess) => trie.insert(mess.content, mess.id));
-        setMessages(initialMessages1);
-        break;
-      case 'user2':
-        trie = new Trie();
-        initialMessages2.map((mess) => trie.insert(mess.content, mess.id));
-        setMessages(initialMessages2);
-        break;
-      case 'user3':
-        trie = new Trie();
-        initialMessages3.map((mess) => trie.insert(mess.content, mess.id));
-        setMessages(initialMessages3);
-        break;
-      default:
-        setMessages([]);
-    }
-    setPrevChat(openedChat.name);
-  }, [openedChat]);
+  // useEffect(() => {
+  //   console.log('Opened chat changed:', openedChat._id);
+  //   console.log(openedChat);
+  //   switch (prevChat) {
+  //     case 'user1':
+  //       let i = initialMessages1.length;
+  //       for (; i < messages.length; i++) {
+  //         initialMessages1.push(messages[i]);
+  //       }
+  //       break;
+  //     case 'user2':
+  //       let j = initialMessages2.length;
+  //       for (; j < messages.length; j++) {
+  //         initialMessages2.push(messages[j]);
+  //       }
+  //       break;
+  //     case 'user3':
+  //       let k = initialMessages3.length;
+  //       for (; k < messages.length; k++) {
+  //         initialMessages3.push(messages[k]);
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  //   switch (openedChat.name) {
+  //     case 'user1':
+  //       trie = new Trie();
+  //       initialMessages1.map((mess) => trie.insert(mess.content, mess.id));
+  //       setMessages(initialMessages1);
+  //       break;
+  //     case 'user2':
+  //       trie = new Trie();
+  //       initialMessages2.map((mess) => trie.insert(mess.content, mess.id));
+  //       setMessages(initialMessages2);
+  //       break;
+  //     case 'user3':
+  //       trie = new Trie();
+  //       initialMessages3.map((mess) => trie.insert(mess.content, mess.id));
+  //       setMessages(initialMessages3);
+  //       break;
+  //     default:
+  //       setMessages([]);
+  //   }
+  //   setPrevChat(openedChat.name);
+  // }, [openedChat]);
 
   const handleSearch = (text) => {
     const ids = trie.startsWith(text);
@@ -222,13 +235,16 @@ function Chat() {
       if (selectedFile) setLoading(true);
 
       const newMessage = {
+        chatId: openedChat._id,
         content: inputValue,
+        messageType: 'text',
         timestamp: new Date().toLocaleTimeString('en-US', {
           hour: 'numeric',
           minute: 'numeric',
         }),
         date: new Date().toISOString().slice(0, 10),
         replyTo: replyToMessageId || null, // Link the reply if there's any
+        type:'sent'
       };
 
       if (selectedFile) {
@@ -260,23 +276,33 @@ function Chat() {
           messageType: 'text',
           type: 'sent',
         };
-        socket.emit('send_message', newMessage, (response) => {
-          // Callback handles server response
-          if (response.status === 'success') {
-            console.log('Server acknowledgment:', response);
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              {
-                id: response.messageId,
-                content: inputMessage,
-                timestamp: response.metadata.timestamp,
-              },
-            ]);
-            setInputValue(''); // Clear the input field
-          } else {
-            console.error('Error:', response.message || 'Unknown error');
-          }
-        });
+
+        try {
+          console.log(newMessage);
+          socket.emit('message:send', newMessage, (response) => {
+
+            // Callback handles server response
+            if (response.status === 'ok') {
+              console.log('Server acknowledgment:', response);
+              setMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                  id: response.messageId,
+                  content: newMessage.content,
+                  type: newMessage.type,
+                  timestamp: newMessage.timestamp
+                },
+              ]);
+
+              setInputValue(''); // Clear the input field
+            } else {
+              console.log(response);
+              console.error('Error:', response.message || 'Unknown error');
+            }
+          });
+        } catch (err) {
+          console.log(err);
+        }
       }
 
       // Clear input and reset reply state after sending

@@ -11,6 +11,7 @@ const initialState = {
     .split(';')
     .some((cookie) => cookie.trim().startsWith('accessToken')),
   error: '',
+  userId: '',
 };
 
 // Create an async thunk for the login request
@@ -37,6 +38,11 @@ export const loginUser = createAsyncThunk(
       }
 
       const user = data.data.updatedUser;
+      // console.log(user);
+
+
+      localStorage.setItem('user', JSON.stringify(state.user));
+
       return user;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -48,6 +54,7 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+   
     login(state, action) {},
     logout(state) {
       localStorage.removeItem('user');
@@ -58,7 +65,7 @@ export const authSlice = createSlice({
       state.user = action.payload.user;
       state.isLogin = true;
 
-      localStorage.setItem('user', JSON.stringify(state.user));
+      localStorage.setItem('userId', JSON.stringify(state.user));
     },
   },
   extraReducers: (builder) => {

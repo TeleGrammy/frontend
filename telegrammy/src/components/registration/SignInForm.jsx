@@ -46,6 +46,7 @@ const SignInForm = () => {
   const { loading, error } = useSelector((state) => state.auth);
   const handleSubmitForm = async (e) => {
     e.preventDefault();
+   
     reduxDispatch(loginUser({ UUID: state.email, password: state.password }));
   };
 
