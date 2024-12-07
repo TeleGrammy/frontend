@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 const apiUrl = import.meta.env.VITE_API_URL;
-// Define the initial state
 
+// Define the initial state
 const initialState = {
   user: localStorage.getItem('user')
     ? JSON.parse(localStorage.getItem('user'))
@@ -11,7 +11,7 @@ const initialState = {
     .split(';')
     .some((cookie) => cookie.trim().startsWith('accessToken')),
   error: '',
-  userId: '',
+  userId: localStorage.getItem('userId') || '', // Initialize userId from localStorage
 };
 
 // Create an async thunk for the login request
@@ -38,12 +38,7 @@ export const loginUser = createAsyncThunk(
       }
 
       const user = data.data.updatedUser;
-      // console.log(user);
-
-
-      localStorage.setItem('user', JSON.stringify(state.user));
-
-      return user;
+      return user; // Return the full user object
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -54,18 +49,20 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-   
-    login(state, action) {},
     logout(state) {
       localStorage.removeItem('user');
+      localStorage.removeItem('userId'); // Clear userId from localStorage
       state.user = null;
+      state.userId = '';
       state.isLogin = false;
     },
     loginWithCallback(state, action) {
       state.user = action.payload.user;
+      state.userId = action.payload.user.id; // Assuming `id` is the user ID
       state.isLogin = true;
 
-      localStorage.setItem('userId', JSON.stringify(state.user));
+      localStorage.setItem('user', JSON.stringify(state.user));
+      localStorage.setItem('userId', state.userId); // Save userId in localStorage
     },
   },
   extraReducers: (builder) => {
@@ -77,9 +74,12 @@ export const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
+        state.userId = action.payload.id; // Assuming `id` is the user ID
         state.isLogin = true;
-        //save user and islogin in local storage
+
+        // Save user and userId in localStorage
         localStorage.setItem('user', JSON.stringify(state.user));
+        localStorage.setItem('userId', state.userId);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -89,6 +89,6 @@ export const authSlice = createSlice({
   },
 });
 
-export const { login, logout, loginWithCallback } = authSlice.actions;
+export const { logout, loginWithCallback } = authSlice.actions;
 
 export default authSlice.reducer;
