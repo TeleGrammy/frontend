@@ -6,6 +6,7 @@ import MuteIcon from '../../icons/MuteIcon';
 import { setOpenedChat } from '../../../slices/chatsSlice';
 import { initialChatsLSB } from '../../../mocks/mockDataChatList';
 const apiUrl = import.meta.env.VITE_API_URL;
+const userId = localStorage.getItem('user')._id;
 
 const Chats = ({ searchValue }) => {
   const dispatch = useDispatch();
@@ -23,7 +24,6 @@ const Chats = ({ searchValue }) => {
   const containerRef = useRef(null);
 
   const handleClickChat = (chat) => {
-    
     dispatch(setOpenedChat(chat));
   };
 
@@ -136,75 +136,80 @@ const Chats = ({ searchValue }) => {
       data-test-id="viewed-chats-container"
     >
       <ul className="divide-y divide-gray-700" data-test-id="chats-list">
-        {ViewedChats.map((chat) => (
-          <li
-            key={chat._id}
-            className="flex w-full cursor-pointer items-center p-4 transition hover:bg-gray-700"
-            onContextMenu={(e) => handleContextMenu(e, chat._id)}
-            onClick={() => handleClickChat(chat)}
-            data-test-id={`chat-item-${chat._id}`}
-          >
-            {/* Profile Picture */}
-            <img
-              src={
-                chat.participants[1].userId.picture
-                  ? chat.participants[1].userId.picture
-                  : 'https://ui-avatars.com/api/?name=' +
-                    chat.participants[1].userId.username
-              }
-              alt={`${chat.participants[1].userId.username}'s avatar`}
-              className="h-12 w-12 rounded-full object-cover"
-              data-test-id={`chat-avatar-${chat._id}`}
-            />
-            {/* Chat Details */}
-            <div
-              className="ml-4 flex-1"
-              data-test-id={`chat-details-${chat._id}`}
+        {ViewedChats.map((chat) => {
+          let otherUser = chat.participants.find(
+            (participant) => participant.userId._id !== userId,
+          );
+          return (
+            <li
+              key={chat._id}
+              className="flex w-full cursor-pointer items-center p-4 transition hover:bg-gray-700"
+              onContextMenu={(e) => handleContextMenu(e, chat._id)}
+              onClick={() => handleClickChat(chat)}
+              data-test-id={`chat-item-${chat._id}`}
             >
-              <div className="flex items-center justify-between">
-                <h3
-                  className="truncate font-semibold"
-                  data-test-id={`chat-name-${chat._id}`}
-                >
-                  {chat.participants[1].userId.username}
-                </h3>
-                <span
-                  className="text-sm text-gray-400"
-                  data-test-id={`chat-timestamp-${chat._id}`}
-                >
-                  Last Seen {chat.participants[1].userId.lastSeen}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <p
-                  className="truncate text-sm text-gray-400"
-                  data-test-id={`chat-message-${chat._id}`}
-                >
-                  {chat.lastMessage
-                    ? chat.lastMessage.content
-                    : 'Hey there! Are you using Telegrammy?'}
-                </p>
-                {chat.unreadCount > 0 && (
-                  <span
-                    className="ml-2 rounded-full bg-blue-500 px-2 py-1 text-xs text-white"
-                    data-test-id={`chat-unread-${chat._id}`}
-                  >
-                    {/* {chat.unreadCount} */}3
-                  </span>
-                )}
-              </div>
-            </div>
-            {/* Muted Icon */}
-            {chat.isMuted && (
+              {/* Profile Picture */}
+              <img
+                src={
+                  otherUser.userId.picture
+                    ? otherUser.userId.picture
+                    : 'https://ui-avatars.com/api/?name=' +
+                      otherUser.userId.username
+                }
+                alt={`${otherUser.userId.username}'s avatar`}
+                className="h-12 w-12 rounded-full object-cover"
+                data-test-id={`chat-avatar-${chat._id}`}
+              />
+              {/* Chat Details */}
               <div
-                className="ml-2 text-gray-400"
-                data-test-id={`chat-muted-icon-${chat._id}`}
+                className="ml-4 flex-1"
+                data-test-id={`chat-details-${chat._id}`}
               >
-                <MuteIcon />
+                <div className="flex items-center justify-between">
+                  <h3
+                    className="truncate font-semibold"
+                    data-test-id={`chat-name-${chat._id}`}
+                  >
+                    {otherUser.userId.username}
+                  </h3>
+                  <span
+                    className="text-sm text-gray-400"
+                    data-test-id={`chat-timestamp-${chat._id}`}
+                  >
+                    Last Seen {otherUser.userId.lastSeen}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p
+                    className="truncate text-sm text-gray-400"
+                    data-test-id={`chat-message-${chat._id}`}
+                  >
+                    {chat.lastMessage
+                      ? chat.lastMessage.content
+                      : 'Hey there! Are you using Telegrammy?'}
+                  </p>
+                  {chat.unreadCount > 0 && (
+                    <span
+                      className="ml-2 rounded-full bg-blue-500 px-2 py-1 text-xs text-white"
+                      data-test-id={`chat-unread-${chat._id}`}
+                    >
+                      {/* {chat.unreadCount} */}3
+                    </span>
+                  )}
+                </div>
               </div>
-            )}
-          </li>
-        ))}
+              {/* Muted Icon */}
+              {chat.isMuted && (
+                <div
+                  className="ml-2 text-gray-400"
+                  data-test-id={`chat-muted-icon-${chat._id}`}
+                >
+                  <MuteIcon />
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       {/* Context Menu */}

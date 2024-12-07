@@ -12,7 +12,7 @@ function getCookie(name) {
   return null;
 }
 
-const token = getCookie('authToken'); // Replace 'authToken' with the name of your cookie
+const token = getCookie('accessToken'); // Replace 'authToken' with the name of your cookie
 
 const socket = io(SOCKET_URL, {
   query: {
