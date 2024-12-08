@@ -22,7 +22,8 @@ import PinnedMessagesBar from './PinnedMessagesBar';
 import socket from './utils/Socket';
 import { GiConsoleController } from 'react-icons/gi';
 import { setOpenedChat } from '../../../slices/chatsSlice';
-const userId = JSON.parse(localStorage.getItem('user'))._id;
+import { useDispatch } from 'react-redux';
+const userId = JSON.parse(localStorage.getItem('user'))?._id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
@@ -51,6 +52,7 @@ function Chat() {
   const [prevChat, setPrevChat] = useState(null);
   const [ack, setAck] = useState(null);
   const secretKey = 'our-secret-key';
+  const dispatch = useDispatch();
   let it = 0;
   let it1 = 0;
 
@@ -87,37 +89,22 @@ function Chat() {
       }
     });
 
+
     if (!isPinned) {
-      socket.emit(
-        'message:pin',
-        {
-          chatId: openedChat._id,
-          messageId: messageId,
-        },
-        (res) => {
-         
-          let newPinnedArr = [...pinnedMsgs, messageId];
-          dispatch(
-            setOpenedChat({ ...openedChat, pinnedMessages: newPinnedArr }),
-          );
-          setPinnedMsgs([...pinnedMsgs, messageId]);
-        },
-      );
+      console.log({
+        chatId: openedChat._id,
+        messageId: messageId,
+      });
+      console.log;
+      socket.emit('message:pin', {
+        chatId: openedChat._id,
+        messageId: messageId,
+      });
     } else {
-      socket.emit(
-        'message:unpin',
-        {
-          chatId: openedChat._id,
-          messageId: messageId,
-        },
-        (res) => {
-          const newPinnedArr = pinnedMsgs.filter((el) => el != messageId);
-          dispatch(
-            setOpenedChat({ ...openedChat, pinnedMessages: newPinnedArr }),
-          );
-          setPinnedMsgs(newPinnedArr);
-        },
-      );
+      socket.emit('message:unpin', {
+        chatId: openedChat._id,
+        messageId: messageId,
+      });
     }
     console.log(pinnedMsgs);
   };
@@ -137,8 +124,9 @@ function Chat() {
     console.log(openedChat.draft);
     setInputValue(openedChat.draft);
     try {
-      socket.connect();
       console.log('Attempting to connect to the socket...');
+      socket.connect();
+
       socket.on('error', (err) => {
         console.log(err);
       });
@@ -149,13 +137,55 @@ function Chat() {
         console.log(err);
       });
       socket.on('message:sent', (message) => {
-        console.log('Message received:', message);
-        const ackPayload = {
-          chatId: openedChat._id,
-          eventIndex: message.eventIndex, // Required
-        };
-        socket.emit('ack_event', ackPayload);
-        setMessages((prevMessages) => [...prevMessages, message]);
+        if (message.senderId !== userId) {
+          console.log(socket);
+          console.log('Message received:', message);
+          const ackPayload = {
+            chatId: openedChat._id,
+            eventIndex: message.eventIndex, // Required
+          };
+          socket.emit('ack_event', ackPayload);
+          setMessages((prevMessages) => [...prevMessages, message]);
+        }
+      });
+
+      socket.on('message:pin', (payload) => {
+        console.log('recieved pin');
+       
+        console.log('asddddddddddddddddd');
+        console.log(pinnedMsgs);
+        let newPinnedArr = [...pinnedMsgs, payload.messageId];
+        console.log('heereeeeee');
+        console.log(newPinnedArr);
+        console.log(openedChat);
+        dispatch(
+          setOpenedChat({ ...openedChat, pinnedMessages: newPinnedArr }),
+        );
+        setPinnedMsgs([...pinnedMsgs, payload.messageId]);
+      });
+      socket.on('message:updated', (response) => {
+        console.log('recieved updated', response);
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => {
+            const newMessage = { ...msg, ...response };
+            if (msg._id === response._id) {
+              trie.delete(msg.content, msg.id);
+              return newMessage;
+            }
+            return msg;
+          }),
+        );
+        trie.insert(response.content, response._id);
+        setEditingMessageId(null);
+      });
+      socket.on('message:deleted', (response) => {
+        console.log('recieved deleted', response);
+        setMessages((prevMessages) =>
+          prevMessages.filter((msg) => msg._id !== response._id),
+        );
+        setPinnedMsgs((prevMessages) =>
+          prevMessages.filter((msg) => msg._id !== response._id),
+        );
       });
     } catch (err) {
       console.log(err);
@@ -165,7 +195,7 @@ function Chat() {
       socket.disconnect();
       console.log('dscnnctd');
     };
-  }, [openedChat._id]);
+  }, []);
 
   useEffect(() => {
     if (ack) {
@@ -181,6 +211,9 @@ function Chat() {
     // setInputValue(openedChat.draft);
     const fetchMessages = async () => {
       try {
+        if (openedChat._id === undefined) {
+          return;
+        }
         const response = await fetch(
           `${apiUrl}/v1/chats/chat/${openedChat._id}`,
           {
@@ -302,31 +335,10 @@ function Chat() {
       }
 
       if (editingMessageId) {
-        socket.emit(
-          'message:update',
-          {
-            messageId: editingMessageId,
-            content: newMessage.content,
-          },
-          (response) => {
-            if (response.status === 'ok') {
-              setMessages((prevMessages) =>
-                prevMessages.map((msg) => {
-                  if (msg._id === editingMessageId) {
-                    trie.delete(msg.content, msg.id);
-                    return { ...msg, ...newMessage };
-                  }
-                  return msg;
-                }),
-              );
-              trie.insert(newMessage.content, editingMessageId);
-              setEditingMessageId(null);
-            } else {
-              console.log(response);
-              console.error('Error:', response.message || 'Unknown error');
-            }
-          },
-        );
+        socket.emit('message:update', {
+          messageId: editingMessageId,
+          content: newMessage.content,
+        });
         trie.insert(newMessage.content, editingMessageId);
         setEditingMessageId(null);
         setInputValue(''); // Clear the input field
@@ -345,12 +357,14 @@ function Chat() {
           console.log(newMessage);
           socket.emit('message:send', newMessage, (response) => {
             // Callback handles server response
+
             if (response.status === 'ok') {
               console.log('Server acknowledgment:', response);
               setMessages((prevMessages) => [
                 ...prevMessages,
                 {
-                  id: response.messageId,
+                  chatId: openedChat._id,
+                  _id: response.data.id,
                   content: newMessage.content,
                   type: newMessage.type,
                   timestamp: newMessage.timestamp,
@@ -376,6 +390,7 @@ function Chat() {
   };
 
   const handleEditMessage = (message) => {
+    console.log(message);
     const messageToEdit = messages.find((msg) => msg._id === message._id);
     if (messageToEdit) {
       setInputValue(messageToEdit.content);
@@ -432,9 +447,7 @@ function Chat() {
     //   );
     // }
 
-    console.log(message._id);
-
-    socket.emit('message:delete', message._id, (response) => {
+    socket.emit('message:delete', { messageId: message._id }, (response) => {
       console.log(response);
     });
   };

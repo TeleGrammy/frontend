@@ -6,7 +6,7 @@ import MuteIcon from '../../icons/MuteIcon';
 import { setOpenedChat } from '../../../slices/chatsSlice';
 import { initialChatsLSB } from '../../../mocks/mockDataChatList';
 const apiUrl = import.meta.env.VITE_API_URL;
-const userId = JSON.parse(localStorage.getItem('user'))._id
+const userId = JSON.parse(localStorage.getItem('user'))?._id;
 const Chats = ({ searchValue }) => {
   const dispatch = useDispatch();
 
@@ -136,10 +136,10 @@ const Chats = ({ searchValue }) => {
     >
       <ul className="divide-y divide-gray-700" data-test-id="chats-list">
         {ViewedChats.map((chat) => {
-   
           let otherUser = chat.participants.find(
             (participant) => participant.userId._id !== userId,
           );
+          console.log(otherUser);
           return (
             <li
               key={chat._id}

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const PinnedMessagesBar = (handleNavigateToPinned) => {
+const PinnedMessagesBar = ({ handleNavigateToPinned }) => {
   return (
     <div className="rounded-lg bg-bg-primary p-2 shadow-md">
       <h2

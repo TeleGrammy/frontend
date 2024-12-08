@@ -69,7 +69,10 @@ export const MessageItem = ({
                 {/* Pin/Unpin button */}
                 <button
                   data-test-id={`${idx}-message-pin-unpin-button`}
-                  onClick={() => handlePinMessage(message._id)}
+                  onClick={() => {
+                    console.log('should pinning ', message);
+                    handlePinMessage(message._id);
+                  }}
                   className="text-white-500 ml-2 text-xs hover:underline"
                 >
                   {message.pinned ? 'UnPin' : 'Pin'}
