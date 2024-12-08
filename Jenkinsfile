@@ -12,7 +12,7 @@ pipeline{
                 dir('telegrammy') {
                     script{
                         sh """
-                        echo "VITE_API_URL=http://localhost:8080/api" > .env
+                        echo -e "VITE_API_URL=http://localhost:8080/api\nVITE_WS_URL=http://localhost:8080" > .env
                         npm install
                         """
                     }
@@ -31,7 +31,7 @@ pipeline{
                 dir('telegrammy') {
                     script{
                         if(env.CHANGE_ID){
-                           sh 'docker build -t telegrammy/frontend --build-arg VITE_API_URL=http://localhost:8080/api .'
+                           sh 'docker build -t telegrammy/frontend --build-arg VITE_API_URL=http://localhost:8080/api --build-arg VITE_WS_URL=http://localhost:8080 .'
                         }
                     }
                 }
@@ -50,12 +50,12 @@ pipeline{
                         if(env.BRANCH_NAME.startsWith('module/')){
                             tag = env.BRANCH_NAME.replace('module/','')
                             docker.withRegistry('https://index.docker.io/v1/','dockerhub-cred'){
-                                sh 'docker build -t telegrammy/frontend --build-arg VITE_API_URL=http://localhost:8080/api .'
+                                sh 'docker build -t telegrammy/frontend --build-arg VITE_API_URL=http://localhost:8080/api --build-arg VITE_WS_URL=http://localhost:8080 .'
                                 docker.image('telegrammy/frontend').push("${tag}")
                             }
                         } else if(env.BRANCH_NAME== 'main'){
                             tag = env.BUILD_NUMBER
-                            sh 'docker build -t telegrammy/frontend --build-arg VITE_API_URL=https://telegrammy.tech/api .'
+                            sh 'docker build -t telegrammy/frontend --build-arg VITE_API_URL=https://telegrammy.tech/api --build-arg VITE_WS_URL=https://sockets.telegrammy.tech .'
                             docker.withRegistry('https://index.docker.io/v1/','dockerhub-cred'){
                                 docker.image('telegrammy/frontend').push("${tag}")
                             }
