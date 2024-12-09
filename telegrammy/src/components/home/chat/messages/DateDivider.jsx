@@ -14,7 +14,7 @@ export const DateDivider = ({ message }) => {
   return (
     <div className="my-2 flex justify-center">
       <span className="rounded-full bg-gray-200 px-3 py-1 text-xs dark:bg-gray-700">
-        {formatDate(message.date)}
+        {formatDate(message.timestamp)}
       </span>
     </div>
   );

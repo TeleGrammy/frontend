@@ -20,10 +20,10 @@ export const MessageItem = ({
   showDateDivider,
 }) => {
   return (
-    <React.Fragment key={message.id}>
+    <React.Fragment key={message._id}>
       <div
-        ref={(el) => (messageRefs.current[message.id] = el)}
-        key={message.id}
+        ref={(el) => (messageRefs.current[message._id] = el)}
+        key={message._id}
         className=""
       >
         {showDateDivider && <DateDivider message={message} />}
@@ -45,7 +45,7 @@ export const MessageItem = ({
                 {/* Forward button */}
                 <button
                   data-test-id={`${idx}-message-forward-button`}
-                  onClick={() => handleClickForwardMessage(message.id)}
+                  onClick={() => handleClickForwardMessage(message._id)}
                   className="text-xs text-green-500 hover:underline"
                 >
                   Forward
@@ -53,7 +53,7 @@ export const MessageItem = ({
                 {/* Edit button */}
                 <button
                   data-test-id={`${idx}-message-edit-button`}
-                  onClick={() => handleEditMessage(message.id)}
+                  onClick={() => handleEditMessage(message)}
                   className="mr-2 text-xs text-blue-500 hover:underline"
                 >
                   Edit
@@ -61,7 +61,7 @@ export const MessageItem = ({
                 {/* Delete button */}
                 <button
                   data-test-id={`${idx}-message-delete-button`}
-                  onClick={() => handleDeleteMessage(message.id)}
+                  onClick={() => handleDeleteMessage(message)}
                   className="mr-2 text-xs text-red-500 hover:underline"
                 >
                   Delete
@@ -69,7 +69,10 @@ export const MessageItem = ({
                 {/* Pin/Unpin button */}
                 <button
                   data-test-id={`${idx}-message-pin-unpin-button`}
-                  onClick={() => handlePinMessage(message.id, message.pinned)}
+                  onClick={() => {
+                    console.log('should pinning ', message);
+                    handlePinMessage(message._id);
+                  }}
                   className="text-white-500 ml-2 text-xs hover:underline"
                 >
                   {message.pinned ? 'UnPin' : 'Pin'}
@@ -87,7 +90,7 @@ export const MessageItem = ({
                 {/* Forward button */}
                 <button
                   data-test-id={`${idx}-recieved-forward-button`}
-                  onClick={() => handleClickForwardMessage(message.id)}
+                  onClick={() => handleClickForwardMessage(message._id)}
                   className="ml-2 text-xs text-green-500 hover:underline"
                 >
                   Forward
@@ -95,7 +98,7 @@ export const MessageItem = ({
                 {/* Reply button */}
                 <button
                   data-test-id={`${idx}-recieved-reply-button`}
-                  onClick={() => handleReplyToMessage(message.id)}
+                  onClick={() => handleReplyToMessage(message._id)}
                   className="ml-2 text-xs text-blue-500 hover:underline"
                 >
                   Reply
@@ -103,7 +106,7 @@ export const MessageItem = ({
                 {/* Pin/Unpin button */}
                 <button
                   data-test-id={`${idx}-recieved-pin-unpin-button`}
-                  onClick={() => handlePinMessage(message.id, message.pinned)}
+                  onClick={() => handlePinMessage(message._id, message.pinned)}
                   className="text-white-500 ml-2 text-xs hover:underline"
                 >
                   {message.pinned ? 'UnPin' : 'Pin'}
