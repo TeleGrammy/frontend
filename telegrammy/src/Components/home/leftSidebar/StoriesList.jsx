@@ -131,7 +131,7 @@ function StoriesList() {
 
                 {/* Story Image */}
                 <img
-                  src={collection.stories[0].media}
+                  src={collection?.profile?.picture}
                   className="h-14 w-14 rounded-full"
                   alt={`story${index}`}
                   data-test-id={`${index}-story-image`}

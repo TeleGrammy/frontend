@@ -21,13 +21,15 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isViewerListOpen, setIsViewerListOpen] = useState(false);
 
-  const viewerIds = [
-    ...new Set(
-      Object.keys(medias[currentStoryIndex].viewers).map(
-        (viewerId) => viewerId,
-      ),
-    ),
-  ];
+  const viewerIds = medias[currentStoryIndex].viewers
+    ? [
+        ...new Set(
+          Object.keys(medias[currentStoryIndex].viewers).map(
+            (viewerId) => viewerId,
+          ),
+        ),
+      ]
+    : [];
 
   const seen = viewerIds.includes(user._id);
   const storyCreator = profile.username === user.username;
