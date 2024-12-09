@@ -7,7 +7,7 @@ import {
   setShowedOtherUserIndex,
 } from '../../../slices/storiesSlice';
 import Progressbar from './Progressbar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { FaEllipsisVertical, FaTrash } from 'react-icons/fa6';
 
@@ -20,6 +20,28 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isViewerListOpen, setIsViewerListOpen] = useState(false);
+  const [videoDuration, setVideoDuration] = useState(10); // Default duration
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (medias[currentStoryIndex].mediaType === 'video' && videoRef.current) {
+      const videoElement = videoRef.current;
+
+      const handleMetadataLoaded = () => {
+        setVideoDuration(Math.ceil(videoElement.duration)); // Set duration to the video's length
+      };
+
+      videoElement.addEventListener('loadedmetadata', handleMetadataLoaded);
+
+      // Cleanup listener when the component unmounts or index changes
+      return () => {
+        videoElement.removeEventListener(
+          'loadedmetadata',
+          handleMetadataLoaded,
+        );
+      };
+    }
+  }, [currentStoryIndex, medias]);
 
   const viewerIds = medias[currentStoryIndex].viewers
     ? [
@@ -83,13 +105,6 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
       }
       const data = await response.json();
       console.log(data);
-      const updatedStories = stories.filter(
-        (_, index) => index !== currentStoryIndex,
-      );
-
-      dispatch(setMyStories(updatedStories));
-
-      handleCloseStory();
     } catch (error) {
       console.error('Error fetching stories:', error);
     }
@@ -128,7 +143,11 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
           {medias.map((media, index) => (
             <Progressbar
               key={index}
-              duration={10}
+              duration={
+                index === currentStoryIndex && media.mediaType === 'video'
+                  ? videoDuration
+                  : 10
+              }
               count={medias.length}
               isActive={currentStoryIndex === index}
               isCompleted={currentStoryIndex > index}
@@ -136,11 +155,22 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
             />
           ))}
         </div>
-        <img
-          className="mt-1 h-[89%] w-full rounded-xl"
-          src={medias[currentStoryIndex].media}
-          alt={medias[currentStoryIndex].content}
-        />
+        {medias[currentStoryIndex].mediaType === 'video' ? (
+          <video
+            className="mt-1 h-[89%] w-full rounded-xl"
+            src={medias[currentStoryIndex].media}
+            ref={videoRef}
+            controls
+            autoPlay
+            muted
+          />
+        ) : (
+          <img
+            className="mt-1 h-[89%] w-full rounded-xl"
+            src={medias[currentStoryIndex].media}
+            alt={medias[currentStoryIndex].content}
+          />
+        )}
         <div
           className="absolute left-0 top-0 h-[80%] w-[30%]"
           onClick={(e) => {
@@ -196,7 +226,16 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
             <ul className="text-l flex w-full flex-col justify-start space-y-2 p-2">
               <li className="mx-2 rounded-lg hover:bg-bg-hover">
                 <button
-                  onClick={handleDeleteStory}
+                  onClick={() => {
+                    handleDeleteStory();
+
+                    const updatedStories = medias.filter(
+                      (_, index) => index !== currentStoryIndex,
+                    );
+
+                    dispatch(setMyStories(updatedStories));
+                    handleCloseStory();
+                  }}
                   className="flex w-full flex-row items-center text-text-primary hover:text-gray-300"
                 >
                   <FaTrash />
