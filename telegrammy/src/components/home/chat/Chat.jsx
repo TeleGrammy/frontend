@@ -40,6 +40,7 @@ function Chat() {
   const [replyToMessageId, setReplyToMessageId] = useState(null);
   const [forwardingMessageId, setForwardingMessageId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFileType, setSelectedFileType] = useState(null);
   const [viewingImage, setViewingImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -89,20 +90,19 @@ function Chat() {
       }
     });
 
-
     if (!isPinned) {
       console.log({
-        chatId: openedChat._id,
+        chatId: openedChat.id,
         messageId: messageId,
       });
       console.log;
       socket.emit('message:pin', {
-        chatId: openedChat._id,
+        chatId: openedChat.id,
         messageId: messageId,
       });
     } else {
       socket.emit('message:unpin', {
-        chatId: openedChat._id,
+        chatId: openedChat.id,
         messageId: messageId,
       });
     }
@@ -141,7 +141,7 @@ function Chat() {
           console.log(socket);
           console.log('Message received:', message);
           const ackPayload = {
-            chatId: openedChat._id,
+            chatId: openedChat.id,
             eventIndex: message.eventIndex, // Required
           };
           socket.emit('ack_event', ackPayload);
@@ -151,7 +151,7 @@ function Chat() {
 
       socket.on('message:pin', (payload) => {
         console.log('recieved pin');
-       
+
         console.log('asddddddddddddddddd');
         console.log(pinnedMsgs);
         let newPinnedArr = [...pinnedMsgs, payload.messageId];
@@ -211,11 +211,11 @@ function Chat() {
     // setInputValue(openedChat.draft);
     const fetchMessages = async () => {
       try {
-        if (openedChat._id === undefined) {
+        if (openedChat.id === undefined) {
           return;
         }
         const response = await fetch(
-          `${apiUrl}/v1/chats/chat/${openedChat._id}`,
+          `${apiUrl}/v1/chats/chat/${openedChat.id}`,
           {
             method: 'GET',
             headers: {
@@ -282,7 +282,7 @@ function Chat() {
   const handleInputChange = (event) => {
     const value = event.target.value;
     setInputValue(value);
-    socket.emit('draft', { chatId: openedChat._id, draft: value }, (res) => {
+    socket.emit('draft', { chatId: openedChat.id, draft: value }, (res) => {
       console.log(res);
     });
 
@@ -310,12 +310,12 @@ function Chat() {
     setMentionIndex(-1);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (inputValue.trim() !== '' || selectedFile) {
       if (selectedFile) setLoading(true);
 
       const newMessage = {
-        chatId: openedChat._id,
+        chatId: openedChat.id,
         content: inputValue,
         messageType: 'text',
         timestamp: new Date().toLocaleTimeString('en-US', {
@@ -328,10 +328,30 @@ function Chat() {
       };
 
       if (selectedFile) {
-        newMessage.file = URL.createObjectURL(selectedFile);
-        newMessage.fileName = selectedFile.name;
-        newMessage.fileType = selectedFile.type;
-        setSelectedFile(null); // Clear the selected file after sending
+        const formData = new FormData();
+        formData.append('media', selectedFile);
+        const mediaResponse = await fetch(
+          `${apiUrl}/v1/messaging/upload/${selectedFileType.split('_')[0]}`,
+          {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json', // Specify JSON response expected
+            },
+            credentials: 'include', // Include credentials (cookies)
+            body: formData,
+          },
+        );
+        const mediaResponseData = await mediaResponse.json();
+        console.log(mediaResponseData);
+
+        newMessage.mediaKey = mediaResponseData.mediaKey;
+        newMessage.mediaUrl = mediaResponseData.signedUrl;
+        newMessage.messageType =
+          selectedFile !== null ? selectedFileType.split('_')[1] : 'text';
+        // newMessage.file = URL.createObjectURL(selectedFile);
+
+        // newMessage.fileName = selectedFile.name;
+        // newMessage.fileType = selectedFile.type;
       }
 
       if (editingMessageId) {
@@ -349,7 +369,8 @@ function Chat() {
           ...newMessage,
           content: encryptMessage(newMessage.content),
           chatId: openedChat.id,
-          messageType: 'text',
+          messageType:
+            selectedFile !== null ? selectedFileType.split('_')[1] : 'text',
           type: 'sent',
         };
 
@@ -360,15 +381,20 @@ function Chat() {
 
             if (response.status === 'ok') {
               console.log('Server acknowledgment:', response);
+              const newRenderedMessage = {
+                chatId: openedChat.id,
+                _id: response.data.id,
+                content: newMessage.content,
+                type: newMessage.type,
+                timestamp: newMessage.timestamp,
+                mediaKey: newMessage.mediaKey,
+                mediaUrl: newMessage.mediaUrl,
+                messageType: newMessage.messageType,
+              };
+              console.log(newRenderedMessage);
               setMessages((prevMessages) => [
                 ...prevMessages,
-                {
-                  chatId: openedChat._id,
-                  _id: response.data.id,
-                  content: newMessage.content,
-                  type: newMessage.type,
-                  timestamp: newMessage.timestamp,
-                },
+                newRenderedMessage,
               ]);
 
               setInputValue(''); // Clear the input field
@@ -624,6 +650,7 @@ function Chat() {
           <AttachMedia
             setErrorMessage={setErrorMessage}
             setSelectedFile={setSelectedFile}
+            setSelectedFileType={setSelectedFileType}
           />
           <VoiceNoteButton onSendVoice={handleSendVoice} />
           <button

@@ -1,19 +1,34 @@
 import React from 'react';
 
+const getMimeType = (url) => {
+  const extension = url.split('.').pop();
+  switch (extension) {
+    case 'mp4':
+      return 'video/mp4';
+    case 'webm':
+      return 'video/webm';
+    case 'ogg':
+      return 'video/ogg';
+    default:
+      return 'video/mp4'; // Default to mp4 if the extension is unknown
+  }
+};
+
 const MediaContent = ({ message, handleImageClick, idx }) => {
+  const mimeType = getMimeType(message.mediaUrl);
   return (
     <>
-      {message.fileType.startsWith('image/') ? (
+      {message.messageType === 'image' ? (
         <img
           data-test-id={`${idx}-message-image`}
-          src={message.file}
-          alt={message.fileName}
+          src={message.mediaUrl}
+          alt={message.mediaKey}
           className="h-auto max-w-full cursor-pointer rounded-lg"
-          onClick={() => handleImageClick(message.file)}
+          onClick={() => handleImageClick(message.mediaUrl)}
         />
-      ) : message.fileType.startsWith('video/') ? (
+      ) : message.messageType === 'video' ? (
         <video controls className="h-auto max-w-full rounded-lg">
-          <source src={message.file} type={message.fileType} />
+          <source src={message.mediaUrl} type={mimeType} />
           Your browser does not support the video tag.
         </video>
       ) : (

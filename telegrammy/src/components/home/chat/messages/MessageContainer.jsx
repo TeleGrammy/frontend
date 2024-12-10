@@ -15,7 +15,7 @@ const MessageContainer = ({ message, messages, idx, handleImageClick }) => {
         <ReplyingInfo message={message} messages={messages} idx={idx} />
       )}
       {/*Media Content*/}
-      {message.file && (
+      {(message.messageType === 'video' || message.messageType === 'image') && (
         <MediaContent
           message={message}
           handleImageClick={handleImageClick}

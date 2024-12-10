@@ -1,24 +1,30 @@
 import React, { useState } from 'react';
 import AttachmentsMenu from './AttachmentsMenu';
 
-const AttachMedia = ({ setErrorMessage, setSelectedFile }) => {
+const AttachMedia = ({
+  setErrorMessage,
+  setSelectedFile,
+  setSelectedFileType,
+}) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const toggleMenu = () => {
     setIsMenuVisible(!isMenuVisible);
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = (event, type) => {
     const file = event.target.files[0];
 
     if (file && file.size > 26214400) {
       setErrorMessage('The maximum file size is 25 MB.');
       setSelectedFile(null);
+      setSelectedFileType(null);
       setTimeout(() => {
         setErrorMessage('');
       }, 3000);
     } else {
       setErrorMessage('');
       setSelectedFile(file);
+      setSelectedFileType(type);
     }
   };
 
@@ -43,7 +49,7 @@ const AttachMedia = ({ setErrorMessage, setSelectedFile }) => {
       <input
         data-test-id="attach-image-input"
         type="file"
-        onChange={handleFileChange}
+        onChange={(event) => handleFileChange(event, 'media_image')}
         className="hidden"
         id="file-input-image"
         accept="image/*"
@@ -51,7 +57,7 @@ const AttachMedia = ({ setErrorMessage, setSelectedFile }) => {
       <input
         data-test-id="attach-video-input"
         type="file"
-        onChange={handleFileChange}
+        onChange={(event) => handleFileChange(event, 'media_video')}
         className="hidden"
         id="file-input-video"
         accept="video/*"
