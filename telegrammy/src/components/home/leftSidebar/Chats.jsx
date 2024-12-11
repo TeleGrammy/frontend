@@ -136,7 +136,7 @@ const Chats = ({ searchValue }) => {
       data-test-id="viewed-chats-container"
     >
       <ul className="divide-y divide-gray-700" data-test-id="chats-list">
-        {ViewedChats.map((chat) => {
+        {ViewedChats &&ViewedChats.map((chat) => {
           return (
             <li
               key={chat.id}

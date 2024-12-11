@@ -23,6 +23,8 @@ import socket from './utils/Socket';
 import { GiConsoleController } from 'react-icons/gi';
 import { setOpenedChat } from '../../../slices/chatsSlice';
 import { useDispatch } from 'react-redux';
+import { closeRightSidebar } from '../../../slices/sidebarSlice';
+import { PiMagicWand } from 'react-icons/pi';
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -54,22 +56,20 @@ function Chat() {
   const [ack, setAck] = useState(null);
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
+  const pinnedMsgsRef = useRef(pinnedMsgs);
+  useEffect(() => {
+    pinnedMsgsRef.current = pinnedMsgs; // Update the ref whenever `pinnedMsgs` changes
+  }, [pinnedMsgs]);
+  useEffect(() => {
+    console.log('Updated pinnedMsgs:', pinnedMsgs); // This logs the updated state after re-render
+  }, [pinnedMsgs]); // This will run every time pinnedMsgs changes
+  
   let it = 0;
   let it1 = 0;
 
-  const handleNavigateToPinned = () => {
-    const msg = messageRefs.current[pinnedMsgs[it1]];
-    msg.classList.add('bg-yellow-200');
+ 
 
-    msg.scrollIntoView({ behavior: 'smooth' });
-
-    setTimeout(() => {
-      msg.classList.remove('bg-yellow-200');
-    }, 1000);
-    it1++;
-    if (it1 >= pinnedMsgs.length) it1 = 0;
-  };
-  const handlePinMessage = (messageId) => {
+  const handlePinMessage = (messageId, isPinned) => {
     // setMessages((prevMessages) =>
     //   prevMessages.map((msg) =>
     //     msg.id === messageId ? { ...msg, pinned: !msg.pinned } : msg,
@@ -82,31 +82,31 @@ function Chat() {
     //   setPinnedMsgs(newPinnedArr);
     // }
 
-    let isPinned = false;
-
-    openedChat.pinnedMessages.map((msg) => {
-      if (msg._id === messageId) {
-        isPinned = true;
-      }
-    });
+    console.log('iam pinned or not');
+    console.log(isPinned);
 
     if (!isPinned) {
-      console.log({
-        chatId: openedChat.id,
-        messageId: messageId,
-      });
-      console.log;
       socket.emit('message:pin', {
         chatId: openedChat.id,
         messageId: messageId,
       });
+      // setPinnedMsgs([...pinnedMsgs, messageId]);
+      // setMessages((prevMessages) =>
+      //   prevMessages.map((msg) => {
+      //     const newMessage = msg;
+      //     if (msg._id === messageId) {
+      //       newMessage.isPinned = true;
+      //       return newMessage;
+      //     }
+      //     return msg;
+      //   }),
+      // );
     } else {
       socket.emit('message:unpin', {
         chatId: openedChat.id,
         messageId: messageId,
       });
     }
-    console.log(pinnedMsgs);
   };
 
   const encryptMessage = (text) => {
@@ -136,6 +136,41 @@ function Chat() {
       socket.on('connect_error', (err) => {
         console.log(err);
       });
+      socket.on('message:pin', (payload) => {
+        
+        setPinnedMsgs((prevPinnedMsgs) => [
+          ...prevPinnedMsgs,
+          payload.message._id,
+        ]);
+
+      
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => {
+            if (msg._id === payload.message._id) {
+              return { ...msg, isPinned: true }; 
+            }
+            return msg;
+          }),
+        );
+      });
+
+      socket.on('message:unpin', (payload) => {
+        setPinnedMsgs((prev) =>
+          prev.filter((msg) => msg._id !== payload.message._id)
+        );
+        console.log('Pinned messages after update:', pinnedMsgs); // This might still log the previous value
+      
+        // Updating the messages as well
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg._id === payload.message._id
+              ? { ...msg, isPinned: false } // Make sure to avoid mutating state
+              : msg
+          )
+        );
+      });
+      
+
       socket.on('message:sent', (message) => {
         if (message.senderId !== userId) {
           console.log(socket);
@@ -149,20 +184,6 @@ function Chat() {
         }
       });
 
-      socket.on('message:pin', (payload) => {
-        console.log('recieved pin');
-
-        console.log('asddddddddddddddddd');
-        console.log(pinnedMsgs);
-        let newPinnedArr = [...pinnedMsgs, payload.messageId];
-        console.log('heereeeeee');
-        console.log(newPinnedArr);
-        console.log(openedChat);
-        dispatch(
-          setOpenedChat({ ...openedChat, pinnedMessages: newPinnedArr }),
-        );
-        setPinnedMsgs([...pinnedMsgs, payload.messageId]);
-      });
       socket.on('message:updated', (response) => {
         console.log('recieved updated', response);
         setMessages((prevMessages) =>
@@ -232,13 +253,16 @@ function Chat() {
         const data = await response.json();
         console.log(data.messages.data);
         let tempMessages = data.messages.data;
+        let tempPinned = [];
         tempMessages.map((msg) => {
+          if (msg.isPinned) tempPinned.push(msg._id);
           if (msg.senderId._id === userId) {
             msg['type'] = 'sent';
           } else {
             msg['type'] = 'received';
           }
         });
+        setPinnedMsgs(tempPinned);
 
         tempMessages.sort(
           (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
@@ -390,6 +414,7 @@ function Chat() {
                 mediaKey: newMessage.mediaKey,
                 mediaUrl: newMessage.mediaUrl,
                 messageType: newMessage.messageType,
+                isPinned: false,
               };
               console.log(newRenderedMessage);
               setMessages((prevMessages) => [
@@ -570,13 +595,46 @@ function Chat() {
     }
   };
 
+  const handleNavigateToPinned = () => {
+    const currentPinnedMsgs = pinnedMsgs; // Use the state directly here
+    if (currentPinnedMsgs.length === 0) return; // Early exit if no pinned messages
+  
+    const msg = messageRefs.current[currentPinnedMsgs[it1]];
+  
+    if (msg) {
+      msg.classList.add('bg-yellow-200');
+      msg.scrollIntoView({ behavior: 'smooth' });
+  
+      setTimeout(() => {
+        msg.classList.remove('bg-yellow-200');
+      }, 1000);
+    } else {
+      console.error('Message reference not found for pinned message:', currentPinnedMsgs[it1]);
+    }
+  
+    // Update the iterator for the next pinned message
+    it1++;
+    if (it1 >= currentPinnedMsgs.length) it1 = 0;
+  };
+  
+  
+
   return (
     <div
       className={`relative flex flex-grow flex-col justify-between ${viewingImage ? '' : 'space-y-4'} overflow-y-auto text-black dark:text-white`}
     >
       <ChatHeader handleKey={handleKey} />
       {pinnedMsgs.length > 0 && (
-        <PinnedMessagesBar handleNavigateToPinned={handleNavigateToPinned} />
+        <div className="rounded-lg bg-bg-primary p-2 shadow-md">
+          <h2
+            data-test-id="navigate-to-pinned-h2"
+            className="flex cursor-pointer items-center space-x-2 pl-3 text-lg font-semibold text-white"
+            onClick={handleNavigateToPinned}
+          >
+            <span className="text-base">📌</span>
+            <span className="text-sm">Pinned Messages</span>
+          </h2>
+        </div>
       )}
 
       <MessagesList
