@@ -56,18 +56,13 @@ function Chat() {
   const [ack, setAck] = useState(null);
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
-  const pinnedMsgsRef = useRef(pinnedMsgs);
+
   useEffect(() => {
-    pinnedMsgsRef.current = pinnedMsgs; // Update the ref whenever `pinnedMsgs` changes
-  }, [pinnedMsgs]);
-  useEffect(() => {
-    console.log('Updated pinnedMsgs:', pinnedMsgs); // This logs the updated state after re-render
+    console.log('Updated pinnedMsgs222s:', pinnedMsgs); // This logs the updated state after re-render
   }, [pinnedMsgs]); // This will run every time pinnedMsgs changes
-  
+
   let it = 0;
   let it1 = 0;
-
- 
 
   const handlePinMessage = (messageId, isPinned) => {
     // setMessages((prevMessages) =>
@@ -86,6 +81,7 @@ function Chat() {
     console.log(isPinned);
 
     if (!isPinned) {
+      // console.log('laaaa');
       socket.emit('message:pin', {
         chatId: openedChat.id,
         messageId: messageId,
@@ -101,7 +97,10 @@ function Chat() {
       //     return msg;
       //   }),
       // );
+      // console.log('Pinned messages:', pinnedMsgs); // This might still log the previous value
     } else {
+      // console.log('loooooo');
+      console.log('Pinned messages before update:', pinnedMsgs); // This might still log the previous value
       socket.emit('message:unpin', {
         chatId: openedChat.id,
         messageId: messageId,
@@ -137,17 +136,16 @@ function Chat() {
         console.log(err);
       });
       socket.on('message:pin', (payload) => {
-        
+        // console.log('iam pin', payload);
         setPinnedMsgs((prevPinnedMsgs) => [
           ...prevPinnedMsgs,
           payload.message._id,
         ]);
 
-      
         setMessages((prevMessages) =>
           prevMessages.map((msg) => {
             if (msg._id === payload.message._id) {
-              return { ...msg, isPinned: true }; 
+              return { ...msg, isPinned: true };
             }
             return msg;
           }),
@@ -155,21 +153,20 @@ function Chat() {
       });
 
       socket.on('message:unpin', (payload) => {
-        setPinnedMsgs((prev) =>
-          prev.filter((msg) => msg._id !== payload.message._id)
+        console.log('iam here', payload);
+        setPinnedMsgs((pinnedMsgs) =>
+          pinnedMsgs.filter((msg) => msg !== payload.message._id),
         );
-        console.log('Pinned messages after update:', pinnedMsgs); // This might still log the previous value
-      
+
         // Updating the messages as well
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             msg._id === payload.message._id
               ? { ...msg, isPinned: false } // Make sure to avoid mutating state
-              : msg
-          )
+              : msg,
+          ),
         );
       });
-      
 
       socket.on('message:sent', (message) => {
         if (message.senderId !== userId) {
@@ -205,7 +202,7 @@ function Chat() {
           prevMessages.filter((msg) => msg._id !== response._id),
         );
         setPinnedMsgs((prevMessages) =>
-          prevMessages.filter((msg) => msg._id !== response._id),
+          prevMessages.filter((msg) => msg !== response._id),
         );
       });
     } catch (err) {
@@ -598,26 +595,27 @@ function Chat() {
   const handleNavigateToPinned = () => {
     const currentPinnedMsgs = pinnedMsgs; // Use the state directly here
     if (currentPinnedMsgs.length === 0) return; // Early exit if no pinned messages
-  
+
     const msg = messageRefs.current[currentPinnedMsgs[it1]];
-  
+
     if (msg) {
       msg.classList.add('bg-yellow-200');
       msg.scrollIntoView({ behavior: 'smooth' });
-  
+
       setTimeout(() => {
         msg.classList.remove('bg-yellow-200');
       }, 1000);
     } else {
-      console.error('Message reference not found for pinned message:', currentPinnedMsgs[it1]);
+      console.error(
+        'Message reference not found for pinned message:',
+        currentPinnedMsgs[it1],
+      );
     }
-  
+
     // Update the iterator for the next pinned message
     it1++;
     if (it1 >= currentPinnedMsgs.length) it1 = 0;
   };
-  
-  
 
   return (
     <div
