@@ -6,6 +6,7 @@ import {
   closeRightSidebar,
   setRightSidebar,
 } from '../../../slices/sidebarSlice';
+import Caller from '../voicecall/Caller';
 
 function ChatHeader({ handleKey }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -39,41 +40,48 @@ function ChatHeader({ handleKey }) {
   return (
     <>
       <div>
-        <div className="flex items-center bg-bg-primary p-4">
-          <img
-            data-test-id="chat-image"
-            src={openedChat.picture}
-            alt=""
-            className="h-10 w-10 cursor-pointer rounded-full"
-            onClick={toggleExpand}
-          />
-          <h1 className="mb-1 ml-5 text-xl font-semibold text-text-primary">
-            {openedChat.name}
-          </h1>
-          {searchVisible ? (
-            <div className="ml-auto flex items-center">
-              <input
-                data-test-id="search-in-chat-input"
-                type="text"
-                value={searchText}
-                onChange={handleSearchChange}
-                className="mr-2 rounded border border-gray-300 p-1 text-gray-500 focus:outline-none" // Apply gray text color
-                placeholder="Search..."
-                onKeyDown={handleKey}
-              />
-              <FaTimes
-                data-test-id="close-search-in-chat-button"
+        <div className="flex flex-row items-center justify-between bg-bg-primary p-4">
+          <div className="flex flex-row">
+            <img
+              data-test-id="chat-image"
+              src={openedChat.picture}
+              alt=""
+              className="h-10 w-10 cursor-pointer rounded-full"
+              onClick={toggleExpand}
+            />
+            <h1 className="mb-1 ml-5 text-xl font-semibold text-text-primary">
+              {openedChat.name}
+            </h1>
+          </div>
+          <div className="flex flex-row items-center space-x-3">
+            {searchVisible ? (
+              <>
+                <input
+                  data-test-id="search-in-chat-input"
+                  type="text"
+                  value={searchText}
+                  onChange={handleSearchChange}
+                  className="mr-2 rounded border border-gray-300 p-1 text-gray-500 focus:outline-none" // Apply gray text color
+                  placeholder="Search..."
+                  onKeyDown={handleKey}
+                />
+                <FaTimes
+                  size={17}
+                  data-test-id="close-search-in-chat-button"
+                  className="cursor-pointer text-gray-600 hover:text-gray-900"
+                  onClick={toggleSearch}
+                />
+              </>
+            ) : (
+              <FaSearch
+                size={17}
+                data-test-id="open-search-in-chat-button"
                 className="cursor-pointer text-gray-600 hover:text-gray-900"
                 onClick={toggleSearch}
               />
-            </div>
-          ) : (
-            <FaSearch
-              data-test-id="open-search-in-chat-button"
-              className="ml-auto cursor-pointer text-gray-600 hover:text-gray-900"
-              onClick={toggleSearch}
-            />
-          )}
+            )}
+            <Caller />
+          </div>
         </div>
       </div>
     </>

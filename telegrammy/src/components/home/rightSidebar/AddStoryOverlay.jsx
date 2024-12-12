@@ -138,6 +138,7 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
     const formData = new FormData();
     formData.append('content', caption); // 'content' field
     formData.append('story', blob, file.name);
+    formData.append('mediaType', fileType === 'video' ? 'video' : 'picture');
 
     try {
       setIsLoading(true);

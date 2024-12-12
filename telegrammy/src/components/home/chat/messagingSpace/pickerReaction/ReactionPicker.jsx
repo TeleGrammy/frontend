@@ -6,6 +6,21 @@ import ReactionTypeSelector from './ReactionTypeSelector';
 import ReactionsArea from './ReactionsArea';
 import PickerPopup from './PickerPopup';
 
+const buttonsData = [
+  {
+    type: 'emoji',
+    content: '😊',
+  },
+  {
+    type: 'stickers',
+    content: <StickerIcon />,
+  },
+  {
+    type: 'gifs',
+    content: <GifIcon />,
+  },
+];
+
 const ReactionPicker = ({ setInputValue, handleSelectItem }) => {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('emoji'); // Tabs: 'emoji', 'stickers', 'gifs'
@@ -42,20 +57,6 @@ const ReactionPicker = ({ setInputValue, handleSelectItem }) => {
     }
   };
 
-  const buttonsData = [
-    {
-      type: 'emoji',
-      content: '😊',
-    },
-    {
-      type: 'stickers',
-      content: <StickerIcon />,
-    },
-    {
-      type: 'gifs',
-      content: <GifIcon />,
-    },
-  ];
   return (
     <>
       <button
