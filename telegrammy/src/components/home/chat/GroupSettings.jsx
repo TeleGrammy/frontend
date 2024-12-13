@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 const apiUrl = import.meta.env.VITE_API_URL;
+import socket from './utils/Socket';
 import { useSelector } from 'react-redux';
 
 function GroupSettings({
@@ -15,27 +16,38 @@ function GroupSettings({
   setGroupPrivacy,
   groupName,
   setGroupName,
+  isOwner,
   toggleView,
 }) {
   const { openedChat } = useSelector((state) => state.chats);
   const [privacy, setPrivacy] = useState('');
   const [sizeLimit, setSizeLimit] = useState(0);
   const [newDescription, setDescription] = useState('');
-  const [newName, setName] = useState('');
+  const [newName, setName] = useState(groupName);
   const [muteDuration, setMuteDuration] = useState('None');
   const [selectedFile,setSelectedFile] = useState();
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // Set initial values from props
+    socket.connect();
+    socket.on('group:deleted', (message) => {
+      console.log('Group deleted', message);
+    });
     setPrivacy(groupPrivacy);
     setSizeLimit(groupSizeLimit);
-    setName(groupName);
     setDescription(groupDescription);
+    return () => {
+      socket.disconnect();
+      console.log("Disconnected");
+    };
   }, [groupPrivacy, groupSizeLimit]);
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
+  };
+
+  const handleNameChange = (e) => {
+    setName(e.target.value);
   };
 
   const handlePhotoChange = (e) => {
@@ -182,17 +194,12 @@ function GroupSettings({
     }
   };
 
-  const leaveGroup = () => {
-    
-  };
 
   const deleteGroup = () => {
-    if (isAdmin) {
-      console.log('Deleting the group...');
-      // Logic to delete the group
-    } else {
-      console.log('Only admins can delete the group.');
+    const data = {
+      groupId: openedChat.groupId
     }
+    socket.emit('removingGroup',data);
   };
 
   return (
@@ -228,6 +235,25 @@ function GroupSettings({
               data-test-id="photo-input"
             />
           </>
+        )}
+      </div>
+      <div className="mb-4 flex w-full flex-col items-center">
+        {isAdmin ? (
+          <input
+            type="text"
+            value={newName}
+            onChange={handleNameChange}
+            className="mb-2 w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-center text-text-primary"
+            placeholder="Enter new group name"
+            data-test-id="name-input"
+          />
+        ) : (
+          <p
+            className="mb-2 text-center text-text-primary"
+            data-test-id="group-name"
+          >
+            {groupName}
+          </p>
         )}
       </div>
       <div className="mb-4 flex w-full flex-col items-center">
@@ -320,14 +346,8 @@ function GroupSettings({
           Save Changes
         </button>
       )}
-      <button
-        className="mb-4 w-3/4 rounded-lg bg-red-500 px-2 py-1 text-white hover:bg-red-600"
-        onClick={leaveGroup}
-        data-test-id="leave-group-button"
-      >
-        Leave Group
-      </button>
-      {isAdmin && (
+
+      {isOwner && (
         <button
           className="w-3/4 rounded-lg bg-red-700 px-2 py-1 text-white hover:bg-red-800"
           onClick={deleteGroup}

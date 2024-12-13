@@ -91,6 +91,7 @@ function GroupOrChannelInfo() {
         setGroupPhoto(groupData.data.group.image);
         setGroupPrivacy(groupData.data.group.groupType);
         setGroupSizeLimit(groupData.data.group.groupSizeLimit);
+        console.log(groupMembers);
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -212,6 +213,33 @@ function GroupOrChannelInfo() {
   }
   catch{
     console.log("ERROR");
+    }
+  };
+
+  const removeAdmin = async (id) => {
+    if (admins.includes(id)) {
+      setAdmins(admins.filter(admin => admin !== id));
+      try {
+        const res = await fetch(
+          `${apiUrl}/v1/groups/${openedChat.groupId}/admins/${id}`,
+          {
+            method: 'DELETE',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: 'include',
+          },
+        );
+
+        if (!res.ok) {
+          console.error('Failed to remove admin.');
+        } else {
+          const result = await res.json();
+          console.log('Admin removed successfully', result);
+        }
+      } catch (error) {
+        console.error('Error updating group settings:', error);
+      }
     }
   };
 
@@ -367,51 +395,63 @@ function GroupOrChannelInfo() {
                               Leave Group
                             </button>
                           ) : (
-                            // Only show options if the member is not an admin
-                            !admins.includes(member.id) && (
-                              <>
+                            <>
+                              {!admins.includes(member.id) ? (
+                                <>
+                                  <button
+                                    data-test-id={`${member.username}-make-admin-button`}
+                                    className="text-text-primary"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      makeAdmin(member.id);
+                                    }}
+                                  >
+                                    Make Admin
+                                  </button>
+                                  <button
+                                    data-test-id={`${member.username}-allow-comments-button`}
+                                    className="text-text-primary"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      togglePermission(member.username, 'canComment');
+                                    }}
+                                  >
+                                    {member.canComment ? 'Revoke Comments' : 'Allow Comments'}
+                                  </button>
+                                  <button
+                                    data-test-id={`${member.username}-allow-download-button`}
+                                    className="text-text-primary"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      togglePermission(member.username, 'canDownload');
+                                    }}
+                                  >
+                                    {member.canDownload ? 'Revoke Download' : 'Allow Download'}
+                                  </button>
+                                </>
+                              ) : (
                                 <button
-                                  data-test-id={`${member.username}-make-admin-button`}
-                                  className="text-text-primary"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    makeAdmin(member.id);
-                                  }}
-                                >
-                                  Make Admin
-                                </button>
-                                <button
-                                  data-test-id={`${member.username}-allow-comments-button`}
-                                  className="text-text-primary"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    togglePermission(member.username, 'canComment');
-                                  }}
-                                >
-                                  {member.canComment ? 'Revoke Comments' : 'Allow Comments'}
-                                </button>
-                                <button
-                                  data-test-id={`${member.username}-allow-download-button`}
-                                  className="text-text-primary"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    togglePermission(member.username, 'canDownload');
-                                  }}
-                                >
-                                  {member.canDownload ? 'Revoke Download' : 'Allow Download'}
-                                </button>
-                                <button
-                                  data-test-id={`${member.username}-remove-member-button`}
+                                  data-test-id={`${member.username}-remove-admin-button`}
                                   className="text-red-500"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    removeMember(member);
+                                    removeAdmin(member.id);
                                   }}
                                 >
-                                  Remove
+                                  Remove Admin
                                 </button>
-                              </>
-                            )
+                              )}
+                              <button
+                                data-test-id={`${member.username}-remove-member-button`}
+                                className="text-red-500"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeMember(member);
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </>
                           )}
                         </div>
                       ) : null}
