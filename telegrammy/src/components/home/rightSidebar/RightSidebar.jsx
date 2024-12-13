@@ -8,7 +8,7 @@ function RightSidebar() {
 
   return (
     <div
-      className="relative flex h-screen flex-col items-center overflow-y-hidden bg-bg-primary"
+      className="relative flex h-screen flex-col items-center bg-bg-primary"
       style={{ width: `25vw` }}
     >
       {/* Components to render */}

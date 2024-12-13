@@ -1,8 +1,9 @@
 import { useDispatch } from 'react-redux';
 import { setcurrentMenu } from '../../../slices/sidebarSlice';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AddUsersList from './AddUsersList';
 import { FaAngleRight } from 'react-icons/fa';
+import socket from '../chat/utils/Socket';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -23,16 +24,29 @@ function ChannelList({ channelOrGroup }) {
     }
   };
 
+  useEffect(() => {
+    socket.connect();
+    socket.on('group:created', (message) => {
+      console.log('Group created message received:', message);
+    });
+
+    // Cleanup function to remove the listener when the component unmounts
+    return () => {
+      socket.disconnect();
+      console.log("Disconnected");
+    };
+  }, []); // Empty dependency array means this runs once on mount and cleanup on unmount
+
   function handleCreateGroupOrChannel() {
-    const createGroup = async () => {
-      console.log(channelName);
+    const createChannel = async () => {
       try {
         const response = await fetch(
-          `${apiUrl}/v1/${channelOrGroup === 'channel' ? 'channels' : 'groups'}/`,
+          `${apiUrl}/v1/channels/`,
           {
             method: 'POST',
             headers: {
               Accept: 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               name: channelName,
@@ -47,6 +61,20 @@ function ChannelList({ channelOrGroup }) {
         console.error('Error creating group or channel:', error.message);
       }
     };
+
+    function createGroup() {
+      try {
+        const groupData = {
+          name: channelName,
+        };
+        console.log('Emitting group creation:', groupData);
+
+        // Emit the correct message type for creating a group
+        socket.emit('creatingGroup', groupData);
+      } catch (error) {
+        console.error('Error in createGroup:', error.message);
+      }
+    }
     createGroup();
   }
 
