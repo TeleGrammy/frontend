@@ -77,7 +77,7 @@ function Caller() {
       // Create and send an offer
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
-      socket.emit(
+      socket.current.emit(
         'call:newCall',
         {
           chatId: openedChat.id,
