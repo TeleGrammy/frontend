@@ -6,11 +6,19 @@ import {
   calldeclined,
   acceptCall,
   endCall,
+  callConnected,
+  connectingCall,
+  updateParticipants,
 } from '../../../slices/callSlice';
 
 import { useSocket } from '../../../contexts/SocketContext';
 
 import { IoMdCall } from 'react-icons/io';
+
+// ICE servers configuration
+const iceServers = {
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+};
 
 function Caller() {
   const socket = useSocket();
@@ -31,9 +39,7 @@ function Caller() {
 
     try {
       // Create peer connection
-      const peerConnection = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-      });
+      const peerConnection = new RTCPeerConnection(iceServers);
       peerConnectionRef.current = peerConnection;
 
       // Handle ICE candidates
@@ -98,21 +104,36 @@ function Caller() {
           }
         },
       );
+
+      peerConnectionRef.current.onconnectionstatechange = () => {
+        console.log(
+          'Connection State:',
+          peerConnectionRef.current.connectionState,
+        );
+
+        if (peerConnectionRef.current.connectionState === 'connected') {
+          console.log('Call is active.');
+          dispatch(callConnected());
+        } else if (peerConnectionRef.current.connectionState === 'connecting') {
+          console.log('Connecting call...');
+          dispatch(connectingCall());
+        }
+      };
     } catch (err) {
       console.error('Error starting call:', err);
     }
   };
 
-  const endCall = () => {
+  const endCallEvent = () => {
     if (callState !== 'no call') {
-      dispatch(endCall());
-      cleanup();
       socket.current.emit(
         'call:end',
         { callId: callID, status: 'ended' },
         (response) => {
           if (response.status === 'ok') {
             console.log('Call ended');
+            dispatch(endCall());
+            cleanup();
           } else {
             console.log('error', response.message);
           }
@@ -140,26 +161,34 @@ function Caller() {
 
   // listen for sockets events
   useEffect(() => {
-    const handleAcceptCall = (data) => {
-      peerConnectionRef.current.setRemoteDescription(
-        new RTCSessionDescription(data.answer),
-      );
+    // need to change for groups and multiple participants calls (backend , frontend)
+    const handleAcceptCall = (response) => {
+      if (callState === 'no call') return;
+      if (!peerConnectionRef.current.remoteDescription) {
+        // Set the first valid answer
+        peerConnectionRef.current.setRemoteDescription(
+          new RTCSessionDescription(response.callObj.answer),
+        );
+        dispatch(updateParticipants(response.participants));
+      }
     };
+    // need to check in group calls
+    const handleRejectCall = (response) => {};
 
-    const handleRejectCall = () => {
-      cleanup();
-    };
-
-    const handleIncomingICE = (data) => {
+    // need to check
+    const handleIncomingICE = (response) => {
+      if (callState === 'no call') return;
       if (peerConnectionRef.current) {
         peerConnectionRef.current
-          .addIceCandidate(new RTCIceCandidate(data.candidate))
+          .addIceCandidate(new RTCIceCandidate(response.callObj.IceCandidate))
           .catch((err) => console.error('Error adding ICE candidate:', err));
       }
     };
 
-    const handleEndCall = () => {
-      dispatch(endCall());
+    const handleEndCallFromCallee = (response) => {
+      if (callState === 'no call') return;
+      if (response.status === 'rejected') dispatch(calldeclined());
+      else dispatch(endCall());
       cleanup();
     };
 
@@ -168,7 +197,7 @@ function Caller() {
       socket.current.on('call:answeredCall', handleAcceptCall);
       socket.current.on('call:rejectedCall', handleRejectCall);
       socket.current.on('call:addedICE', handleIncomingICE);
-      socket.current.on('call:endedCall', handleEndCall);
+      socket.current.on('call:endedCall', handleEndCallFromCallee);
     } catch (err) {
       console.error('Error listening for socket events:', err);
     }
@@ -178,7 +207,7 @@ function Caller() {
       socket.current.off('call:answeredCall', handleAcceptCall);
       socket.current.off('call:rejectedCall', handleRejectCall);
       socket.current.off('call:addedICE', handleIncomingICE);
-      socket.current.off('call:endedCall', handleEndCall);
+      socket.current.off('call:endedCall', handleEndCallFromCallee);
       cleanup();
     };
   }, [socket]);
@@ -194,7 +223,7 @@ function Caller() {
       <audio ref={remoteAudioRef} autoPlay className="hidden"></audio>
       <button
         ref={endCallFromCallerRef}
-        onClick={endCall}
+        onClick={endCallEvent}
         className="hidden"
       ></button>
     </>

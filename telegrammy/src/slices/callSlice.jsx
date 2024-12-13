@@ -31,8 +31,12 @@ const callSlice = createSlice({
       state.isCallOverlayOpen = true;
       state.callState = 'incoming call';
     },
+    //
+    connectingCall: (state) => {
+      state.callState = 'connecting';
+    },
     // function to accept call
-    acceptCall: (state) => {
+    callConnected: (state) => {
       state.callState = 'in call';
       state.callTime = '00:00';
     },
@@ -75,12 +79,16 @@ const callSlice = createSlice({
     setIntervalId(state, action) {
       state.intervalId = action.payload;
     },
+    updateParticipants(state, action) {
+      state.participants = action.payload;
+    },
   },
 });
 
 export const {
   startCall,
-  acceptCall,
+  connectingCall,
+  callConnected,
   declineCall,
   endCall,
   closeOverlay,
@@ -89,6 +97,7 @@ export const {
   openOverlay,
   incomingCall,
   calldeclined,
+  updateParticipants,
 } = callSlice.actions;
 
 export default callSlice.reducer;
