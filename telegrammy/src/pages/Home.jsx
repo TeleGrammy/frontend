@@ -104,7 +104,9 @@ function Home() {
         />
       )}
 
-      {isCallOverlayOpen && <CallOverlay />}
+      {/* Show the call overlay and Callee functions */}
+      <CallOverlay />
+
       <ToastContainer />
     </div>
   );

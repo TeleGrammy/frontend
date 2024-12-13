@@ -134,12 +134,12 @@ function Chat() {
       socket.current.on('error', (err) => {
         console.log(err);
       });
-      socket.current.on('connect', () => {
-        console.log('Connected to Socket.IO server');
-      });
-      socket.current.on('connect_error', (err) => {
-        console.log(err);
-      });
+      // socket.current.on('connect', () => {
+      //   console.log('Connected to Socket.IO server');
+      // });
+      // socket.current.on('connect_error', (err) => {
+      //   console.log(err);
+      // });
       socket.current.on('message:sent', (message) => {
         if (message.senderId !== userId) {
           console.log(socket.current);
@@ -156,10 +156,8 @@ function Chat() {
       socket.current.on('message:pin', (payload) => {
         console.log('recieved pin');
 
-        console.log('asddddddddddddddddd');
         console.log(pinnedMsgs);
         let newPinnedArr = [...pinnedMsgs, payload.messageId];
-        console.log('heereeeeee');
         console.log(newPinnedArr);
         console.log(openedChat);
         dispatch(
@@ -199,7 +197,7 @@ function Chat() {
     //   socket.current.disconnect();
     //   console.log('dscnnctd');
     // };
-  }, [socket.current]);
+  }, [socket]);
 
   useEffect(() => {
     if (ack) {

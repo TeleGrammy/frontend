@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useEffect } from 'react';
+import { createContext, useContext, useRef, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 
 // Create a context for the socket
@@ -20,6 +20,8 @@ function getCookie(name) {
 export const SocketProvider = ({ children }) => {
   const socketRef = useRef(null);
 
+  const [connected, setConnected] = useState(false);
+
   useEffect(() => {
     if (!socketRef.current) {
       const token = getCookie('accessToken');
@@ -27,6 +29,13 @@ export const SocketProvider = ({ children }) => {
       // Initialize the socket connection
       socketRef.current = io(SOCKET_URL, {
         query: { token },
+      });
+      socketRef.current.on('connect_error', (err) => {
+        console.log(err);
+      });
+      socketRef.current.on('connect', () => {
+        console.log('Connected to Socket.IO server');
+        setConnected(true);
       });
     }
 
@@ -37,6 +46,11 @@ export const SocketProvider = ({ children }) => {
       }
     };
   }, []);
+
+  if (!connected) {
+    // Optionally, return a loading indicator or null while waiting
+    return null;
+  }
 
   return (
     <socketContext.Provider value={socketRef}>

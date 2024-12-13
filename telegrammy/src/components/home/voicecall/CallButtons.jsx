@@ -1,30 +1,9 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import {
-  acceptCall,
-  declineCall,
-  endCall,
-  updateTime,
-  setIntervalId,
-} from '../../../slices/callSlice';
+import { useSelector } from 'react-redux';
 
-function CallButtons() {
+function CallButtons({ handleAccept, handleDecline, handleEndCall }) {
   const { callState } = useSelector((state) => state.call);
-  const dispatch = useDispatch();
 
-  const handleAccept = () => {
-    dispatch(acceptCall());
-  };
-
-  const handleDecline = () => {
-    dispatch(declineCall());
-  };
-
-  const handleEndCall = () => {
-    dispatch(endCall());
-  };
-
-  // if (callState === 'ringing') {
   return (
     <div className="mt-4 flex justify-around">
       {callState === 'incoming call' ? (

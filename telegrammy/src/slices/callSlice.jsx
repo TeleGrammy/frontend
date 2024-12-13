@@ -2,10 +2,13 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   isCallOverlayOpen: false, // Overlay for incoming call
+  callID: null, // Call ID
+  chatId: null, // Chat object ID
   callState: 'no call', // 'ringing', 'in call', 'incoming call', or 'no call'
+  participants: [],
   callTime: '00:00', // Call duration in seconds
-  participants: {}, //{CALLER and CHATID}
   intervalId: null, // Timer reference for counting call duration
+  endCallFromCallerRef: null, // Reference to endCall function in Caller component
 };
 
 const callSlice = createSlice({
@@ -14,12 +17,19 @@ const callSlice = createSlice({
   reducers: {
     // function to start call
     startCall: (state, action) => {
-      state.participants = action.payload.participants; // e.g., { caller, CHATID }
+      state.participants = action.payload.participants;
+      state.chatId = action.payload.chatId;
+      state.callID = action.payload.callID;
+      state.endCallFromCallerRef = action.payload.endCallFromCallerRef;
       state.isCallOverlayOpen = true;
-      state.callState =
-        JSON.parse(localStorage.getItem('user')) === state.participants.CALLER
-          ? 'ringing'
-          : 'incoming call';
+      state.callState = 'ringing';
+    },
+    incomingCall: (state, action) => {
+      state.participants = action.payload.participants;
+      state.chatId = action.payload.chatId;
+      state.callID = action.payload.callID;
+      state.isCallOverlayOpen = true;
+      state.callState = 'incoming call';
     },
     // function to accept call
     acceptCall: (state) => {
@@ -30,7 +40,14 @@ const callSlice = createSlice({
     declineCall: (state) => {
       state.callState = 'no call';
       state.participants = [];
+      state.chatId = null;
+      state.callID = null;
+      state.endCallFromCallerRef = null;
+      state.intervalId = null;
       state.isCallOverlayOpen = false;
+    },
+    calldeclined: (state) => {
+      state.callState = 'callDeclined';
     },
     // function to end call
     endCall: (state) => {
@@ -38,6 +55,10 @@ const callSlice = createSlice({
       if (state.intervalId) {
         clearInterval(state.intervalId); // Clear interval when call ends
       }
+      state.participants = [];
+      state.chatId = null;
+      state.callID = null;
+      state.endCallFromCallerRef = null;
       state.intervalId = null;
       state.isCallOverlayOpen = false;
     },
@@ -66,5 +87,8 @@ export const {
   updateTime,
   setIntervalId,
   openOverlay,
+  incomingCall,
+  calldeclined,
 } = callSlice.actions;
+
 export default callSlice.reducer;
