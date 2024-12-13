@@ -67,18 +67,6 @@ function Chat() {
   let it1 = 0;
 
   const handlePinMessage = (messageId, isPinned) => {
-    // setMessages((prevMessages) =>
-    //   prevMessages.map((msg) =>
-    //     msg.id === messageId ? { ...msg, pinned: !msg.pinned } : msg,
-    //   ),
-    // );
-    // if (!ispinned) {
-    //   setPinnedMsgs([...pinnedMsgs, messageId]);
-    // } else {
-    //   const newPinnedArr = pinnedMsgs.filter((el) => el != messageId);
-    //   setPinnedMsgs(newPinnedArr);
-    // }
-
     console.log('iam pinned or not');
     console.log(isPinned);
 
@@ -88,21 +76,7 @@ function Chat() {
         chatId: openedChat.id,
         messageId: messageId,
       });
-      // setPinnedMsgs([...pinnedMsgs, messageId]);
-      // setMessages((prevMessages) =>
-      //   prevMessages.map((msg) => {
-      //     const newMessage = msg;
-      //     if (msg._id === messageId) {
-      //       newMessage.isPinned = true;
-      //       return newMessage;
-      //     }
-      //     return msg;
-      //   }),
-      // );
-      // console.log('Pinned messages:', pinnedMsgs); // This might still log the previous value
     } else {
-      // console.log('loooooo');
-      console.log('Pinned messages before update:', pinnedMsgs); // This might still log the previous value
       socket.current.emit('message:unpin', {
         chatId: openedChat.id,
         messageId: messageId,
@@ -171,6 +145,8 @@ function Chat() {
       });
 
       socket.current.on('message:sent', (message) => {
+        trie.insert(message.content, message._id);
+
         if (message.senderId !== userId) {
           console.log(socket.current);
           console.log('Message received:', message);
@@ -189,7 +165,7 @@ function Chat() {
           prevMessages.map((msg) => {
             const newMessage = { ...msg, ...response };
             if (msg._id === response._id) {
-              trie.delete(msg.content, msg.id);
+              trie.delete(msg.content, msg._id);
               return newMessage;
             }
             return msg;
@@ -200,8 +176,12 @@ function Chat() {
       });
       socket.current.on('message:deleted', (response) => {
         console.log('recieved deleted', response);
+
         setMessages((prevMessages) =>
-          prevMessages.filter((msg) => msg._id !== response._id),
+          prevMessages.filter((msg) => {
+            if (msg._id === response._id) trie.delete(msg.content, msg._id);
+            return msg._id !== response._id;
+          }),
         );
         setPinnedMsgs((prevMessages) =>
           prevMessages.filter((msg) => msg !== response._id),
@@ -266,6 +246,7 @@ function Chat() {
         tempMessages.sort(
           (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
         );
+        tempMessages.map((msg) => trie.insert(msg.content, msg._id));
         setMessages(tempMessages);
       } catch (error) {
         console.error('Error fetching Chats:', error);
@@ -281,16 +262,18 @@ function Chat() {
       console.log('yes');
       if (it >= ids.length) it = 0;
       console.log(it);
-      const msg = messageRefs.current[ids[it]];
+      console.log('here sir', ids[it]);
+      const msg = messageRefs.current[ids[it++]];
       msg.classList.add('bg-yellow-200');
 
       msg.scrollIntoView({ behavior: 'smooth' });
 
+
       setTimeout(() => {
         msg.classList.remove('bg-yellow-200');
       }, 1000);
-      it1++;
-      if (it1 >= pinnedMsgs.length) it1 = 0;
+    } else {
+      console.log('empty');
     }
   };
   useEffect(() => {
@@ -386,11 +369,10 @@ function Chat() {
           messageId: editingMessageId,
           content: newMessage.content,
         });
-        trie.insert(newMessage.content, editingMessageId);
+
         setEditingMessageId(null);
         setInputValue(''); // Clear the input field
       } else {
-        trie.insert(newMessage.content, messages.length + 1);
         const sentMessage = {
           id: messages.length + 1,
           ...newMessage,
@@ -489,18 +471,6 @@ function Chat() {
     }
   };
   const handleDeleteMessage = (message) => {
-    // const confirmDelete = window.confirm(
-    //   'Are you sure you want to delete this message?',
-    // );
-    // if (confirmDelete) {
-    //   setMessages((prevMessages) =>
-    //     prevMessages.filter((msg) => msg.id !== id),
-    //   );
-    //   setPinnedMsgs((prevMessages) =>
-    //     prevMessages.filter((msg) => msg.id !== id),
-    //   );
-    // }
-
     socket.current.emit(
       'message:delete',
       { messageId: message._id },
@@ -597,7 +567,7 @@ function Chat() {
 
   const handleKey = (event) => {
     if (event.key === 'Enter' && searchVisible) {
-      it++;
+    
       handleSearch(searchText);
     }
   };
@@ -633,16 +603,7 @@ function Chat() {
     >
       <ChatHeader handleKey={handleKey} />
       {pinnedMsgs.length > 0 && (
-        <div className="rounded-lg bg-bg-primary p-2 shadow-md">
-          <h2
-            data-test-id="navigate-to-pinned-h2"
-            className="flex cursor-pointer items-center space-x-2 pl-3 text-lg font-semibold text-white"
-            onClick={handleNavigateToPinned}
-          >
-            <span className="text-base">📌</span>
-            <span className="text-sm">Pinned Messages</span>
-          </h2>
-        </div>
+        <PinnedMessagesBar handleNavigateToPinned={handleNavigateToPinned} />
       )}
 
       <MessagesList
