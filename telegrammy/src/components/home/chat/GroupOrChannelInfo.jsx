@@ -409,14 +409,14 @@ function GroupOrChannelInfo() {
                                     Make Admin
                                   </button>
                                   <button
-                                    data-test-id={`${member.username}-allow-comments-button`}
+                                    data-test-id={`${member.username}-allow-messages-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      togglePermission(member.username, 'canComment');
+                                      togglePermission(member.username, 'sendMessages');
                                     }}
                                   >
-                                    {member.canComment ? 'Revoke Comments' : 'Allow Comments'}
+                                    {member.sendMessages ? 'Revoke Messages' : 'Allow Messages'}
                                   </button>
                                   <button
                                     data-test-id={`${member.username}-allow-download-button`}
