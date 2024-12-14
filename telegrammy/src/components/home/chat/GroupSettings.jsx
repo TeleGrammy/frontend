@@ -19,7 +19,7 @@ function GroupSettings({
   isOwner,
   toggleView,
 }) {
-  const socket = useSocket();
+  const {socketGroupRef} = useSocket();
 
   const { openedChat } = useSelector((state) => state.chats);
   const [privacy, setPrivacy] = useState('');
@@ -31,17 +31,13 @@ function GroupSettings({
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    socket.current.on('group:deleted', (message) => {
+    socketGroupRef.current.on('group:deleted', (message) => {
       console.log('Group deleted', message);
     });
     setPrivacy(groupPrivacy);
     setSizeLimit(groupSizeLimit);
     setDescription(groupDescription);
-    return () => {
-      socket.disconnect();
-      console.log('Disconnected');
-    };
-  }, [groupPrivacy, groupSizeLimit, socket]);
+  }, [groupPrivacy, groupSizeLimit, socketGroupRef]);
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
@@ -199,7 +195,7 @@ function GroupSettings({
     const data = {
       groupId: openedChat.groupId,
     };
-    socket.current.emit('removingGroup', data);
+    socketGroupRef.current.emit('removingGroup', data);
   };
 
   return (

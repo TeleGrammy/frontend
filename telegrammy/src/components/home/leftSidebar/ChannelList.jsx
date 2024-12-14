@@ -3,11 +3,12 @@ import { setcurrentMenu } from '../../../slices/sidebarSlice';
 import { useState, useEffect } from 'react';
 import AddUsersList from './AddUsersList';
 import { FaAngleRight } from 'react-icons/fa';
-import socket from '../chat/utils/Socket';
+import { useSocket } from '../../../contexts/SocketContext';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function ChannelList({ channelOrGroup }) {
+  const {socketGroupRef} = useSocket();
   const [view, setView] = useState('newChannel');
   const [channelName, setChannelName] = useState('');
   const [description, setDescription] = useState('');
@@ -25,17 +26,13 @@ function ChannelList({ channelOrGroup }) {
   };
 
   useEffect(() => {
-    socket.connect();
-    socket.on('group:created', (message) => {
+
+    socketGroupRef.current.on('group:created', (message) => {
       console.log('Group created message received:', message);
     });
 
-    // Cleanup function to remove the listener when the component unmounts
-    return () => {
-      socket.disconnect();
-      console.log('Disconnected');
-    };
-  }, []); // Empty dependency array means this runs once on mount and cleanup on unmount
+
+  }, [socketGroupRef]); // Empty dependency array means this runs once on mount and cleanup on unmount
 
   function handleCreateGroupOrChannel() {
     const createChannel = async () => {
@@ -67,7 +64,7 @@ function ChannelList({ channelOrGroup }) {
         console.log('Emitting group creation:', groupData);
 
         // Emit the correct message type for creating a group
-        socket.emit('creatingGroup', groupData);
+        socketGroupRef.current.emit('creatingGroup', groupData);
       } catch (error) {
         console.error('Error in createGroup:', error.message);
       }

@@ -18,7 +18,7 @@ const initialGroupMembers = [];
 const initialGroupPhoto = 'https://picsum.photos/50/50';
 
 function GroupOrChannelInfo() {
-  const socket = useSocket();
+  const {socketGroupRef} = useSocket();
 
   const { openedChat } = useSelector((state) => state.chats);
   const [isAdmin, setIsAdmin] = useState(true); // Assume the current user is an admin for demonstration
@@ -44,7 +44,7 @@ function GroupOrChannelInfo() {
   useEffect(() => {
     setGroupPhoto(openedChat.photo);
 
-    socket.current.on('group:memberLeft', (message) => {
+    socketGroupRef.current.on('group:memberLeft', (message) => {
       console.log('Group Left:', message);
     });
 
@@ -101,11 +101,7 @@ function GroupOrChannelInfo() {
 
     fetchGroupData();
 
-    return () => {
-      socket.current.disconnect();
-      console.log('Disconnected');
-    };
-  }, [socket]);
+  }, [socketGroupRef]);
 
   const makeAdmin = async (id) => {
     if (!admins.includes(id)) {
@@ -142,14 +138,14 @@ function GroupOrChannelInfo() {
       groupId: openedChat.groupId,
       userId: username.id,
     };
-    socket.current.emit('removingParticipant', data);
+    socketGroupRef.current.emit('removingParticipant', data);
   };
 
   const leaveGroup = async (id) => {
     const data = {
       groupId: openedChat.groupId,
     };
-    socket.current.emit('leavingGroup', data);
+    socketGroupRef.current.emit('leavingGroup', data);
 
     // Remove the member from the groupMembers state
     setGroupMembers((prevMembers) =>
@@ -200,7 +196,7 @@ function GroupOrChannelInfo() {
         phones: arr,
       };
       console.log(data);
-      socket.current.emit('addingGroupMemberV2', data, (response) => {
+      socketGroupRef.current.emit('addingGroupMemberV2', data, (response) => {
         // Callback handles server response
         if (response.status === 'ok') {
           console.log('Server acknowledgment:', response);
