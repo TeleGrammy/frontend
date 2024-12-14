@@ -158,8 +158,6 @@ const CallOverlay = () => {
     if (remoteAudioRef.current) {
       remoteAudioRef.current.srcObject = null;
     }
-
-    setCallerInfo(null);
   };
 
   // listen for sockets events
