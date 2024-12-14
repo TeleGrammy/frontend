@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { useSocket } from '../../../contexts/SocketContext';
@@ -25,17 +25,21 @@ const CallOverlay = () => {
   const socket = useSocket();
   const dispatch = useDispatch();
 
+  const [isMuted, setIsMuted] = useState(false);
+
   const peerConnectionRef = useRef(null);
   const localAudioRef = useRef(null);
   const remoteAudioRef = useRef(null);
 
   const {
+    participants,
     callState,
     callTime,
     isCallOverlayOpen,
     chatId,
     endCallFromCallerRef,
     callID,
+    muteRef,
   } = useSelector((state) => state.call);
 
   const currentUserId = JSON.parse(localStorage.getItem('user'))._id;
@@ -123,6 +127,20 @@ const CallOverlay = () => {
     dispatch(closeOverlay());
   };
 
+  const toggleMute = () => {
+    if (currentUserId === participants[0]?._id) {
+      muteRef.current.click();
+      setIsMuted((prev) => !prev);
+    } else {
+      if (callState === 'in call' && localAudioRef.current.srcObject) {
+        localAudioRef.current.srcObject.getAudioTracks().forEach((track) => {
+          track.enabled = !track.enabled;
+          setIsMuted((prev) => !prev);
+        });
+      }
+    }
+  };
+
   const cleanup = () => {
     // Close PeerConnection and stop media tracks
     if (peerConnectionRef.current) {
@@ -205,11 +223,12 @@ const CallOverlay = () => {
       );
     };
 
-    const handleIncomingICE = ({ candidate }) => {
-      if (callState === 'no call') return;
+    const handleIncomingICE = (response) => {
+      if (callState === 'no call' || response.senderId === currentUserId)
+        return;
       if (peerConnectionRef.current) {
         peerConnectionRef.current
-          .addIceCandidate(new RTCIceCandidate(candidate))
+          .addIceCandidate(new RTCIceCandidate(response.callObj.IceCandidate))
           .catch((err) => console.error('Error adding ICE candidate:', err));
       }
     };
@@ -271,6 +290,8 @@ const CallOverlay = () => {
             handleAccept={handleAccept}
             handleDecline={handleDecline}
             handleEndCall={handleEndCall}
+            toggleMute={toggleMute}
+            isMuted={isMuted}
           />
         )}
         <audio ref={localAudioRef} autoPlay muted />

@@ -29,10 +29,13 @@ function Caller() {
 
   const { openedChat } = useSelector((state) => state.chats);
 
+  const currentUserId = JSON.parse(localStorage.getItem('user'))._id;
+
   const peerConnectionRef = useRef(null);
   const localAudioRef = useRef(null);
   const remoteAudioRef = useRef(null);
   const endCallFromCallerRef = useRef(null);
+  const muteRef = useRef(null);
 
   const handleCall = async () => {
     if (callState !== 'no call') return;
@@ -97,6 +100,7 @@ function Caller() {
                 chatId: response.call.chatId,
                 callID: response.call._id,
                 endCallFromCallerRef: endCallFromCallerRef,
+                muteRef: muteRef,
               }),
             );
           } else {
@@ -142,6 +146,14 @@ function Caller() {
     }
   };
 
+  const handleMute = () => {
+    if (callState === 'in call' && localAudioRef.current.srcObject) {
+      localAudioRef.current.srcObject.getAudioTracks().forEach((track) => {
+        track.enabled = !track.enabled;
+      });
+    }
+  };
+
   const cleanup = () => {
     // Close peer connection and stop local stream
     peerConnectionRef.current?.close();
@@ -177,7 +189,8 @@ function Caller() {
 
     // need to check
     const handleIncomingICE = (response) => {
-      if (callState === 'no call') return;
+      if (callState === 'no call' || response.senderId === currentUserId)
+        return;
       if (peerConnectionRef.current) {
         peerConnectionRef.current
           .addIceCandidate(new RTCIceCandidate(response.callObj.IceCandidate))
@@ -226,6 +239,7 @@ function Caller() {
         onClick={endCallEvent}
         className="hidden"
       ></button>
+      <button ref={muteRef} onClick={handleMute} className="hidden"></button>
     </>
   );
 }

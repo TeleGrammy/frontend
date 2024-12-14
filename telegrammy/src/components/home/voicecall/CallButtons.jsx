@@ -1,7 +1,15 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-function CallButtons({ handleAccept, handleDecline, handleEndCall }) {
+import { FiMic, FiMicOff } from 'react-icons/fi';
+
+function CallButtons({
+  handleAccept,
+  handleDecline,
+  handleEndCall,
+  toggleMute,
+  isMuted,
+}) {
   const { callState } = useSelector((state) => state.call);
 
   return (
@@ -24,6 +32,16 @@ function CallButtons({ handleAccept, handleDecline, handleEndCall }) {
         </>
       ) : (
         <>
+          {callState === 'in call' && (
+            <button
+              onClick={toggleMute}
+              className={`rounded-full p-2 ${
+                isMuted ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              {isMuted ? <FiMicOff size={20} /> : <FiMic size={20} />}
+            </button>
+          )}
           <button
             onClick={handleEndCall}
             className="rounded-lg bg-red-500 px-6 py-2 text-white shadow transition hover:bg-red-600"
