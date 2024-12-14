@@ -22,7 +22,7 @@ const iceServers = {
 };
 
 const CallOverlay = () => {
-  const socket = useSocket();
+  const { socketGeneralRef } = useSocket();
   const dispatch = useDispatch();
 
   const [isMuted, setIsMuted] = useState(false);
@@ -59,7 +59,7 @@ const CallOverlay = () => {
     if (peerConnectionRef.current && callState !== 'no call') {
       const answer = await peerConnectionRef.current.createAnswer();
       await peerConnectionRef.current.setLocalDescription(answer);
-      socket.current.emit(
+      socketGeneralRef.current.emit(
         'call:answer',
         { callId: callID, answer },
         (response) => {
@@ -89,22 +89,26 @@ const CallOverlay = () => {
   };
 
   const handleDecline = () => {
-    socket.current.emit('call:reject', { callId: callID }, (response) => {
-      if (response.status === 'ok') {
-        console.log('Call rejected');
-        dispatch(declineCall());
-        cleanup();
-      } else {
-        console.log('error', response.message);
-      }
-    });
+    socketGeneralRef.current.emit(
+      'call:reject',
+      { callId: callID },
+      (response) => {
+        if (response.status === 'ok') {
+          console.log('Call rejected');
+          dispatch(declineCall());
+          cleanup();
+        } else {
+          console.log('error', response.message);
+        }
+      },
+    );
   };
 
   const handleEndCall = () => {
     if (currentUserId === participants[0]?._id) {
       endCallFromCallerRef.current.click();
     } else {
-      socket.current.emit(
+      socketGeneralRef.current.emit(
         'call:end',
         { callId: callID, status: 'ended' },
         (response) => {
@@ -174,7 +178,7 @@ const CallOverlay = () => {
       // Handle ICE candidates
       peerConnectionRef.current.onicecandidate = (event) => {
         if (event.candidate) {
-          socket.current.emit(
+          socketGeneralRef.current.emit(
             'call:addMyIce',
             {
               callId: callID,
@@ -238,24 +242,24 @@ const CallOverlay = () => {
     };
 
     try {
-      // Register socket listeners
-      socket.current.on('call:incomingCall', handleIncomingOffer);
-      socket.current.on('call:addedICE', handleIncomingICE);
-      socket.current.on('call:endedCall', handleEndCallFromCaller);
+      // Register socketGeneralRef listeners
+      socketGeneralRef.current.on('call:incomingCall', handleIncomingOffer);
+      socketGeneralRef.current.on('call:addedICE', handleIncomingICE);
+      socketGeneralRef.current.on('call:endedCall', handleEndCallFromCaller);
     } catch (error) {
       console.error(error);
     }
 
     return () => {
-      // Cleanup socket listeners
-      socket.current.off('call:incomingCall', handleIncomingOffer);
-      socket.current.off('call:addedICE', handleIncomingICE);
-      socket.current.off('call:endedCall', handleEndCallFromCaller);
+      // Cleanup socketGeneralRef listeners
+      socketGeneralRef.current.off('call:incomingCall', handleIncomingOffer);
+      socketGeneralRef.current.off('call:addedICE', handleIncomingICE);
+      socketGeneralRef.current.off('call:endedCall', handleEndCallFromCaller);
 
       // Cleanup PeerConnection
       cleanup();
     };
-  }, [socket]);
+  }, [socketGeneralRef]);
 
   if (callState === 'no call' || !isCallOverlayOpen) return null;
 

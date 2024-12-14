@@ -20,7 +20,7 @@ const iceServers = {
 };
 
 function Caller() {
-  const socket = useSocket();
+  const { socketGeneralRef } = useSocket();
 
   const dispatch = useDispatch();
 
@@ -47,7 +47,7 @@ function Caller() {
       // Handle ICE candidates
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
-          socket.current.emit(
+          socketGeneralRef.current.emit(
             'call:addMyIce',
             {
               callId: callID,
@@ -85,7 +85,7 @@ function Caller() {
       // Create and send an offer
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
-      socket.current.emit(
+      socketGeneralRef.current.emit(
         'call:newCall',
         {
           chatId: openedChat.id,
@@ -129,7 +129,7 @@ function Caller() {
 
   const endCallEvent = () => {
     if (callState !== 'no call') {
-      socket.current.emit(
+      socketGeneralRef.current.emit(
         'call:end',
         { callId: callID, status: 'ended' },
         (response) => {
@@ -205,24 +205,24 @@ function Caller() {
     };
 
     try {
-      // Register socket listeners
-      socket.current.on('call:answeredCall', handleAcceptCall);
-      socket.current.on('call:rejectedCall', handleRejectCall);
-      socket.current.on('call:addedICE', handleIncomingICE);
-      socket.current.on('call:endedCall', handleEndCallFromCallee);
+      // Register socketGeneralRef listeners
+      socketGeneralRef.current.on('call:answeredCall', handleAcceptCall);
+      socketGeneralRef.current.on('call:rejectedCall', handleRejectCall);
+      socketGeneralRef.current.on('call:addedICE', handleIncomingICE);
+      socketGeneralRef.current.on('call:endedCall', handleEndCallFromCallee);
     } catch (err) {
-      console.error('Error listening for socket events:', err);
+      console.error('Error listening for socketGeneralRef events:', err);
     }
 
     return () => {
-      // Clean up socket listeners
-      socket.current.off('call:answeredCall', handleAcceptCall);
-      socket.current.off('call:rejectedCall', handleRejectCall);
-      socket.current.off('call:addedICE', handleIncomingICE);
-      socket.current.off('call:endedCall', handleEndCallFromCallee);
+      // Clean up socketGeneralRef listeners
+      socketGeneralRef.current.off('call:answeredCall', handleAcceptCall);
+      socketGeneralRef.current.off('call:rejectedCall', handleRejectCall);
+      socketGeneralRef.current.off('call:addedICE', handleIncomingICE);
+      socketGeneralRef.current.off('call:endedCall', handleEndCallFromCallee);
       cleanup();
     };
-  }, [socket]);
+  }, [socketGeneralRef]);
 
   return (
     <>
