@@ -7,7 +7,7 @@ import AddUsersList from '../leftSidebar/AddUsersList';
 import CloseButton from '../rightSidebar/CloseButton';
 import SelectedInfo from '../rightSidebar/SelectedInfo';
 import Header from '../leftSidebar/Header';
-import socket from '../chat/utils/Socket';
+import { useSocket } from '../../../contexts/SocketContext';
 import { use } from 'react';
 import { ClipLoader } from 'react-spinners';
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -22,6 +22,7 @@ const initialGroupMembers = [
 const initialGroupPhoto = 'https://picsum.photos/50/50';
 
 function GroupOrChannelInfo() {
+  const socket = useSocket();
   const { openedChat } = useSelector((state) => state.chats);
   const [isAdmin, setIsAdmin] = useState(true); // Assume the current user is an admin for demonstration
   const [groupMembers, setGroupMembers] = useState(initialGroupMembers);
@@ -46,8 +47,7 @@ function GroupOrChannelInfo() {
   useEffect(() => {
     setGroupPhoto(openedChat.photo);
     
-    socket.connect();
-    socket.on('group:memberLeft', (message) => {
+    socket.current.on('group:memberLeft', (message) => {
       console.log('Group Left:', message);
     });
 
@@ -102,10 +102,10 @@ function GroupOrChannelInfo() {
     fetchGroupData();
 
     return () => {
-      socket.disconnect();
+      socket.current.disconnect();
       console.log("Disconnected");
     };
-  }, []);
+  }, [socket]);
 
   const makeAdmin = async (id) => {
     if (!admins.includes(id)) {
@@ -142,7 +142,7 @@ function GroupOrChannelInfo() {
       groupId: openedChat.groupId,
       userId: username.id,
     }
-    socket.emit('removingParticipant',data);
+    socket.current.emit('removingParticipant',data);
     
   };
 
@@ -150,7 +150,7 @@ function GroupOrChannelInfo() {
     const data ={
       groupId: openedChat.groupId
     }
-    socket.emit('leavingGroup',data);
+    socket.current.emit('leavingGroup',data);
 
     // Remove the member from the groupMembers state
     setGroupMembers((prevMembers) => 
@@ -201,7 +201,7 @@ function GroupOrChannelInfo() {
       phones: arr
     }
     console.log(data);
-    socket.emit('addingGroupMemberV2', data, (response) => {
+    socket.current.emit('addingGroupMemberV2', data, (response) => {
       // Callback handles server response
       if (response.status === 'ok') {
         console.log('Server acknowledgment:', response);

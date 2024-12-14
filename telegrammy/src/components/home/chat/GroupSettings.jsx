@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 const apiUrl = import.meta.env.VITE_API_URL;
-import socket from './utils/Socket';
+import { useSocket } from '../../../contexts/SocketContext';
 import { useSelector } from 'react-redux';
 
 function GroupSettings({
@@ -19,6 +19,7 @@ function GroupSettings({
   isOwner,
   toggleView,
 }) {
+  const socket = useSocket();
   const { openedChat } = useSelector((state) => state.chats);
   const [privacy, setPrivacy] = useState('');
   const [sizeLimit, setSizeLimit] = useState(0);
@@ -29,8 +30,7 @@ function GroupSettings({
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    socket.connect();
-    socket.on('group:deleted', (message) => {
+    socket.current.on('group:deleted', (message) => {
       console.log('Group deleted', message);
     });
     setPrivacy(groupPrivacy);
@@ -40,7 +40,7 @@ function GroupSettings({
       socket.disconnect();
       console.log("Disconnected");
     };
-  }, [groupPrivacy, groupSizeLimit]);
+  }, [groupPrivacy, groupSizeLimit,socket]);
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
@@ -199,7 +199,7 @@ function GroupSettings({
     const data = {
       groupId: openedChat.groupId
     }
-    socket.emit('removingGroup',data);
+    socket.current.emit('removingGroup',data);
   };
 
   return (
