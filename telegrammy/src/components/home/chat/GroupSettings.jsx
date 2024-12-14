@@ -1,4 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+const apiUrl = import.meta.env.VITE_API_URL;
+import { useSocket } from '../../../contexts/SocketContext';
+import { useSelector } from 'react-redux';
 
 function GroupSettings({
   groupId,
@@ -7,21 +10,51 @@ function GroupSettings({
   setGroupPhoto,
   setGroupDescription,
   isAdmin,
+  groupSizeLimit,
+  setGroupSizeLimit,
+  groupPrivacy,
+  setGroupPrivacy,
+  groupName,
+  setGroupName,
+  isOwner,
   toggleView,
 }) {
-  const [privacy, setPrivacy] = useState('Public');
-  const [sizeLimit, setSizeLimit] = useState(1000);
+  const socket = useSocket();
+  const { openedChat } = useSelector((state) => state.chats);
+  const [privacy, setPrivacy] = useState('');
+  const [sizeLimit, setSizeLimit] = useState(0);
+  const [newDescription, setDescription] = useState('');
+  const [newName, setName] = useState(groupName);
   const [muteDuration, setMuteDuration] = useState('None');
+  const [selectedFile,setSelectedFile] = useState();
   const fileInputRef = useRef(null);
 
+  useEffect(() => {
+    socket.current.on('group:deleted', (message) => {
+      console.log('Group deleted', message);
+    });
+    setPrivacy(groupPrivacy);
+    setSizeLimit(groupSizeLimit);
+    setDescription(groupDescription);
+    return () => {
+      socket.disconnect();
+      console.log("Disconnected");
+    };
+  }, [groupPrivacy, groupSizeLimit,socket]);
+
   const handleDescriptionChange = (e) => {
-    setGroupDescription(e.target.value);
+    setDescription(e.target.value);
+  };
+
+  const handleNameChange = (e) => {
+    setName(e.target.value);
   };
 
   const handlePhotoChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const reader = new FileReader();
+      setSelectedFile(file);
       reader.onloadend = () => {
         setGroupPhoto(reader.result);
       };
@@ -41,34 +74,132 @@ function GroupSettings({
     setMuteDuration(e.target.value);
   };
 
-  const saveChanges = () => {
-    if (isAdmin) {
-      console.log('Group description:', groupDescription);
-      console.log('Group photo URL:', groupPhoto);
-      console.log('Group privacy:', privacy);
-      console.log('Group size limit:', sizeLimit);
-      console.log('Mute duration:', muteDuration);
-      setGroupDescription(groupDescription);
-      setGroupPhoto(groupPhoto);
-      toggleView('info');
-      // Logic to save changes to the server or state
-    } else {
-      console.log('Only admins can save changes.');
+  const saveChanges = async () => {
+    if(selectedFile){
+      try {
+        console.log(selectedFile);
+        const formData = new FormData();
+        const dataUrl = URL.createObjectURL(selectedFile);
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        formData.append('media', blob, selectedFile.name);
+
+        const pictureResponse = await fetch(
+          `${apiUrl}/v1/messaging/upload/media`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          },
+        );
+
+        if (!pictureResponse.ok) {
+          console.error('Failed to update profile picture.');
+        } else {
+          const pictureResult = await pictureResponse.json();
+          console.log('Group picture updated successfully:', pictureResult);
+          setGroupPhoto(pictureResult.signedUrl);
+        }
+      } catch (error) {
+        console.error('Error updating profile picture:', error);
+      }
+    }
+    try {
+      const updatedData = {
+        name: newName,
+        image: groupPhoto, 
+        description: newDescription,
+      };
+
+      const res = await fetch(
+        `${apiUrl}/v1/groups/${openedChat.groupId}/info`,
+        {
+          method: 'PATCH',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: 'include',
+          body: JSON.stringify(updatedData),
+        },
+      );
+
+      if (!res.ok) {
+        console.error('Failed to update group.');
+      } else {
+        const result = await res.json();
+        console.log('Info updated successfully', result);
+        setGroupDescription(newDescription);
+        setGroupName(newName);
+      }
+    } catch (error) {
+      console.error('Error updating group settings:', error);
+    }
+    if(sizeLimit != groupSizeLimit){
+      try {
+        const updatedData = {
+          groupSize: sizeLimit
+        };
+  
+        const res = await fetch(
+          `${apiUrl}/v1/groups/${openedChat.groupId}/size`,
+          {
+            method: 'PATCH',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify(updatedData),
+          },
+        );
+  
+        if (!res.ok) {
+          console.error('Failed to update group size.');
+        } else {
+          const result = await res.json();
+          console.log('Info updated successfully', result);
+          setGroupSizeLimit(sizeLimit);
+        }
+      } catch (error) {
+        console.error('Error updating group size limit:', error);
+      }
+    }
+    if(groupPrivacy != privacy){
+      try {
+        const updatedData = {
+          groupType: privacy
+        };
+  
+        const res = await fetch(
+          `${apiUrl}/v1/groups/${openedChat.groupId}/group-type`,
+          {
+            method: 'PATCH',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: 'include',
+            body: JSON.stringify(updatedData),
+          },
+        );
+  
+        if (!res.ok) {
+          console.error('Failed to update group.');
+        } else {
+          const result = await res.json();
+          console.log('Info updated successfully', result);
+          setGroupPrivacy(privacy);
+        }
+      } catch (error) {
+        console.error('Error updating group settings:', error);
+      }
     }
   };
 
-  const leaveGroup = () => {
-    console.log('Leaving the group...');
-    // Logic to leave the group
-  };
 
   const deleteGroup = () => {
-    if (isAdmin) {
-      console.log('Deleting the group...');
-      // Logic to delete the group
-    } else {
-      console.log('Only admins can delete the group.');
+    const data = {
+      groupId: openedChat.groupId
     }
+    socket.current.emit('removingGroup',data);
   };
 
   return (
@@ -110,7 +241,26 @@ function GroupSettings({
         {isAdmin ? (
           <input
             type="text"
-            value={groupDescription}
+            value={newName}
+            onChange={handleNameChange}
+            className="mb-2 w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-center text-text-primary"
+            placeholder="Enter new group name"
+            data-test-id="name-input"
+          />
+        ) : (
+          <p
+            className="mb-2 text-center text-text-primary"
+            data-test-id="group-name"
+          >
+            {groupName}
+          </p>
+        )}
+      </div>
+      <div className="mb-4 flex w-full flex-col items-center">
+        {isAdmin ? (
+          <input
+            type="text"
+            value={newDescription}
             onChange={handleDescriptionChange}
             className="mb-2 w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-center text-text-primary"
             placeholder="Enter new group description"
@@ -196,14 +346,8 @@ function GroupSettings({
           Save Changes
         </button>
       )}
-      <button
-        className="mb-4 w-3/4 rounded-lg bg-red-500 px-2 py-1 text-white hover:bg-red-600"
-        onClick={leaveGroup}
-        data-test-id="leave-group-button"
-      >
-        Leave Group
-      </button>
-      {isAdmin && (
+
+      {isOwner && (
         <button
           className="w-3/4 rounded-lg bg-red-700 px-2 py-1 text-white hover:bg-red-800"
           onClick={deleteGroup}

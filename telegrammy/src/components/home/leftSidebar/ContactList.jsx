@@ -120,7 +120,7 @@ function ContactList() {
                 value={input}
                 onChange={handleChangeInput}
                 className="mt-2 w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary outline-none sm:px-4 sm:py-2"
-                placeholder="Channel Name"
+                placeholder=""
                 aria-label="ChannelName"
               />
             </div>
