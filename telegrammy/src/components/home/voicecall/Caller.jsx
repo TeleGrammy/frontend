@@ -188,11 +188,14 @@ function Caller() {
 
     // need to check
     const handleIncomingICE = (response) => {
-      if (callState === 'no call' || response.senderId === currentUserId)
+      if (
+        callState === 'no call' ||
+        response.callObj.senderId === currentUserId
+      )
         return;
       if (peerConnectionRef.current) {
         peerConnectionRef.current
-          .addIceCandidate(new RTCIceCandidate(response.callObj.IceCandidate))
+          .addIceCandidate(new RTCIceCandidate(response.callObj.participantICE))
           .catch((err) => console.error('Error adding ICE candidate:', err));
       }
     };

@@ -169,8 +169,7 @@ const CallOverlay = () => {
     const handleIncomingOffer = async (response) => {
       // Check if the current user is part of the call
       // neeed to change after backend edit it
-      if (!response.people.includes(currentUserId) || callState !== 'no call')
-        return;
+      if (callState !== 'no call') return;
 
       // Create PeerConnection
       peerConnectionRef.current = new RTCPeerConnection(iceServers);
@@ -186,7 +185,7 @@ const CallOverlay = () => {
             },
             (response) => {
               if (response.status === 'ok') {
-                console.log('ICE from caller candidate sent');
+                console.log('ICE from callee candidate sent');
               } else {
                 console.log('error', response.message);
               }
@@ -226,11 +225,14 @@ const CallOverlay = () => {
     };
 
     const handleIncomingICE = (response) => {
-      if (callState === 'no call' || response.senderId === currentUserId)
+      if (
+        callState === 'no call' ||
+        response.callObj.senderId === currentUserId
+      )
         return;
       if (peerConnectionRef.current) {
         peerConnectionRef.current
-          .addIceCandidate(new RTCIceCandidate(response.callObj.IceCandidate))
+          .addIceCandidate(new RTCIceCandidate(response.callObj.participantICE))
           .catch((err) => console.error('Error adding ICE candidate:', err));
       }
     };
