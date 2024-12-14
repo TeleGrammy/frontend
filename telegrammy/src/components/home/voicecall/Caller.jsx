@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   startCall,
   calldeclined,
-  acceptCall,
   endCall,
   callConnected,
   connectingCall,
