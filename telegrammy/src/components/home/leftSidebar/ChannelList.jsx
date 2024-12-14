@@ -33,28 +33,25 @@ function ChannelList({ channelOrGroup }) {
     // Cleanup function to remove the listener when the component unmounts
     return () => {
       socket.disconnect();
-      console.log("Disconnected");
+      console.log('Disconnected');
     };
   }, []); // Empty dependency array means this runs once on mount and cleanup on unmount
 
   function handleCreateGroupOrChannel() {
     const createChannel = async () => {
       try {
-        const response = await fetch(
-          `${apiUrl}/v1/channels/`,
-          {
-            method: 'POST',
-            headers: {
-              Accept: 'application/json',
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name: channelName,
-              description: description,
-            }),
-            credentials: 'include',
+        const response = await fetch(`${apiUrl}/v1/channels/`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
           },
-        );
+          body: JSON.stringify({
+            name: channelName,
+            description: description,
+          }),
+          credentials: 'include',
+        });
         const data = await response.json();
         console.log(data);
       } catch (error) {

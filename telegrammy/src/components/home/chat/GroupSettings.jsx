@@ -20,13 +20,14 @@ function GroupSettings({
   toggleView,
 }) {
   const socket = useSocket();
+
   const { openedChat } = useSelector((state) => state.chats);
   const [privacy, setPrivacy] = useState('');
   const [sizeLimit, setSizeLimit] = useState(0);
   const [newDescription, setDescription] = useState('');
   const [newName, setName] = useState(groupName);
   const [muteDuration, setMuteDuration] = useState('None');
-  const [selectedFile,setSelectedFile] = useState();
+  const [selectedFile, setSelectedFile] = useState();
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -38,9 +39,9 @@ function GroupSettings({
     setDescription(groupDescription);
     return () => {
       socket.disconnect();
-      console.log("Disconnected");
+      console.log('Disconnected');
     };
-  }, [groupPrivacy, groupSizeLimit,socket]);
+  }, [groupPrivacy, groupSizeLimit, socket]);
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
@@ -75,7 +76,7 @@ function GroupSettings({
   };
 
   const saveChanges = async () => {
-    if(selectedFile){
+    if (selectedFile) {
       try {
         console.log(selectedFile);
         const formData = new FormData();
@@ -107,7 +108,7 @@ function GroupSettings({
     try {
       const updatedData = {
         name: newName,
-        image: groupPhoto, 
+        image: groupPhoto,
         description: newDescription,
       };
 
@@ -116,7 +117,7 @@ function GroupSettings({
         {
           method: 'PATCH',
           headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json',
           },
           credentials: 'include',
           body: JSON.stringify(updatedData),
@@ -134,24 +135,24 @@ function GroupSettings({
     } catch (error) {
       console.error('Error updating group settings:', error);
     }
-    if(sizeLimit != groupSizeLimit){
+    if (sizeLimit != groupSizeLimit) {
       try {
         const updatedData = {
-          groupSize: sizeLimit
+          groupSize: sizeLimit,
         };
-  
+
         const res = await fetch(
           `${apiUrl}/v1/groups/${openedChat.groupId}/size`,
           {
             method: 'PATCH',
             headers: {
-              "Content-Type": "application/json"
+              'Content-Type': 'application/json',
             },
             credentials: 'include',
             body: JSON.stringify(updatedData),
           },
         );
-  
+
         if (!res.ok) {
           console.error('Failed to update group size.');
         } else {
@@ -163,24 +164,24 @@ function GroupSettings({
         console.error('Error updating group size limit:', error);
       }
     }
-    if(groupPrivacy != privacy){
+    if (groupPrivacy != privacy) {
       try {
         const updatedData = {
-          groupType: privacy
+          groupType: privacy,
         };
-  
+
         const res = await fetch(
           `${apiUrl}/v1/groups/${openedChat.groupId}/group-type`,
           {
             method: 'PATCH',
             headers: {
-              "Content-Type": "application/json"
+              'Content-Type': 'application/json',
             },
             credentials: 'include',
             body: JSON.stringify(updatedData),
           },
         );
-  
+
         if (!res.ok) {
           console.error('Failed to update group.');
         } else {
@@ -194,12 +195,11 @@ function GroupSettings({
     }
   };
 
-
   const deleteGroup = () => {
     const data = {
-      groupId: openedChat.groupId
-    }
-    socket.current.emit('removingGroup',data);
+      groupId: openedChat.groupId,
+    };
+    socket.current.emit('removingGroup', data);
   };
 
   return (
