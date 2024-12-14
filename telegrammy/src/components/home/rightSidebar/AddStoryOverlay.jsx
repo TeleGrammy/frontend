@@ -13,6 +13,8 @@ import {
   IoArrowForward,
   IoTrash,
 } from 'react-icons/io5';
+import { useDispatch, useSelector } from 'react-redux';
+import { setMyStories } from '../../../slices/storiesSlice';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -35,6 +37,10 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
 
   const [activeTextIndex, setActiveTextIndex] = useState(null);
   const [editingText, setEditingText] = useState('');
+
+  const { myStories } = useSelector((state) => state.stories);
+
+  const dispatch = useDispatch();
 
   //toast
 
@@ -138,6 +144,7 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
     const formData = new FormData();
     formData.append('content', caption); // 'content' field
     formData.append('story', blob, file.name);
+    formData.append('mediaType', fileType === 'video' ? 'video' : 'picture');
 
     try {
       setIsLoading(true);
@@ -155,6 +162,9 @@ const AddStoryOverlay = ({ file, previewUrl, onClose, fileType }) => {
         const data = await res.json();
         console.log(data);
         showToast('Story uploaded successfully', true);
+        const updatedStories = [...myStories, data.data];
+        console.log('myStories: ', updatedStories);
+        dispatch(setMyStories(updatedStories));
         onClose();
       } else {
         showToast('Error uploaded Story', false);

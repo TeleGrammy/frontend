@@ -11,6 +11,7 @@ import {
   setShowedMyStoryIndex,
   setMyStories,
 } from '../../../slices/storiesSlice';
+import { BeatLoader } from 'react-spinners';
 
 function MyStories() {
   const { myStories } = useSelector((state) => state.stories);
@@ -62,10 +63,13 @@ function MyStories() {
         <CloseButton />
         <SelectedInfo />
       </Header>
-
+      {loading && (
+        <div className="m-auto h-20">
+          <BeatLoader color="gray" size={15} margin={10} />
+        </div>
+      )}
       {/* My Stories */}
       <div className="grid w-full grid-cols-3 gap-4 p-4">
-        {loading && <p>Loading...</p>}
         {error && <p>Error loading stories: {error}</p>}
         {!loading &&
           !error &&

@@ -9,7 +9,6 @@ import Chat from '../components/home/chat/Chat';
 import RightSidebar from '../components/home/rightSidebar/RightSidebar';
 import MediaShower from '../components/home/imageShower/MediaShower';
 
-
 function Home() {
   const {
     myStories,
@@ -18,6 +17,8 @@ function Home() {
     showedOtherStoryIndex,
     showedOtherUserIndex,
   } = useSelector((state) => state.stories);
+
+  const { user } = useSelector((state) => state.auth);
 
   const { isDarkTheme } = useSelector((state) => state.darkMode);
 
@@ -42,12 +43,14 @@ function Home() {
       {showedMyStoryIndex !== null && (
         <MediaShower
           medias={myStories}
+          profile={user}
           initialStoryIndex={showedMyStoryIndex}
         />
       )}
       {showedOtherStoryIndex !== null && (
         <MediaShower
           medias={otherStories[showedOtherUserIndex].stories}
+          profile={otherStories[showedOtherStoryIndex].profile}
           initialStoryIndex={showedOtherStoryIndex}
         />
       )}
