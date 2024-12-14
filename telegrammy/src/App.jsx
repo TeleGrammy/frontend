@@ -6,8 +6,6 @@ import ProtectedRoute from './components/shared/ProtectedRoute';
 import Auth from './pages/Auth';
 import { SocketProvider } from './contexts/SocketContext';
 
-import { SocketProvider } from './contexts/SocketContext';
-
 export default function App() {
   return (
     <BrowserRouter>
