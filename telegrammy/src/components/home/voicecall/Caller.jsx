@@ -40,6 +40,7 @@ function Caller() {
     if (callState !== 'no call') return;
 
     try {
+      console.log('Starting call');
       // Create peer connection
       const peerConnection = new RTCPeerConnection(iceServers);
       peerConnectionRef.current = peerConnection;
@@ -129,6 +130,7 @@ function Caller() {
 
   const endCallEvent = () => {
     if (callState !== 'no call') {
+      console.log('Ending call');
       socketGeneralRef.current.emit(
         'call:end',
         { callId: callID, status: 'ended' },
@@ -147,6 +149,7 @@ function Caller() {
 
   const handleMute = () => {
     if (callState === 'in call' && localAudioRef.current.srcObject) {
+      console.log('Muting/unmuting audio');
       localAudioRef.current.srcObject.getAudioTracks().forEach((track) => {
         track.enabled = !track.enabled;
       });
@@ -176,6 +179,7 @@ function Caller() {
     const handleAcceptCall = (response) => {
       if (callState === 'no call') return;
       if (!peerConnectionRef.current.remoteDescription) {
+        console.log('call has been accepted from callee');
         // Set the first valid answer
         peerConnectionRef.current.setRemoteDescription(
           new RTCSessionDescription(response.callObj.answer),
@@ -194,6 +198,7 @@ function Caller() {
       )
         return;
       if (peerConnectionRef.current) {
+        console.log('adding ICE candidate from callee');
         peerConnectionRef.current
           .addIceCandidate(new RTCIceCandidate(response.callObj.participantICE))
           .catch((err) => console.error('Error adding ICE candidate:', err));
@@ -202,6 +207,7 @@ function Caller() {
 
     const handleEndCallFromCallee = (response) => {
       if (callState === 'no call') return;
+      console.log('Call ended');
       if (response.status === 'rejected') dispatch(calldeclined());
       else dispatch(endCall());
       cleanup();

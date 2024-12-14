@@ -50,13 +50,14 @@ const CallOverlay = () => {
       ? chatId?.participants[1].picture
       : chatId?.participants[0].picture;
   const nameToShow = chatId?.isGroup
-    ? chatId?.groupId.groupName
+    ? chatId?.groupId.name
     : currentUserId === chatId?.participants[0]._id
       ? chatId?.participants[1].username
       : chatId?.participants[0].username;
 
   const handleAccept = async () => {
     if (peerConnectionRef.current && callState !== 'no call') {
+      console.log('Accepting call');
       const answer = await peerConnectionRef.current.createAnswer();
       await peerConnectionRef.current.setLocalDescription(answer);
       socketGeneralRef.current.emit(
@@ -77,6 +78,7 @@ const CallOverlay = () => {
               } else if (
                 peerConnectionRef.current.connectionState === 'connecting'
               ) {
+                console.log('Call is connecting.');
                 dispatch(connectingCall());
               }
             };
@@ -89,6 +91,7 @@ const CallOverlay = () => {
   };
 
   const handleDecline = () => {
+    console.log('Declining call');
     socketGeneralRef.current.emit(
       'call:reject',
       { callId: callID },
@@ -106,8 +109,10 @@ const CallOverlay = () => {
 
   const handleEndCall = () => {
     if (currentUserId === participants[0]?._id) {
+      console.log('Ending call from caller');
       endCallFromCallerRef.current.click();
     } else {
+      console.log('Ending call from callee');
       socketGeneralRef.current.emit(
         'call:end',
         { callId: callID, status: 'ended' },
@@ -171,6 +176,16 @@ const CallOverlay = () => {
       // neeed to change after backend edit it
       if (callState !== 'no call') return;
 
+      console.log('Incoming call');
+
+      dispatch(
+        incomingCall({
+          participants: response.participants,
+          chatId: response.chatId,
+          callID: response._id,
+        }),
+      );
+
       // Create PeerConnection
       peerConnectionRef.current = new RTCPeerConnection(iceServers);
 
@@ -214,14 +229,6 @@ const CallOverlay = () => {
       await peerConnectionRef.current.setRemoteDescription(
         new RTCSessionDescription(response.callObj.offer),
       );
-
-      dispatch(
-        incomingCall({
-          participants: response.participants,
-          chatId: response.chatId,
-          callID: response._id,
-        }),
-      );
     };
 
     const handleIncomingICE = (response) => {
@@ -231,6 +238,7 @@ const CallOverlay = () => {
       )
         return;
       if (peerConnectionRef.current) {
+        console.log('Adding ICE candidate from caller');
         peerConnectionRef.current
           .addIceCandidate(new RTCIceCandidate(response.callObj.participantICE))
           .catch((err) => console.error('Error adding ICE candidate:', err));
@@ -239,6 +247,7 @@ const CallOverlay = () => {
 
     const handleEndCallFromCaller = () => {
       if (callState === 'no call') return;
+      console.log('Call ended by caller');
       dispatch(endCall());
       cleanup();
     };
