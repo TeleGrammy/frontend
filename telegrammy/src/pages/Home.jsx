@@ -14,6 +14,7 @@ import RightSidebar from '../components/home/rightSidebar/RightSidebar';
 import MediaShower from '../components/home/imageShower/MediaShower';
 import CallOverlay from '../components/home/voicecall/CallOverlay';
 import CallBar from '../components/home/voicecall/CallBar';
+import Callee from '../components/home/voicecall/Callee';
 
 const formatTime = (seconds) => {
   const minutes = Math.floor(seconds / 60);
@@ -47,6 +48,9 @@ function Home() {
   );
 
   const { isRightSidebarOpen } = useSelector((state) => state.sidebar);
+
+  const localAudioRef = useRef(null);
+  const remoteAudioRef = useRef(null);
 
   useEffect(() => {
     if (isDarkTheme) {
@@ -105,7 +109,11 @@ function Home() {
       )}
 
       {/* Show the call overlay and Callee functions */}
-      <CallOverlay />
+      <CallOverlay
+        localAudioRef={localAudioRef}
+        remoteAudioRef={remoteAudioRef}
+      />
+      <Callee localAudioRef={localAudioRef} remoteAudioRef={remoteAudioRef} />
 
       <ToastContainer />
     </div>

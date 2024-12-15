@@ -22,7 +22,7 @@ const iceServers = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
-const CallOverlay = () => {
+const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
   const { socketGeneralRef } = useSocket();
   const { endCallFromCallerRef, muteRef } = useCallContext();
 
@@ -31,8 +31,6 @@ const CallOverlay = () => {
   const [isMuted, setIsMuted] = useState(false);
 
   const peerConnectionRef = useRef(null);
-  const localAudioRef = useRef(null);
-  const remoteAudioRef = useRef(null);
 
   const {
     participants,
@@ -63,17 +61,53 @@ const CallOverlay = () => {
       console.log('Accepting call');
       const answer = await peerConnectionRef.current.createAnswer();
 
+      console.log('answer: ', answer);
+
       await peerConnectionRef.current
         .setLocalDescription(answer)
         .then(() =>
           console.log(
             'Local description set:',
-            peerConnection.localDescription,
+            peerConnectionRef.current.localDescription,
           ),
         )
         .catch((err) => console.error('Error setting local description:', err));
 
-      console.log(answer);
+      // IMPORTANT: ICE candidate handler
+      peerConnectionRef.current.onicecandidate = (event) => {
+        if (event.candidate) {
+          console.log('Callee ICE candidate:', event.candidate);
+          socketGeneralRef.current.emit(
+            'call:addMyIce',
+            {
+              callId: callID,
+              IceCandidate: event.candidate,
+            },
+            (response) => {
+              if (response.status === 'ok') {
+                console.log('ICE from callee candidate sent');
+              } else {
+                console.error('ICE sending error', response.message);
+              }
+            },
+          );
+        }
+      };
+
+      peerConnectionRef.current.onconnectionstatechange = () => {
+        console.log(
+          'Connection State:',
+          peerConnectionRef.current.connectionState,
+        );
+
+        if (peerConnectionRef.current.connectionState === 'connected') {
+          console.log('Call is active.');
+          dispatch(callConnected());
+        } else if (peerConnectionRef.current.connectionState === 'connecting') {
+          console.log('Call is connecting.');
+          dispatch(connectingCall());
+        }
+      };
 
       socketGeneralRef.current.emit(
         'call:answer',
@@ -185,8 +219,29 @@ const CallOverlay = () => {
       const peerConnection = new RTCPeerConnection(iceServers);
       peerConnectionRef.current = peerConnection;
 
+      // Add track listener for remote stream
+      peerConnectionRef.current.ontrack = (event) => {
+        console.log('Received remote track:', event.track);
+
+        remoteAudioRef.current.srcObject = event.streams[0];
+      };
+
+      // Add local audio stream
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+
+      localStream.getTracks().forEach((track) => {
+        peerConnectionRef.current.addTrack(track, localStream);
+        console.log('local track added', track);
+      });
+
+      localAudioRef.current.srcObject = localStream;
+
       // Set remote description first
-      await peerConnection.setRemoteDescription(response.callObj.offer);
+      await peerConnectionRef.current.setRemoteDescription(
+        response.callObj.offer,
+      );
 
       dispatch(
         incomingCall({
@@ -196,61 +251,45 @@ const CallOverlay = () => {
         }),
       );
 
-      // IMPORTANT: ICE candidate handler
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          console.log('Callee ICE candidate:', event.candidate);
-          socketGeneralRef.current.emit(
-            'call:addMyIce',
-            {
-              callId: response._id,
-              IceCandidate: event.candidate,
-            },
-            (response) => {
-              if (response.status === 'ok') {
-                console.log('ICE from callee candidate sent');
-              } else {
-                console.error('ICE sending error', response.message);
-              }
-            },
-          );
-        }
-      };
+      // // IMPORTANT: ICE candidate handler
+      // peerConnection.onicecandidate = (event) => {
+      //   if (event.candidate) {
+      //     console.log('Callee ICE candidate:', event.candidate);
+      //     socketGeneralRef.current.emit(
+      //       'call:addMyIce',
+      //       {
+      //         callId: response._id,
+      //         IceCandidate: event.candidate,
+      //       },
+      //       (response) => {
+      //         if (response.status === 'ok') {
+      //           console.log('ICE from callee candidate sent');
+      //         } else {
+      //           console.error('ICE sending error', response.message);
+      //         }
+      //       },
+      //     );
+      //   }
+      // };
 
-      peerConnection.onconnectionstatechange = () => {
-        console.log('Connection State:', peerConnection.connectionState);
+      // peerConnection.onconnectionstatechange = () => {
+      //   console.log('Connection State:', peerConnection.connectionState);
 
-        if (peerConnection.connectionState === 'connected') {
-          console.log('Call is active.');
-          dispatch(callConnected());
-        } else if (peerConnection.connectionState === 'connecting') {
-          console.log('Call is connecting.');
-          dispatch(connectingCall());
-        }
-      };
-
-      // Add track listener for remote stream
-      peerConnection.ontrack = (event) => {
-        remoteAudioRef.current.srcObject = event.streams[0];
-      };
-
-      // Add local audio stream
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
-
-      localStream
-        .getTracks()
-        .forEach((track) => peerConnection.addTrack(track, localStream));
-
-      localAudioRef.current.srcObject = localStream;
+      //   if (peerConnection.connectionState === 'connected') {
+      //     console.log('Call is active.');
+      //     dispatch(callConnected());
+      //   } else if (peerConnection.connectionState === 'connecting') {
+      //     console.log('Call is connecting.');
+      //     dispatch(connectingCall());
+      //   }
+      // };
     };
 
     const handleIncomingICE = (response) => {
       if (peerConnectionRef.current) {
         console.log('Adding ICE candidate from caller');
         peerConnectionRef.current
-          .addIceCandidate(new RTCIceCandidate(response.callObj.participantICE))
+          .addIceCandidate(response.callObj.participantICE)
           .catch((err) => console.error('Error adding ICE candidate:', err));
       }
     };
@@ -317,8 +356,6 @@ const CallOverlay = () => {
             isMuted={isMuted}
           />
         )}
-        <audio ref={localAudioRef} autoPlay muted />
-        <audio ref={remoteAudioRef} autoPlay />
       </div>
     </div>
   );

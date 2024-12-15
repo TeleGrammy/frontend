@@ -36,7 +36,32 @@ function Caller() {
   const localAudioRef = useRef(null);
   const remoteAudioRef = useRef(null);
 
-  const handleCall = async () => {
+  const createCall = () => {
+    console.log('creating call');
+    socketGeneralRef.current.emit(
+      'call:createCall',
+      {
+        chatId: openedChat.id,
+      },
+      (response) => {
+        if (response.status === 'ok') {
+          console.log('call created');
+          dispatch(
+            startCall({
+              participants: response.call.participants,
+              chatId: response.call.chatId,
+              callID: response.call._id,
+            }),
+          );
+          handleCall(response.call._id);
+        } else {
+          console.log('error', response.message);
+        }
+      },
+    );
+  };
+
+  const handleCall = async (callid) => {
     if (callState !== 'no call') return;
 
     try {
@@ -47,45 +72,33 @@ function Caller() {
 
       // Handle remote stream
       peerConnection.ontrack = (event) => {
-        if (remoteAudioRef.current) {
-          remoteAudioRef.current.srcObject = new MediaStream([event.track]);
-        }
+        console.log('Received remote track:', event.track);
+        remoteAudioRef.current.srcObject = event.streams[0];
       };
       // Get local audio stream
       const localStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
       // Add local audio stream to peer connection
-      localStream
-        .getTracks()
-        .forEach((track) => peerConnection.addTrack(track, localStream));
+      localStream.getTracks().forEach((track) => {
+        peerConnection.addTrack(track, localStream);
+        console.log('local track added', track);
+      });
 
       localAudioRef.current.srcObject = localStream;
 
       // Create and send an offer
       const offer = await peerConnection.createOffer();
 
-      socketGeneralRef.current.emit(
-        'call:newCall',
-        {
-          chatId: openedChat.id,
-          offer,
-        },
-        (response) => {
-          if (response.status === 'ok') {
-            console.log('Offer sent');
-            dispatch(
-              startCall({
-                participants: response.call.participants,
-                chatId: response.call.chatId,
-                callID: response.call._id,
-              }),
-            );
-          } else {
-            console.log('error', response.message);
-          }
-        },
-      );
+      await peerConnection
+        .setLocalDescription(offer)
+        .then(() =>
+          console.log(
+            'Local description set:',
+            peerConnection.localDescription,
+          ),
+        )
+        .catch((err) => console.error('Error setting local description:', err));
 
       // IMPORTANT: Add this to ensure ICE candidates are generated
       peerConnection.onicecandidate = (event) => {
@@ -94,7 +107,7 @@ function Caller() {
           socketGeneralRef.current.emit(
             'call:addMyIce',
             {
-              callId: callID,
+              callId: callid,
               IceCandidate: event.candidate,
             },
             (response) => {
@@ -120,15 +133,22 @@ function Caller() {
         }
       };
 
-      await peerConnection
-        .setLocalDescription(offer)
-        .then(() =>
-          console.log(
-            'Local description set:',
-            peerConnection.localDescription,
-          ),
-        )
-        .catch((err) => console.error('Error setting local description:', err));
+      console.log('sending offer');
+
+      socketGeneralRef.current.emit(
+        'call:newCall',
+        {
+          callId: callid,
+          offer,
+        },
+        (response) => {
+          if (response.status === 'ok') {
+            console.log('Offer sent');
+          } else {
+            console.log('error', response.message);
+          }
+        },
+      );
     } catch (err) {
       console.error('Error starting call:', err);
     }
@@ -188,8 +208,9 @@ function Caller() {
       console.log('handleAcceptCall');
       if (!peerConnectionRef.current.remoteDescription) {
         console.log('call has been accepted from callee');
-        // Set the first valid answer
+
         peerConnectionRef.current.setRemoteDescription(response.callObj.answer);
+
         dispatch(updateParticipants(response.participants));
       }
     };
@@ -238,7 +259,7 @@ function Caller() {
     <>
       <IoMdCall
         size={24}
-        onClick={handleCall}
+        onClick={createCall}
         className="cursor-pointer text-gray-600 hover:text-gray-900"
       />
       <audio ref={localAudioRef} autoPlay muted className="hidden"></audio>
