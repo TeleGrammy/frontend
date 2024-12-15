@@ -8,9 +8,10 @@ import { useSocket } from '../../../contexts/SocketContext';
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function ChannelList({ channelOrGroup }) {
-  const {socketGroupRef} = useSocket();
+  const { socketGroupRef, socketChannelRef } = useSocket();
   const [view, setView] = useState('newChannel');
   const [channelName, setChannelName] = useState('');
+  const [channelId, setChannelId] = useState(null);
   const [description, setDescription] = useState('');
   const [addedMembers, setAddedMembers] = useState([]);
   const dispatch = useDispatch();
@@ -26,13 +27,35 @@ function ChannelList({ channelOrGroup }) {
   };
 
   useEffect(() => {
-
     socketGroupRef.current.on('group:created', (message) => {
       console.log('Group created message received:', message);
     });
 
+    socketChannelRef.current.on('error', (message) => {
+      console.log('error in channel: ', message);
+    });
+  }, [socketGroupRef, socketChannelRef]); // Empty dependency array means this runs once on mount and cleanup on unmount
 
-  }, [socketGroupRef]); // Empty dependency array means this runs once on mount and cleanup on unmount
+  async function handleAddSubsribers() {
+    try {
+      const payload = {
+        channelId: channelId,
+        subscriberIds: addedMembers,
+      };
+      console.log('Emitting channel adding subscribers:', payload);
+
+      // Emit the correct message type for creating a group
+      socketChannelRef.current.emit(
+        'addingChannelSubscriper',
+        payload,
+        (ackMessage) => {
+          console.log('subsriber added successfully', ackMessage);
+        },
+      );
+    } catch (error) {
+      console.error('Error in createGroup:', error.message);
+    }
+  }
 
   function handleCreateGroupOrChannel() {
     const createChannel = async () => {
@@ -51,8 +74,9 @@ function ChannelList({ channelOrGroup }) {
         });
         const data = await response.json();
         console.log(data);
+        setChannelId(data.channelId);
       } catch (error) {
-        console.error('Error creating group or channel:', error.message);
+        console.error('Error creating channel:', error.message);
       }
     };
 
@@ -69,7 +93,8 @@ function ChannelList({ channelOrGroup }) {
         console.error('Error in createGroup:', error.message);
       }
     }
-    createGroup();
+    if (channelOrGroup === 'group') createGroup();
+    else createChannel();
   }
 
   return (
@@ -243,8 +268,10 @@ function ChannelList({ channelOrGroup }) {
             if (view === 'newChannel') {
               handleCreateGroupOrChannel();
               setView('addMembers');
-            } else if (view === 'addMembers')
+            } else if (view === 'addMembers') {
+              handleAddSubsribers();
               dispatch(setcurrentMenu('ChatList'));
+            }
           }}
         >
           <FaAngleRight className="text-text-primary opacity-70" />
