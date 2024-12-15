@@ -24,51 +24,56 @@ export const SocketProvider = ({ children }) => {
   const socketGroupRef = useRef(null);
   const socketChannelRef = useRef(null);
 
+  const token = getCookie('accessToken');
+
   const [connectedGeneral, setConnectedGeneral] = useState(false);
   const [connectedGroup, setConnectedGroup] = useState(false);
   const [connectedChannel, setConnectedChannel] = useState(false);
 
   useEffect(() => {
-    const token = getCookie('accessToken');
-    if (!socketGeneralRef.current) {
-      // Initialize the socket connection
-      socketGeneralRef.current = io(SOCKET_URL_GENERAL, {
-        query: { token },
-      });
-      socketGeneralRef.current.on('connect_error', (err) => {
-        console.log(err);
-      });
-      socketGeneralRef.current.on('connect', () => {
-        console.log('Connected to Socket_General.IO server');
-        setConnectedGeneral(true);
-      });
-    }
-    if (!socketGroupRef.current) {
-      // Initialize the socket connection
-      socketGroupRef.current = io(SOCKET_URL_GROUP, {
-        query: { token },
-      });
-      socketGroupRef.current.on('connect_error', (err) => {
-        console.log(err);
-      });
-      socketGroupRef.current.on('connect', () => {
-        console.log('Connected to Socket_Group.IO server');
-        setConnectedGroup(true);
-      });
-    }
-    if (!socketChannelRef.current) {
-      // Initialize the socket connection
-      socketChannelRef.current = io(SOCKET_URL_CHANNEL, {
-        query: { token },
-      });
-      socketChannelRef.current.on('connect_error', (err) => {
-        console.log(err);
-      });
-      socketChannelRef.current.on('connect', () => {
-        console.log('Connected to Socket_Channel.IO server');
-        setConnectedChannel(true);
-      });
-    }
+    const connectSockets = () => {
+      if (!socketGeneralRef.current) {
+        // Initialize the socket connection
+        socketGeneralRef.current = io(SOCKET_URL_GENERAL, {
+          query: { token },
+        });
+        socketGeneralRef.current.on('connect_error', (err) => {
+          console.log(err);
+        });
+        socketGeneralRef.current.on('connect', () => {
+          console.log('Connected to Socket_General.IO server');
+          setConnectedGeneral(true);
+        });
+      }
+      if (!socketGroupRef.current) {
+        // Initialize the socket connection
+        socketGroupRef.current = io(SOCKET_URL_GROUP, {
+          query: { token },
+        });
+        socketGroupRef.current.on('connect_error', (err) => {
+          console.log(err);
+        });
+        socketGroupRef.current.on('connect', () => {
+          console.log('Connected to Socket_Group.IO server');
+          setConnectedGroup(true);
+        });
+      }
+      if (!socketChannelRef.current) {
+        // Initialize the socket connection
+        socketChannelRef.current = io(SOCKET_URL_CHANNEL, {
+          query: { token },
+        });
+        socketChannelRef.current.on('connect_error', (err) => {
+          console.log(err);
+        });
+        socketChannelRef.current.on('connect', () => {
+          console.log('Connected to Socket_Channel.IO server');
+          setConnectedChannel(true);
+        });
+      }
+    };
+
+    connectSockets();
 
     return () => {
       if (socketGeneralRef.current) {
@@ -87,7 +92,7 @@ export const SocketProvider = ({ children }) => {
         setConnectedChannel(false);
       }
     };
-  }, []);
+  }, [token]);
 
   if (!connectedGeneral || !connectedGroup || !connectedChannel) {
     // Optionally, return a loading indicator or null while waiting
