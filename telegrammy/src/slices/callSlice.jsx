@@ -8,8 +8,6 @@ const initialState = {
   participants: [],
   callTime: '00:00', // Call duration in seconds
   intervalId: null, // Timer reference for counting call duration
-  endCallFromCallerRef: null, // Reference to endCall function in Caller component
-  muteRef: null, // Reference to toggleMute function in Caller component
 };
 
 const callSlice = createSlice({
@@ -21,8 +19,6 @@ const callSlice = createSlice({
       state.participants = action.payload.participants;
       state.chatId = action.payload.chatId;
       state.callID = action.payload.callID;
-      state.endCallFromCallerRef = action.payload.endCallFromCallerRef;
-      state.muteRef = action.payload.muteRef;
       state.isCallOverlayOpen = true;
       state.callState = 'ringing';
     },
@@ -48,7 +44,6 @@ const callSlice = createSlice({
       state.participants = [];
       state.chatId = null;
       state.callID = null;
-      state.endCallFromCallerRef = null;
       state.intervalId = null;
       state.isCallOverlayOpen = false;
     },
@@ -64,7 +59,6 @@ const callSlice = createSlice({
       state.participants = [];
       state.chatId = null;
       state.callID = null;
-      state.endCallFromCallerRef = null;
       state.intervalId = null;
       state.isCallOverlayOpen = false;
     },

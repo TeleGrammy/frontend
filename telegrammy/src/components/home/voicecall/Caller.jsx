@@ -11,6 +11,7 @@ import {
 } from '../../../slices/callSlice';
 
 import { useSocket } from '../../../contexts/SocketContext';
+import { useCallContext } from '../../../contexts/CallContext';
 
 import { IoMdCall } from 'react-icons/io';
 
@@ -21,6 +22,7 @@ const iceServers = {
 
 function Caller() {
   const { socketGeneralRef } = useSocket();
+  const { endCallFromCallerRef, muteRef } = useCallContext();
 
   const dispatch = useDispatch();
 
@@ -33,8 +35,6 @@ function Caller() {
   const peerConnectionRef = useRef(null);
   const localAudioRef = useRef(null);
   const remoteAudioRef = useRef(null);
-  const endCallFromCallerRef = useRef(null);
-  const muteRef = useRef(null);
 
   const handleCall = async () => {
     if (callState !== 'no call') return;
@@ -45,9 +45,52 @@ function Caller() {
       const peerConnection = new RTCPeerConnection(iceServers);
       peerConnectionRef.current = peerConnection;
 
-      // Handle ICE candidates
+      // Handle remote stream
+      peerConnection.ontrack = (event) => {
+        if (remoteAudioRef.current) {
+          remoteAudioRef.current.srcObject = new MediaStream([event.track]);
+        }
+      };
+      // Get local audio stream
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+      // Add local audio stream to peer connection
+      localStream
+        .getTracks()
+        .forEach((track) => peerConnection.addTrack(track, localStream));
+
+      localAudioRef.current.srcObject = localStream;
+
+      // Create and send an offer
+      const offer = await peerConnection.createOffer();
+
+      socketGeneralRef.current.emit(
+        'call:newCall',
+        {
+          chatId: openedChat.id,
+          offer,
+        },
+        (response) => {
+          if (response.status === 'ok') {
+            console.log('Offer sent');
+            dispatch(
+              startCall({
+                participants: response.call.participants,
+                chatId: response.call.chatId,
+                callID: response.call._id,
+              }),
+            );
+          } else {
+            console.log('error', response.message);
+          }
+        },
+      );
+
+      // IMPORTANT: Add this to ensure ICE candidates are generated
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log('Caller ICE candidate:', event.candidate);
           socketGeneralRef.current.emit(
             'call:addMyIce',
             {
@@ -58,71 +101,34 @@ function Caller() {
               if (response.status === 'ok') {
                 console.log('ICE from caller candidate sent');
               } else {
-                console.log('error', response.message);
+                console.error('ICE sending error', response.message);
               }
             },
           );
         }
       };
 
-      // Handle remote stream
-      peerConnection.ontrack = (event) => {
-        if (remoteAudioRef.current) {
-          remoteAudioRef.current.srcObject = new MediaStream([event.track]);
-        }
-      };
+      peerConnection.onconnectionstatechange = () => {
+        console.log('Connection State:', peerConnection.connectionState);
 
-      // Get local audio stream
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
-      localAudioRef.current.srcObject = localStream;
-
-      // Add local audio stream to peer connection
-      localStream
-        .getTracks()
-        .forEach((track) => peerConnection.addTrack(track, localStream));
-
-      // Create and send an offer
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      socketGeneralRef.current.emit(
-        'call:newCall',
-        {
-          chatId: openedChat.id,
-          offer,
-        },
-        (response) => {
-          if (response.status === 'ok') {
-            dispatch(
-              startCall({
-                participants: response.call.participants,
-                chatId: response.call.chatId,
-                callID: response.call._id,
-                endCallFromCallerRef: endCallFromCallerRef,
-                muteRef: muteRef,
-              }),
-            );
-          } else {
-            console.log('error', response.message);
-          }
-        },
-      );
-
-      peerConnectionRef.current.onconnectionstatechange = () => {
-        console.log(
-          'Connection State:',
-          peerConnectionRef.current.connectionState,
-        );
-
-        if (peerConnectionRef.current.connectionState === 'connected') {
+        if (peerConnection.connectionState === 'connected') {
           console.log('Call is active.');
           dispatch(callConnected());
-        } else if (peerConnectionRef.current.connectionState === 'connecting') {
+        } else if (peerConnection.connectionState === 'connecting') {
           console.log('Connecting call...');
           dispatch(connectingCall());
         }
       };
+
+      await peerConnection
+        .setLocalDescription(offer)
+        .then(() =>
+          console.log(
+            'Local description set:',
+            peerConnection.localDescription,
+          ),
+        )
+        .catch((err) => console.error('Error setting local description:', err));
     } catch (err) {
       console.error('Error starting call:', err);
     }
@@ -130,13 +136,13 @@ function Caller() {
 
   const endCallEvent = () => {
     if (callState !== 'no call') {
-      console.log('Ending call');
+      console.log('Ending call from caller');
       socketGeneralRef.current.emit(
         'call:end',
         { callId: callID, status: 'ended' },
         (response) => {
           if (response.status === 'ok') {
-            console.log('Call ended');
+            console.log('Call ended from caller');
             dispatch(endCall());
             cleanup();
           } else {
@@ -149,7 +155,7 @@ function Caller() {
 
   const handleMute = () => {
     if (callState === 'in call' && localAudioRef.current.srcObject) {
-      console.log('Muting/unmuting audio');
+      console.log('Muting/unmuting audio from caller');
       localAudioRef.current.srcObject.getAudioTracks().forEach((track) => {
         track.enabled = !track.enabled;
       });
@@ -158,6 +164,8 @@ function Caller() {
 
   const cleanup = () => {
     // Close peer connection and stop local stream
+    console.log('Cleaning up call');
+
     peerConnectionRef.current?.close();
     peerConnectionRef.current = null;
 
@@ -177,13 +185,11 @@ function Caller() {
   useEffect(() => {
     // need to change for groups and multiple participants calls (backend , frontend)
     const handleAcceptCall = (response) => {
-      if (callState === 'no call') return;
+      console.log('handleAcceptCall');
       if (!peerConnectionRef.current.remoteDescription) {
         console.log('call has been accepted from callee');
         // Set the first valid answer
-        peerConnectionRef.current.setRemoteDescription(
-          new RTCSessionDescription(response.callObj.answer),
-        );
+        peerConnectionRef.current.setRemoteDescription(response.callObj.answer);
         dispatch(updateParticipants(response.participants));
       }
     };
@@ -192,25 +198,20 @@ function Caller() {
 
     // need to check
     const handleIncomingICE = (response) => {
-      if (
-        callState === 'no call' ||
-        response.callObj.senderId === currentUserId
-      )
-        return;
       if (peerConnectionRef.current) {
         console.log('adding ICE candidate from callee');
         peerConnectionRef.current
-          .addIceCandidate(new RTCIceCandidate(response.callObj.participantICE))
+          .addIceCandidate(response.callObj.participantICE)
           .catch((err) => console.error('Error adding ICE candidate:', err));
       }
     };
 
     const handleEndCallFromCallee = (response) => {
-      if (callState === 'no call') return;
-      console.log('Call ended');
+      console.log('call state from end event in caller', callState);
+      console.log('Call ended from end event in caller');
+      cleanup();
       if (response.status === 'rejected') dispatch(calldeclined());
       else dispatch(endCall());
-      cleanup();
     };
 
     try {

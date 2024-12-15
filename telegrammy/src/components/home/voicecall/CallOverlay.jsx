@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { useSocket } from '../../../contexts/SocketContext';
+import { useCallContext } from '../../../contexts/CallContext';
 
 import {
   closeOverlay,
@@ -23,6 +24,8 @@ const iceServers = {
 
 const CallOverlay = () => {
   const { socketGeneralRef } = useSocket();
+  const { endCallFromCallerRef, muteRef } = useCallContext();
+
   const dispatch = useDispatch();
 
   const [isMuted, setIsMuted] = useState(false);
@@ -37,51 +40,47 @@ const CallOverlay = () => {
     callTime,
     isCallOverlayOpen,
     chatId,
-    endCallFromCallerRef,
     callID,
-    muteRef,
   } = useSelector((state) => state.call);
 
   const currentUserId = JSON.parse(localStorage.getItem('user'))._id;
 
-  const pictureToShow = chatId?.isGroup
-    ? chatId?.groupId.image
-    : currentUserId === chatId?.participants[0]._id
-      ? chatId?.participants[1].picture
-      : chatId?.participants[0].picture;
-  const nameToShow = chatId?.isGroup
-    ? chatId?.groupId.name
-    : currentUserId === chatId?.participants[0]._id
-      ? chatId?.participants[1].username
-      : chatId?.participants[0].username;
+  //////////////////////////////////////////
+
+  // const pictureToShow = chatId?.isGroup
+  //   ? chatId?.groupId.image
+  //   : currentUserId === chatId?.participants[0].userId
+  //     ? chatId?.participants[1].picture
+  //     : chatId?.participants[0].picture;
+  // const nameToShow = chatId?.isGroup
+  //   ? chatId?.groupId.name
+  //   : currentUserId === chatId?.participants[0].userId
+  //     ? chatId?.participants[1].username
+  //     : chatId?.participants[0].username;
 
   const handleAccept = async () => {
     if (peerConnectionRef.current && callState !== 'no call') {
       console.log('Accepting call');
       const answer = await peerConnectionRef.current.createAnswer();
-      await peerConnectionRef.current.setLocalDescription(answer);
+
+      await peerConnectionRef.current
+        .setLocalDescription(answer)
+        .then(() =>
+          console.log(
+            'Local description set:',
+            peerConnection.localDescription,
+          ),
+        )
+        .catch((err) => console.error('Error setting local description:', err));
+
+      console.log(answer);
+
       socketGeneralRef.current.emit(
         'call:answer',
         { callId: callID, answer },
         (response) => {
           if (response.status === 'ok') {
             console.log('send accepted successfully');
-            peerConnectionRef.current.onconnectionstatechange = () => {
-              console.log(
-                'Connection State:',
-                peerConnectionRef.current.connectionState,
-              );
-
-              if (peerConnectionRef.current.connectionState === 'connected') {
-                console.log('Call is active.');
-                dispatch(callConnected());
-              } else if (
-                peerConnectionRef.current.connectionState === 'connecting'
-              ) {
-                console.log('Call is connecting.');
-                dispatch(connectingCall());
-              }
-            };
           } else {
             console.log('error', response.message);
           }
@@ -108,7 +107,7 @@ const CallOverlay = () => {
   };
 
   const handleEndCall = () => {
-    if (currentUserId === participants[0]?._id) {
+    if (currentUserId === participants[0]?.userId) {
       console.log('Ending call from caller');
       endCallFromCallerRef.current.click();
     } else {
@@ -118,7 +117,7 @@ const CallOverlay = () => {
         { callId: callID, status: 'ended' },
         (response) => {
           if (response.status === 'ok') {
-            console.log('Call ended');
+            console.log('Call ended successfully from callee');
             dispatch(endCall());
             cleanup();
           } else {
@@ -132,30 +131,35 @@ const CallOverlay = () => {
   const handleCloseOverlay = () => {
     if (callState === 'callDeclined') {
       dispatch(endCall());
+    } else {
+      dispatch(closeOverlay());
     }
-    dispatch(closeOverlay());
   };
 
   const toggleMute = () => {
-    if (currentUserId === participants[0]?._id) {
+    console.log(currentUserId, participants[0]?.userId);
+    if (currentUserId === participants[0]?.userId) {
+      console.log('mute from caller');
       muteRef.current.click();
       setIsMuted((prev) => !prev);
     } else {
       if (callState === 'in call' && localAudioRef.current.srcObject) {
+        console.log('mute from callee');
+        console.log('Muting/unmuting audio from callee');
         localAudioRef.current.srcObject.getAudioTracks().forEach((track) => {
           track.enabled = !track.enabled;
-          setIsMuted((prev) => !prev);
         });
+        setIsMuted((prev) => !prev);
       }
     }
   };
 
   const cleanup = () => {
-    // Close PeerConnection and stop media tracks
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
+    // Close peer connection and stop local stream
+    console.log('Cleaning up call');
+
+    peerConnectionRef.current?.close();
+    peerConnectionRef.current = null;
 
     if (localAudioRef.current?.srcObject) {
       localAudioRef.current.srcObject
@@ -174,9 +178,15 @@ const CallOverlay = () => {
     const handleIncomingOffer = async (response) => {
       // Check if the current user is part of the call
       // neeed to change after backend edit it
-      if (callState !== 'no call') return;
 
       console.log('Incoming call');
+
+      // Create PeerConnection
+      const peerConnection = new RTCPeerConnection(iceServers);
+      peerConnectionRef.current = peerConnection;
+
+      // Set remote description first
+      await peerConnection.setRemoteDescription(response.callObj.offer);
 
       dispatch(
         incomingCall({
@@ -186,31 +196,41 @@ const CallOverlay = () => {
         }),
       );
 
-      // Create PeerConnection
-      peerConnectionRef.current = new RTCPeerConnection(iceServers);
-
-      // Handle ICE candidates
-      peerConnectionRef.current.onicecandidate = (event) => {
+      // IMPORTANT: ICE candidate handler
+      peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log('Callee ICE candidate:', event.candidate);
           socketGeneralRef.current.emit(
             'call:addMyIce',
             {
-              callId: callID,
+              callId: response._id,
               IceCandidate: event.candidate,
             },
             (response) => {
               if (response.status === 'ok') {
                 console.log('ICE from callee candidate sent');
               } else {
-                console.log('error', response.message);
+                console.error('ICE sending error', response.message);
               }
             },
           );
         }
       };
 
+      peerConnection.onconnectionstatechange = () => {
+        console.log('Connection State:', peerConnection.connectionState);
+
+        if (peerConnection.connectionState === 'connected') {
+          console.log('Call is active.');
+          dispatch(callConnected());
+        } else if (peerConnection.connectionState === 'connecting') {
+          console.log('Call is connecting.');
+          dispatch(connectingCall());
+        }
+      };
+
       // Add track listener for remote stream
-      peerConnectionRef.current.ontrack = (event) => {
+      peerConnection.ontrack = (event) => {
         remoteAudioRef.current.srcObject = event.streams[0];
       };
 
@@ -218,25 +238,15 @@ const CallOverlay = () => {
       const localStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
-      localAudioRef.current.srcObject = localStream;
+
       localStream
         .getTracks()
-        .forEach((track) =>
-          peerConnectionRef.current.addTrack(track, localStream),
-        );
+        .forEach((track) => peerConnection.addTrack(track, localStream));
 
-      // Set remote description
-      await peerConnectionRef.current.setRemoteDescription(
-        new RTCSessionDescription(response.callObj.offer),
-      );
+      localAudioRef.current.srcObject = localStream;
     };
 
     const handleIncomingICE = (response) => {
-      if (
-        callState === 'no call' ||
-        response.callObj.senderId === currentUserId
-      )
-        return;
       if (peerConnectionRef.current) {
         console.log('Adding ICE candidate from caller');
         peerConnectionRef.current
@@ -245,9 +255,9 @@ const CallOverlay = () => {
       }
     };
 
-    const handleEndCallFromCaller = () => {
-      if (callState === 'no call') return;
-      console.log('Call ended by caller');
+    const handleEndCallFromCaller = (response) => {
+      console.log('call state from end event in callee', callState);
+      console.log('Call ended from end event in callee');
       dispatch(endCall());
       cleanup();
     };
@@ -287,11 +297,11 @@ const CallOverlay = () => {
 
         <div>
           <img
-            src={pictureToShow || 'https://via.placeholder.com/100'}
+            src={'https://via.placeholder.com/100'}
             alt="Participant"
             className="mx-auto mb-4 h-24 w-24 rounded-full"
           />
-          <h2>{nameToShow || 'Caller'}</h2>
+          <h2>{'Caller'}</h2>
         </div>
 
         <h2 className="mb-4 text-lg font-semibold text-text-primary">
