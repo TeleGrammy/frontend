@@ -216,22 +216,6 @@ function Caller() {
 
         peerConnectionRef.current.setRemoteDescription(response.callObj.answer);
 
-        const ices = response.callObj.answererIceCandiate;
-        console.log(
-          'adding ICE candidate from callee in handleAcceptCall',
-          ices,
-        );
-        ices.forEach((ice) => {
-          peerConnectionRef.current
-            .addIceCandidate(ice)
-            .catch((err) =>
-              console.error(
-                'Error adding ICE candidate -> handleAcceptCall:',
-                err,
-              ),
-            );
-        });
-
         dispatch(updateParticipants(response.participants));
       }
     };
@@ -261,12 +245,14 @@ function Caller() {
     };
 
     const handleEndCallFromCallee = (response) => {
-      console.log('call state from end event in caller', callState);
-      console.log('Call ended from end event in caller');
-      cleanup();
-      if (response.status === 'rejected') dispatch(calldeclined());
-      else dispatch(endCall());
-      console.log(response.status);
+      if (peerConnectionRef.current) {
+        console.log('call state from end event in caller', callState);
+        console.log('Call ended from end event in caller');
+        if (response.status === 'rejected') dispatch(calldeclined());
+        else dispatch(endCall());
+        console.log(response.status);
+        cleanup();
+      }
     };
 
     try {

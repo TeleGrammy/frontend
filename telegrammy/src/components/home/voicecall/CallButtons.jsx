@@ -8,7 +8,7 @@ function CallButtons({
   handleDecline,
   handleEndCall,
   toggleMute,
-  isMuted,
+  isMute,
 }) {
   const { callState } = useSelector((state) => state.call);
 
@@ -36,10 +36,10 @@ function CallButtons({
             <button
               onClick={toggleMute}
               className={`rounded-full p-2 ${
-                isMuted ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'
+                isMute ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'
               }`}
             >
-              {isMuted ? <FiMicOff size={20} /> : <FiMic size={20} />}
+              {isMute ? <FiMicOff size={20} /> : <FiMic size={20} />}
             </button>
           )}
           <button

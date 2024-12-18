@@ -8,6 +8,7 @@ const initialState = {
   participants: [],
   callTime: '00:00', // Call duration in seconds
   intervalId: null, // Timer reference for counting call duration
+  isMute: false, // Mute audio
 };
 
 const callSlice = createSlice({
@@ -46,6 +47,7 @@ const callSlice = createSlice({
       state.callID = null;
       state.intervalId = null;
       state.isCallOverlayOpen = false;
+      state.isMute = false;
     },
     calldeclined: (state) => {
       state.callState = 'callDeclined';
@@ -61,6 +63,7 @@ const callSlice = createSlice({
       state.callID = null;
       state.intervalId = null;
       state.isCallOverlayOpen = false;
+      state.isMute = false;
     },
     // function to close overlay
     closeOverlay: (state) => {
@@ -78,6 +81,9 @@ const callSlice = createSlice({
     updateParticipants(state, action) {
       state.participants = action.payload;
     },
+    toggleMuteaction(state) {
+      state.isMute = !state.isMute;
+    },
   },
 });
 
@@ -94,6 +100,7 @@ export const {
   incomingCall,
   calldeclined,
   updateParticipants,
+  toggleMuteaction,
 } = callSlice.actions;
 
 export default callSlice.reducer;

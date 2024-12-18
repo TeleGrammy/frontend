@@ -6,12 +6,12 @@ import { useCallContext } from '../../../contexts/CallContext';
 
 import {
   closeOverlay,
-  openOverlay,
   connectingCall,
   callConnected,
   declineCall,
   endCall,
   incomingCall,
+  toggleMuteaction,
 } from '../../../slices/callSlice';
 
 import CallButtons from './CallButtons';
@@ -28,8 +28,6 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
   const dispatch = useDispatch();
 
-  const [isMuted, setIsMuted] = useState(false);
-
   const peerConnectionRef = useRef(null);
 
   const {
@@ -39,6 +37,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     isCallOverlayOpen,
     chatId,
     callID,
+    isMute,
   } = useSelector((state) => state.call);
 
   const currentUserId = JSON.parse(localStorage.getItem('user'))._id;
@@ -175,7 +174,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     if (currentUserId === participants[0]?.userId) {
       console.log('mute from caller');
       muteRef.current.click();
-      setIsMuted((prev) => !prev);
+      dispatch(toggleMuteaction());
     } else {
       if (callState === 'in call' && localAudioRef.current.srcObject) {
         console.log('mute from callee');
@@ -183,7 +182,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
         localAudioRef.current.srcObject.getAudioTracks().forEach((track) => {
           track.enabled = !track.enabled;
         });
-        setIsMuted((prev) => !prev);
+        dispatch(toggleMuteaction());
       }
     }
   };
@@ -245,22 +244,6 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
         response.callObj.offer,
       );
 
-      const ices = response.callObj.offererIceCandidate;
-      console.log(
-        'adding ICE candidate from callee in handleIncomingOffer',
-        ices,
-      );
-      ices.forEach((ice) => {
-        peerConnectionRef.current
-          .addIceCandidate(ice)
-          .catch((err) =>
-            console.error(
-              'Error adding ICE candidate -> handleIncomingOffer:',
-              err,
-            ),
-          );
-      });
-
       dispatch(
         incomingCall({
           participants: response.participants,
@@ -271,6 +254,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     };
 
     const handleIncomingICE = (response) => {
+      console.log('Adding ICE candidate from caller before if');
       if (peerConnectionRef.current) {
         console.log('Adding ICE candidate from caller');
 
@@ -293,10 +277,12 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     };
 
     const handleEndCallFromCaller = (response) => {
-      console.log('call state from end event in callee', callState);
-      console.log('Call ended from end event in callee');
-      dispatch(endCall());
-      cleanup();
+      if (peerConnectionRef.current) {
+        console.log('call state from end event in callee', callState);
+        console.log('Call ended from end event in callee');
+        cleanup();
+        dispatch(endCall());
+      }
     };
 
     try {
@@ -351,7 +337,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
             handleDecline={handleDecline}
             handleEndCall={handleEndCall}
             toggleMute={toggleMute}
-            isMuted={isMuted}
+            isMute={isMute}
           />
         )}
       </div>
