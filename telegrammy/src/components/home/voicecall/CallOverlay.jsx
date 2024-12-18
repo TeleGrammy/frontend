@@ -45,16 +45,16 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
   //////////////////////////////////////////
 
-  // const pictureToShow = chatId?.isGroup
-  //   ? chatId?.groupId.image
-  //   : currentUserId === chatId?.participants[0].userId
-  //     ? chatId?.participants[1].picture
-  //     : chatId?.participants[0].picture;
-  // const nameToShow = chatId?.isGroup
-  //   ? chatId?.groupId.name
-  //   : currentUserId === chatId?.participants[0].userId
-  //     ? chatId?.participants[1].username
-  //     : chatId?.participants[0].username;
+  const pictureToShow = chatId?.isGroup
+    ? chatId?.groupId.image
+    : currentUserId === chatId?.participants[0].userId._id
+      ? chatId?.participants[1].userId.picture
+      : chatId?.participants[0].userId.picture;
+  const nameToShow = chatId?.isGroup
+    ? chatId?.groupId.name
+    : currentUserId === chatId?.participants[0].userId._id
+      ? chatId?.participants[1].userId.username
+      : chatId?.participants[0].userId.username;
 
   const handleAccept = async () => {
     if (peerConnectionRef.current && callState !== 'no call') {
@@ -188,6 +188,8 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     }
   };
 
+  /////////////////////////// need to handle decline and end when refresh page ///////////////////////////
+
   const cleanup = () => {
     // Close peer connection and stop local stream
     console.log('Cleaning up call');
@@ -243,6 +245,18 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
         response.callObj.offer,
       );
 
+      const ices = response.callObj.offererIceCandidate;
+      ices.forEach((ice) => {
+        peerConnectionRef.current
+          .addIceCandidate(ice)
+          .catch((err) =>
+            console.error(
+              'Error adding ICE candidate -> handleIncomingOffer:',
+              err,
+            ),
+          );
+      });
+
       dispatch(
         incomingCall({
           participants: response.participants,
@@ -250,47 +264,23 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
           callID: response._id,
         }),
       );
-
-      // // IMPORTANT: ICE candidate handler
-      // peerConnection.onicecandidate = (event) => {
-      //   if (event.candidate) {
-      //     console.log('Callee ICE candidate:', event.candidate);
-      //     socketGeneralRef.current.emit(
-      //       'call:addMyIce',
-      //       {
-      //         callId: response._id,
-      //         IceCandidate: event.candidate,
-      //       },
-      //       (response) => {
-      //         if (response.status === 'ok') {
-      //           console.log('ICE from callee candidate sent');
-      //         } else {
-      //           console.error('ICE sending error', response.message);
-      //         }
-      //       },
-      //     );
-      //   }
-      // };
-
-      // peerConnection.onconnectionstatechange = () => {
-      //   console.log('Connection State:', peerConnection.connectionState);
-
-      //   if (peerConnection.connectionState === 'connected') {
-      //     console.log('Call is active.');
-      //     dispatch(callConnected());
-      //   } else if (peerConnection.connectionState === 'connecting') {
-      //     console.log('Call is connecting.');
-      //     dispatch(connectingCall());
-      //   }
-      // };
     };
 
     const handleIncomingICE = (response) => {
       if (peerConnectionRef.current) {
         console.log('Adding ICE candidate from caller');
-        peerConnectionRef.current
-          .addIceCandidate(response.callObj.participantICE)
-          .catch((err) => console.error('Error adding ICE candidate:', err));
+
+        const ices = response.callObj.offererIceCandidate;
+        ices.forEach((ice) => {
+          peerConnectionRef.current
+            .addIceCandidate(ice)
+            .catch((err) =>
+              console.error(
+                'Error adding ICE candidate -> handleIncomingICE caller:',
+                err,
+              ),
+            );
+        });
       }
     };
 
@@ -336,11 +326,11 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
         <div>
           <img
-            src={'https://via.placeholder.com/100'}
+            src={pictureToShow || 'https://via.placeholder.com/100'}
             alt="Participant"
             className="mx-auto mb-4 h-24 w-24 rounded-full"
           />
-          <h2>{'Caller'}</h2>
+          <h2>{nameToShow || 'Caller'}</h2>
         </div>
 
         <h2 className="mb-4 text-lg font-semibold text-text-primary">

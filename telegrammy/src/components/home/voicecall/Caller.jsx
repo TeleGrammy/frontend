@@ -100,10 +100,28 @@ function Caller() {
         )
         .catch((err) => console.error('Error setting local description:', err));
 
+      console.log('sending offer');
+
+      socketGeneralRef.current.emit(
+        'call:newCall',
+        {
+          callId: callid,
+          offer,
+        },
+        (response) => {
+          if (response.status === 'ok') {
+            console.log('Offer sent');
+          } else {
+            console.log('error', response.message);
+          }
+        },
+      );
+
       // IMPORTANT: Add this to ensure ICE candidates are generated
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
           console.log('Caller ICE candidate:', event.candidate);
+          console.log('callid: ', callid);
           socketGeneralRef.current.emit(
             'call:addMyIce',
             {
@@ -132,23 +150,6 @@ function Caller() {
           dispatch(connectingCall());
         }
       };
-
-      console.log('sending offer');
-
-      socketGeneralRef.current.emit(
-        'call:newCall',
-        {
-          callId: callid,
-          offer,
-        },
-        (response) => {
-          if (response.status === 'ok') {
-            console.log('Offer sent');
-          } else {
-            console.log('error', response.message);
-          }
-        },
-      );
     } catch (err) {
       console.error('Error starting call:', err);
     }
@@ -182,6 +183,8 @@ function Caller() {
     }
   };
 
+  /////////////////////////// need to handle decline and end when refresh page ///////////////////////////
+
   const cleanup = () => {
     // Close peer connection and stop local stream
     console.log('Cleaning up call');
@@ -203,13 +206,27 @@ function Caller() {
 
   // listen for sockets events
   useEffect(() => {
-    // need to change for groups and multiple participants calls (backend , frontend)
+    // need to change for groups check for recieved id to add answer of it to its peer connection
+    // sender id -> caller id
+    // reciever id -> callee id
     const handleAcceptCall = (response) => {
       console.log('handleAcceptCall');
       if (!peerConnectionRef.current.remoteDescription) {
         console.log('call has been accepted from callee');
 
         peerConnectionRef.current.setRemoteDescription(response.callObj.answer);
+
+        const ices = response.callObj.answererIceCandiate;
+        ices.forEach((ice) => {
+          peerConnectionRef.current
+            .addIceCandidate(ice)
+            .catch((err) =>
+              console.error(
+                'Error adding ICE candidate -> handleAcceptCall:',
+                err,
+              ),
+            );
+        });
 
         dispatch(updateParticipants(response.participants));
       }
@@ -221,9 +238,17 @@ function Caller() {
     const handleIncomingICE = (response) => {
       if (peerConnectionRef.current) {
         console.log('adding ICE candidate from callee');
-        peerConnectionRef.current
-          .addIceCandidate(response.callObj.participantICE)
-          .catch((err) => console.error('Error adding ICE candidate:', err));
+        const ices = response.callObj.answererIceCandiate;
+        ices.forEach((ice) => {
+          peerConnectionRef.current
+            .addIceCandidate(ice)
+            .catch((err) =>
+              console.error(
+                'Error adding ICE candidate -> handleIncomingICE from callee:',
+                err,
+              ),
+            );
+        });
       }
     };
 
@@ -233,6 +258,7 @@ function Caller() {
       cleanup();
       if (response.status === 'rejected') dispatch(calldeclined());
       else dispatch(endCall());
+      console.log(response.status);
     };
 
     try {
