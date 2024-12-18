@@ -34,7 +34,7 @@ let trie = new Trie();
 function Chat() {
   const { socketGeneralRef } = useSocket();
 
-  const isAdmin = false;
+  const [isAdmin, setIsAdmin] = useState(false);
   const { openedChat, searchVisible, searchText } = useSelector(
     (state) => state.chats,
   );
@@ -247,6 +247,34 @@ function Chat() {
         console.error('Error fetching Chats:', error);
       }
     };
+
+    const fetchChannelInfo = async () => {
+      try {
+        const response = await fetch(
+          `${apiUrl}/v1/channels/${openedChat.channelId}`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          },
+        );
+        if (!response.ok) {
+          console.error('Failed to fetch channel info.');
+        } else {
+          console.log('Channel info have been fetched successfully.');
+        }
+        const data = await response.json();
+        console.log(data);
+        setIsAdmin(data.channelOwner.id === userId);
+      } catch (error) {
+        console.error('Error fetching channel info:', error);
+      }
+    };
+
+    if (openedChat.isChannel) fetchChannelInfo();
 
     fetchMessages();
   }, [openedChat]);
@@ -655,10 +683,10 @@ function Chat() {
           )}
           <input
             data-test-id="message-input"
-            disabled={openedChat.type === 'Channel' && !isAdmin}
+            disabled={openedChat.isChannel && !isAdmin}
             type="text"
             placeholder={
-              !isAdmin && openedChat.type === 'Channel'
+              !isAdmin && openedChat.isChannel
                 ? "YOU DON'T HAVE PERMISSION!"
                 : editingMessageId
                   ? 'Edit your message...'

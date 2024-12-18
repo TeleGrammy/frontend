@@ -291,22 +291,6 @@ function ChannelInfo() {
 
           <div className="relative h-[80%] w-[90%] bg-bg-primary">
             {view === 'edit' && openedChat.isChannel ? (
-              <ChannelSettings
-                channelId={openedChat.id}
-                channelPhoto={channelPhoto}
-                channelDescription={channelDescription}
-                setChannelPhoto={setChannelPhoto}
-                setChannelDescription={setChannelDescription}
-                toggleView={toggleView}
-                isAdmin={isAdmin}
-                channelSizeLimit={channelSizeLimit}
-                setChannelSizeLimit={setChannelSizeLimit}
-                channelName={channelName}
-                setChannelName={setChannelName}
-                channelPrivacy={channelPrivacy}
-                setChannelPrivacy={setChannelPrivacy}
-              />
-            ) : view === 'edit' && openedChat.isChannel ? (
               <ChannelSettings toggleView={toggleView} isAdmin={isAdmin} />
             ) : view === 'addUsers' ? (
               <div className="relative h-full w-full">
