@@ -167,7 +167,7 @@ function Caller() {
             dispatch(endCall());
             cleanup();
           } else {
-            console.log('error', response.message);
+            console.error('error', response.message);
           }
         },
       );
@@ -217,6 +217,10 @@ function Caller() {
         peerConnectionRef.current.setRemoteDescription(response.callObj.answer);
 
         const ices = response.callObj.answererIceCandiate;
+        console.log(
+          'adding ICE candidate from callee in handleAcceptCall',
+          ices,
+        );
         ices.forEach((ice) => {
           peerConnectionRef.current
             .addIceCandidate(ice)
@@ -239,6 +243,10 @@ function Caller() {
       if (peerConnectionRef.current) {
         console.log('adding ICE candidate from callee');
         const ices = response.callObj.answererIceCandiate;
+        console.log(
+          'adding ICE candidate from callee after handleAcceptCall',
+          ices,
+        );
         ices.forEach((ice) => {
           peerConnectionRef.current
             .addIceCandidate(ice)

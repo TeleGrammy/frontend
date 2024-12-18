@@ -116,7 +116,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
           if (response.status === 'ok') {
             console.log('send accepted successfully');
           } else {
-            console.log('error', response.message);
+            console.error('error', response.message);
           }
         },
       );
@@ -134,7 +134,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
           dispatch(declineCall());
           cleanup();
         } else {
-          console.log('error', response.message);
+          console.error('error', response.message);
         }
       },
     );
@@ -155,7 +155,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
             dispatch(endCall());
             cleanup();
           } else {
-            console.log('error', response.message);
+            console.error('error: ', response.message);
           }
         },
       );
@@ -246,6 +246,10 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
       );
 
       const ices = response.callObj.offererIceCandidate;
+      console.log(
+        'adding ICE candidate from callee in handleIncomingOffer',
+        ices,
+      );
       ices.forEach((ice) => {
         peerConnectionRef.current
           .addIceCandidate(ice)
@@ -271,6 +275,10 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
         console.log('Adding ICE candidate from caller');
 
         const ices = response.callObj.offererIceCandidate;
+        console.log(
+          'adding ICE candidate from callee after handleIncomingOffer',
+          ices,
+        );
         ices.forEach((ice) => {
           peerConnectionRef.current
             .addIceCandidate(ice)
