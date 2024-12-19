@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { useSocket } from '../../../contexts/SocketContext';
@@ -19,7 +19,15 @@ import { IoClose } from 'react-icons/io5';
 
 // ICE servers configuration
 const iceServers = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun.2.google.com:19302' },
+    {
+      urls: 'turn:35.152.90.211:3478',
+      username: 'telegrammy',
+      credential: 'telegrammycmp2026',
+    },
+  ],
 };
 
 const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
@@ -71,42 +79,6 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
           ),
         )
         .catch((err) => console.error('Error setting local description:', err));
-
-      // IMPORTANT: ICE candidate handler
-      peerConnectionRef.current.onicecandidate = (event) => {
-        if (event.candidate) {
-          console.log('Callee ICE candidate:', event.candidate);
-          socketGeneralRef.current.emit(
-            'call:addMyIce',
-            {
-              callId: callID,
-              IceCandidate: event.candidate,
-            },
-            (response) => {
-              if (response.status === 'ok') {
-                console.log('ICE from callee candidate sent');
-              } else {
-                console.error('ICE sending error', response.message);
-              }
-            },
-          );
-        }
-      };
-
-      peerConnectionRef.current.onconnectionstatechange = () => {
-        console.log(
-          'Connection State:',
-          peerConnectionRef.current.connectionState,
-        );
-
-        if (peerConnectionRef.current.connectionState === 'connected') {
-          console.log('Call is active.');
-          dispatch(callConnected());
-        } else if (peerConnectionRef.current.connectionState === 'connecting') {
-          console.log('Call is connecting.');
-          dispatch(connectingCall());
-        }
-      };
 
       socketGeneralRef.current.emit(
         'call:answer',
@@ -220,6 +192,42 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
       const peerConnection = new RTCPeerConnection(iceServers);
       peerConnectionRef.current = peerConnection;
 
+      // IMPORTANT: ICE candidate handler
+      peerConnectionRef.current.onicecandidate = (event) => {
+        if (event.candidate) {
+          console.log('Callee ICE candidate:', event.candidate);
+          socketGeneralRef.current.emit(
+            'call:addMyIce',
+            {
+              callId: response._id,
+              IceCandidate: event.candidate,
+            },
+            (response) => {
+              if (response.status === 'ok') {
+                console.log('ICE from callee candidate sent');
+              } else {
+                console.error('ICE sending error', response.message);
+              }
+            },
+          );
+        }
+      };
+
+      peerConnectionRef.current.onconnectionstatechange = () => {
+        console.log(
+          'Connection State:',
+          peerConnectionRef.current.connectionState,
+        );
+
+        if (peerConnectionRef.current.connectionState === 'connected') {
+          console.log('Call is active.');
+          dispatch(callConnected());
+        } else if (peerConnectionRef.current.connectionState === 'connecting') {
+          console.log('Call is connecting.');
+          dispatch(connectingCall());
+        }
+      };
+
       // Add track listener for remote stream
       peerConnectionRef.current.ontrack = (event) => {
         console.log('Received remote track:', event.track);
@@ -254,13 +262,10 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     };
 
     const handleIncomingICE = (response) => {
-      console.log('Adding ICE candidate from caller before if');
       if (peerConnectionRef.current) {
-        console.log('Adding ICE candidate from caller');
-
         const ices = response.callObj.offererIceCandidate;
         console.log(
-          'adding ICE candidate from callee after handleIncomingOffer',
+          'adding ICE candidate from caller after handleIncomingOffer',
           ices,
         );
         ices.forEach((ice) => {

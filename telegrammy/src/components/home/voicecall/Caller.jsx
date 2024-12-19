@@ -17,7 +17,15 @@ import { IoMdCall } from 'react-icons/io';
 
 // ICE servers configuration
 const iceServers = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun.2.google.com:19302' },
+    {
+      urls: 'turn:35.152.90.211:3478',
+      username: 'telegrammy',
+      credential: 'telegrammycmp2026',
+    },
+  ],
 };
 
 function Caller() {
@@ -70,6 +78,40 @@ function Caller() {
       const peerConnection = new RTCPeerConnection(iceServers);
       peerConnectionRef.current = peerConnection;
 
+      // IMPORTANT: Add this to ensure ICE candidates are generated
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          console.log('Caller ICE candidate:', event.candidate);
+          console.log('callid: ', callid);
+          socketGeneralRef.current.emit(
+            'call:addMyIce',
+            {
+              callId: callid,
+              IceCandidate: event.candidate,
+            },
+            (response) => {
+              if (response.status === 'ok') {
+                console.log('ICE from caller candidate sent');
+              } else {
+                console.error('ICE sending error', response.message);
+              }
+            },
+          );
+        }
+      };
+
+      peerConnection.onconnectionstatechange = () => {
+        console.log('Connection State:', peerConnection.connectionState);
+
+        if (peerConnection.connectionState === 'connected') {
+          console.log('Call is active.');
+          dispatch(callConnected());
+        } else if (peerConnection.connectionState === 'connecting') {
+          console.log('Connecting call...');
+          dispatch(connectingCall());
+        }
+      };
+
       // Handle remote stream
       peerConnection.ontrack = (event) => {
         console.log('Received remote track:', event.track);
@@ -116,40 +158,6 @@ function Caller() {
           }
         },
       );
-
-      // IMPORTANT: Add this to ensure ICE candidates are generated
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          console.log('Caller ICE candidate:', event.candidate);
-          console.log('callid: ', callid);
-          socketGeneralRef.current.emit(
-            'call:addMyIce',
-            {
-              callId: callid,
-              IceCandidate: event.candidate,
-            },
-            (response) => {
-              if (response.status === 'ok') {
-                console.log('ICE from caller candidate sent');
-              } else {
-                console.error('ICE sending error', response.message);
-              }
-            },
-          );
-        }
-      };
-
-      peerConnection.onconnectionstatechange = () => {
-        console.log('Connection State:', peerConnection.connectionState);
-
-        if (peerConnection.connectionState === 'connected') {
-          console.log('Call is active.');
-          dispatch(callConnected());
-        } else if (peerConnection.connectionState === 'connecting') {
-          console.log('Connecting call...');
-          dispatch(connectingCall());
-        }
-      };
     } catch (err) {
       console.error('Error starting call:', err);
     }
@@ -225,7 +233,6 @@ function Caller() {
     // need to check
     const handleIncomingICE = (response) => {
       if (peerConnectionRef.current) {
-        console.log('adding ICE candidate from callee');
         const ices = response.callObj.answererIceCandiate;
         console.log(
           'adding ICE candidate from callee after handleAcceptCall',
