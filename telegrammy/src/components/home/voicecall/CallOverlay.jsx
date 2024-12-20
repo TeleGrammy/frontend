@@ -37,6 +37,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
   const dispatch = useDispatch();
 
   const peerConnectionRef = useRef(null);
+  const combinedRemoteStream = useRef(null);
 
   const {
     participants,
@@ -63,34 +64,115 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
       ? chatId?.participants[1].userId.username
       : chatId?.participants[0].userId.username;
 
+  ////////////////////////////////////////// handlers //////////////////////////////////////////
+
+  const setupPeerConnection = async (participantId, localStream, callid) => {
+    const peerConnection = new RTCPeerConnection(iceServers);
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        console.log('ICE Candidate:', event.candidate);
+        socketGeneralRef.current.emit(
+          'call:addIce',
+          {
+            callId: callid,
+            recieverId: participantId,
+            IceCandidate: event.candidate,
+          },
+          (response) => {
+            if (response.status === 'ok') {
+              console.log(`ICE Candidate sent for ${participantId}`);
+            } else {
+              console.error('Error sending ICE Candidate:', response.message);
+            }
+          },
+        );
+      }
+    };
+
+    peerConnection.ontrack = (event) => {
+      console.log('Received remote track:', event.track);
+      combinedRemoteStream.current.addTrack(event.track);
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = combinedRemoteStream.current;
+      }
+    };
+
+    localStream.getTracks().forEach((track) => {
+      peerConnection.addTrack(track, localStream);
+    });
+
+    peerConnectionRef.current.set(participantId, peerConnection);
+    return peerConnection;
+  };
+
   const handleAccept = async () => {
     if (peerConnectionRef.current && callState !== 'no call') {
       console.log('Accepting call');
-      const answer = await peerConnectionRef.current.createAnswer();
 
-      console.log('answer: ', answer);
+      const participantsToIterate = chatId.participants;
 
-      await peerConnectionRef.current
-        .setLocalDescription(answer)
-        .then(() =>
-          console.log(
-            'Local description set:',
-            peerConnectionRef.current.localDescription,
-          ),
-        )
-        .catch((err) => console.error('Error setting local description:', err));
+      for (const participant of participantsToIterate) {
+        if (participant.userId._id !== currentUserId) {
+          const peerConnection = peerConnectionRef.current.get(
+            participant.userId._id,
+          );
 
-      socketGeneralRef.current.emit(
-        'call:answer',
-        { callId: callID, answer },
-        (response) => {
-          if (response.status === 'ok') {
-            console.log('send accepted successfully');
-          } else {
-            console.error('error', response.message);
+          peerConnection.onconnectionstatechange = () => {
+            console.log(
+              `Connection state for receiver ${recieverId}:`,
+              peerConnection.connectionState,
+            );
+
+            if (peerConnection.connectionState === 'connected') {
+              if (callState !== 'in call') dispatch(callConnected());
+            } else if (peerConnection.connectionState === 'connecting') {
+              if (callState !== 'connecting') dispatch(connectingCall());
+            }
+          };
+
+          try {
+            const offer = await peerConnection.createOffer();
+
+            socketGeneralRef.current.emit(
+              'call:offer',
+              {
+                callId: callID,
+                recieverId: participant.userId._id,
+                offer,
+              },
+              async (response) => {
+                if (response.status === 'ok') {
+                  console.log('send offer successfully');
+                  await peerConnection.setLocalDescription(offer);
+                } else if (response.status === 'offerExists') {
+                  const answer = await peerConnection.createAnswer();
+                  socketGeneralRef.current.emit(
+                    'call:answer',
+                    {
+                      callId: callID,
+                      answer,
+                      recieverId: participant.userId._id,
+                    },
+                    async (response) => {
+                      if (response.status === 'ok') {
+                        console.log('send accepted successfully');
+                        await peerConnection.setLocalDescription(answer);
+                      } else {
+                        console.error('error', response.message);
+                      }
+                    },
+                  );
+                } else {
+                  console.error('error', response.message);
+                }
+              },
+            );
+          } catch (err) {
+            console.error('Error handling accept:', err);
           }
-        },
-      );
+        }
+      }
     }
   };
 
@@ -119,7 +201,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
       console.log('Ending call from callee');
       socketGeneralRef.current.emit(
         'call:end',
-        { callId: callID, status: 'ended' },
+        { callId: callID },
         (response) => {
           if (response.status === 'ok') {
             console.log('Call ended successfully from callee');
@@ -162,12 +244,18 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
   /////////////////////////// need to handle decline and end when refresh page ///////////////////////////
 
   const cleanup = () => {
-    // Close peer connection and stop local stream
+    // Close peer connections and stop all local and remote streams for each participant
     console.log('Cleaning up call');
 
-    peerConnectionRef.current?.close();
-    peerConnectionRef.current = null;
+    if (peerConnectionRef.current.size > 0) {
+      Object.values(peerConnectionRef.current).forEach((peerConnection) => {
+        // Close each peer connection
+        peerConnection.close();
+      });
+      peerConnectionRef.current = null;
+    }
 
+    // Stop local audio stream
     if (localAudioRef.current?.srcObject) {
       localAudioRef.current.srcObject
         .getTracks()
@@ -178,98 +266,98 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     if (remoteAudioRef.current) {
       remoteAudioRef.current.srcObject = null;
     }
+
+    combinedRemoteStream.current = null;
+
+    console.log('Call resources cleaned up successfully.');
   };
 
   // listen for sockets events
   useEffect(() => {
-    const handleIncomingOffer = async (response) => {
-      // Check if the current user is part of the call
-      // neeed to change after backend edit it
+    const handleIncomingCall = async (response, callback) => {
+      if (peerConnectionRef.current) return;
 
       console.log('Incoming call');
 
-      // Create PeerConnection
-      const peerConnection = new RTCPeerConnection(iceServers);
-      peerConnectionRef.current = peerConnection;
+      try {
+        peerConnectionRef.current = new Map();
+        combinedRemoteStream.current = new MediaStream();
 
-      // IMPORTANT: ICE candidate handler
-      peerConnectionRef.current.onicecandidate = (event) => {
-        if (event.candidate) {
-          console.log('Callee ICE candidate:', event.candidate);
-          socketGeneralRef.current.emit(
-            'call:addMyIce',
-            {
-              callId: response._id,
-              IceCandidate: event.candidate,
-            },
-            (response) => {
-              if (response.status === 'ok') {
-                console.log('ICE from callee candidate sent');
-              } else {
-                console.error('ICE sending error', response.message);
-              }
-            },
-          );
+        const localStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        localAudioRef.current.srcObject = localStream;
+
+        for (const participant of response.chatId.participants) {
+          if (participant.userId._id !== currentUserId) {
+            await setupPeerConnection(
+              participant.userId._id,
+              localStream,
+              response._id,
+            );
+          }
         }
-      };
 
-      peerConnectionRef.current.onconnectionstatechange = () => {
-        console.log(
-          'Connection State:',
-          peerConnectionRef.current.connectionState,
+        dispatch(
+          incomingCall({
+            participants: response.participants,
+            chatId: response.chatId,
+            callID: response._id,
+          }),
         );
+      } catch (error) {
+        console.error(error);
+      } finally {
+        callback({ status: 'ready' });
+      }
+    };
 
-        if (peerConnectionRef.current.connectionState === 'connected') {
-          console.log('Call is active.');
-          dispatch(callConnected());
-        } else if (peerConnectionRef.current.connectionState === 'connecting') {
-          console.log('Call is connecting.');
-          dispatch(connectingCall());
+    const handleIncomingOffer = async (response) => {
+      if (peerConnectionRef.current) {
+        console.log('Incoming offer');
+
+        const senderId = response.senderId; // senderId is the ID of the participant who accepted the call
+        const peerConnection = peerConnectionRef.current.get(senderId);
+
+        if (!peerConnection.remoteDescription) {
+          console.log('call has been accepted from callee');
+
+          peerConnection.setRemoteDescription(response.callObj.offer);
+
+          dispatch(updateParticipants(response.participants));
         }
-      };
+      }
+    };
 
-      // Add track listener for remote stream
-      peerConnectionRef.current.ontrack = (event) => {
-        console.log('Received remote track:', event.track);
+    const handleIncomingAnswer = (response) => {
+      if (peerConnectionRef.current) {
+        console.log('Incoming answer');
 
-        remoteAudioRef.current.srcObject = event.streams[0];
-      };
+        const senderId = response.senderId; // senderId is the ID of the participant who accepted the call
+        const peerConnection = peerConnectionRef.current.get(senderId);
 
-      // Add local audio stream
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
+        if (!peerConnection.remoteDescription) {
+          console.log('call has been accepted');
 
-      localStream.getTracks().forEach((track) => {
-        peerConnectionRef.current.addTrack(track, localStream);
-        console.log('local track added', track);
-      });
+          peerConnection.setRemoteDescription(response.callObj.answer);
 
-      localAudioRef.current.srcObject = localStream;
-
-      // Set remote description first
-      await peerConnectionRef.current.setRemoteDescription(
-        response.callObj.offer,
-      );
-
-      dispatch(
-        incomingCall({
-          participants: response.participants,
-          chatId: response.chatId,
-          callID: response._id,
-        }),
-      );
+          dispatch(updateParticipants(response.participants));
+        }
+      }
     };
 
     const handleIncomingICE = (response) => {
       if (peerConnectionRef.current) {
-        const ices = response.callObj.offererIceCandidate;
+        const senderId = response.senderId;
+        const peerConnection = peerConnectionRef.current.get(senderId);
+
+        const ices = response.iceCandidates;
         console.log(
           'adding ICE candidate from caller after handleIncomingOffer',
           ices,
         );
         ices.forEach((ice) => {
-          peerConnectionRef.current
+          peerConnection
             .addIceCandidate(ice)
             .catch((err) =>
               console.error(
@@ -292,7 +380,9 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
     try {
       // Register socketGeneralRef listeners
-      socketGeneralRef.current.on('call:incomingCall', handleIncomingOffer);
+      socketGeneralRef.current.on('call:incomingCall', handleIncomingCall);
+      socketGeneralRef.current.on('call:incomingOffer', handleIncomingOffer);
+      socketGeneralRef.current.on('call:incomingAnswer', handleIncomingAnswer);
       socketGeneralRef.current.on('call:addedICE', handleIncomingICE);
       socketGeneralRef.current.on('call:endedCall', handleEndCallFromCaller);
     } catch (error) {
@@ -301,11 +391,14 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
     return () => {
       // Cleanup socketGeneralRef listeners
-      socketGeneralRef.current.off('call:incomingCall', handleIncomingOffer);
+      socketGeneralRef.current.off('call:incomingCall', handleIncomingCall);
+      socketGeneralRef.current.off('call:incomingOffer', handleIncomingOffer);
+      socketGeneralRef.current.off('call:incomingAnswer', handleIncomingAnswer);
       socketGeneralRef.current.off('call:addedICE', handleIncomingICE);
       socketGeneralRef.current.off('call:endedCall', handleEndCallFromCaller);
 
       // Cleanup PeerConnection
+
       cleanup();
     };
   }, [socketGeneralRef]);
