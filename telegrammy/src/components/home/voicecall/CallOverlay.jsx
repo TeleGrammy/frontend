@@ -12,6 +12,7 @@ import {
   endCall,
   incomingCall,
   toggleMuteaction,
+  updateParticipants,
 } from '../../../slices/callSlice';
 
 import CallButtons from './CallButtons';
@@ -112,6 +113,8 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
       const participantsToIterate = chatId.participants;
 
+      console.log('participantsToIterate', participantsToIterate);
+
       for (const participant of participantsToIterate) {
         if (participant.userId._id !== currentUserId) {
           const peerConnection = peerConnectionRef.current.get(
@@ -131,46 +134,44 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
             }
           };
 
-          try {
-            const offer = await peerConnection.createOffer();
+          const offer = await peerConnection.createOffer();
 
-            socketGeneralRef.current.emit(
-              'call:offer',
-              {
-                callId: callID,
-                recieverId: participant.userId._id,
-                offer,
-              },
-              async (response) => {
-                if (response.status === 'ok') {
-                  console.log('send offer successfully');
-                  await peerConnection.setLocalDescription(offer);
-                } else if (response.status === 'offerExists') {
-                  const answer = await peerConnection.createAnswer();
-                  socketGeneralRef.current.emit(
-                    'call:answer',
-                    {
-                      callId: callID,
-                      answer,
-                      recieverId: participant.userId._id,
-                    },
-                    async (response) => {
-                      if (response.status === 'ok') {
-                        console.log('send accepted successfully');
-                        await peerConnection.setLocalDescription(answer);
-                      } else {
-                        console.error('error', response.message);
-                      }
-                    },
-                  );
-                } else {
-                  console.error('error', response.message);
-                }
-              },
-            );
-          } catch (err) {
-            console.error('Error handling accept:', err);
-          }
+          socketGeneralRef.current.emit(
+            'call:offer',
+            {
+              callId: callID,
+              recieverId: participant.userId._id,
+              offer,
+            },
+            async (response) => {
+              console.log('ana hna', response);
+              if (response.status === 'ok') {
+                console.log('send offer successfully');
+                await peerConnection.setLocalDescription(offer);
+              } else if (response.status === 'offerExists') {
+                console.log('offer already exists');
+                const answer = await peerConnection.createAnswer();
+                socketGeneralRef.current.emit(
+                  'call:answer',
+                  {
+                    callId: callID,
+                    answer,
+                    recieverId: participant.userId._id,
+                  },
+                  async (response) => {
+                    if (response.status === 'ok') {
+                      console.log('send answer successfully');
+                      await peerConnection.setLocalDescription(answer);
+                    } else {
+                      console.error('error', response.message);
+                    }
+                  },
+                );
+              } else {
+                console.error('error', response.message);
+              }
+            },
+          );
         }
       }
     }
