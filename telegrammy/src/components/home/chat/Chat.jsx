@@ -133,7 +133,7 @@ function Chat() {
 
       socketGeneralRef.current.on('message:sent', (message) => {
         trie.insert(message.content, message._id);
-
+        console.log(message.senderId);
         if (message.senderId !== userId) {
           console.log(socketGeneralRef.current);
           console.log('Message received:', message);

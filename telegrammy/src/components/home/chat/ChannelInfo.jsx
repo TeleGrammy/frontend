@@ -9,6 +9,7 @@ import Header from '../leftSidebar/Header';
 import { useSocket } from '../../../contexts/SocketContext';
 import { use } from 'react';
 import { ClipLoader } from 'react-spinners';
+import LeaveButton from './LeaveButton';
 const apiUrl = import.meta.env.VITE_API_URL;
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 
@@ -137,16 +138,38 @@ function ChannelInfo() {
     );
   };
 
-  const leaveChannel = async (id) => {
-    const data = {
-      channelId: openedChat.channelId,
-    };
-    socketChannelRef.current.emit('leavingChannel', data);
+  const leaveChannel = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/v1/channels/${openedChat.channelId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+      );
+      const data = await response.json();
+      console.log('leave channel: ', data);
+    } catch (error) {
+      console.error('Error leaving channel:', error);
+    }
+  };
 
-    // Remove the member from the channelMembers state
-    setChannelMembers((prevMembers) =>
-      prevMembers.filter((member) => member.useData.id !== id),
-    );
+  const deleteChannel = async () => {
+    try {
+      const payload = {
+        channelId: openedChat.channelId,
+      };
+
+      socketChannelRef.current.emit('removingChannel', payload, (response) => {
+        console.log('removingChannel: ', response);
+      });
+    } catch (error) {
+      console.error('Error leaving channel:', error);
+    }
   };
 
   const setPermissions = (username, permissionType, value) => {
@@ -464,6 +487,8 @@ function ChannelInfo() {
                 >
                   <FaPlus className="text-text-primary opacity-70" />
                 </div>
+
+                <LeaveButton handleLeave={leaveChannel} />
               </>
             )}
           </div>
