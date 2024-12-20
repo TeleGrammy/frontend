@@ -16,7 +16,10 @@ export const MessagesList = ({
   return (
     <div className="no-scrollbar flex-grow overflow-y-auto px-4">
       {messages.map((message, idx) => {
-        const showDateDivider = message.date !== lastDate;
+        const showDateDivider =
+          !lastDate ||
+          new Date(message.timestamp).toDateString() !==
+            new Date(lastDate).toDateString();
         lastDate = message.date;
         return (
           <MessageItem
@@ -30,7 +33,7 @@ export const MessagesList = ({
             handlePinMessage={handlePinMessage}
             messageRefs={messageRefs}
             showDateDivider={showDateDivider}
-            key={message.id}
+            key={message._id || idx}
             messages={messages}
           />
         );

@@ -27,12 +27,87 @@ export const MessageItem = ({
         className=""
       >
         {showDateDivider && <DateDivider message={message} />}
-        {message.voiceNote ? (
-          <VoiceNotePlayer
-            src={message.voiceNote}
-            time={message.timestamp}
-            type={message.type}
-          />
+        {message.messageType === 'audio' ? (
+          <div
+            className={`flex ${
+              message.type === 'sent' ? 'justify-end' : 'justify-start'
+            } mb-5 items-center`}
+          >
+            {message.type === 'sent' && (
+              <div className="flex flex-row space-x-2 pr-2">
+                {/* Forward button */}
+                <button
+                  data-test-id={`${idx}-message-forward-button`}
+                  onClick={() => handleClickForwardMessage(message._id)}
+                  className="text-xs text-green-500 hover:underline"
+                >
+                  Forward
+                </button>
+                {/* Edit button */}
+                <button
+                  data-test-id={`${idx}-message-edit-button`}
+                  onClick={() => handleEditMessage(message)}
+                  className="mr-2 text-xs text-blue-500 hover:underline"
+                >
+                  Edit
+                </button>
+                {/* Delete button */}
+                <button
+                  data-test-id={`${idx}-message-delete-button`}
+                  onClick={() => handleDeleteMessage(message)}
+                  className="mr-2 text-xs text-red-500 hover:underline"
+                >
+                  Delete
+                </button>
+                {/* Pin/Unpin button */}
+                <button
+                  data-test-id={`${idx}-message-pin-unpin-button`}
+                  onClick={() => {
+                    console.log('should pinning ', message);
+                    handlePinMessage(message._id, message.isPinned);
+                  }}
+                  className="text-white-500 ml-2 text-xs hover:underline"
+                >
+                  {message.isPinned ? 'UnPin' : 'Pin'}
+                </button>
+              </div>
+            )}
+            <VoiceNotePlayer
+              src={message.voiceNote}
+              time={message.timestamp}
+              type={message.type}
+            />
+            {message.type === 'received' && (
+              <div className="flex flex-row space-x-2 pr-2">
+                {/* Forward button */}
+                <button
+                  data-test-id={`${idx}-recieved-forward-button`}
+                  onClick={() => handleClickForwardMessage(message._id)}
+                  className="ml-2 text-xs text-green-500 hover:underline"
+                >
+                  Forward
+                </button>
+                {/* Reply button */}
+                <button
+                  data-test-id={`${idx}-recieved-reply-button`}
+                  onClick={() => handleReplyToMessage(message._id)}
+                  className="ml-2 text-xs text-blue-500 hover:underline"
+                >
+                  Reply
+                </button>
+                {/* Pin/Unpin button */}
+                <button
+                  data-test-id={`${idx}-recieved-pin-unpin-button`}
+                  onClick={() =>
+                    handlePinMessage(message._id, message.isPinned)
+                  }
+                  className="text-white-500 ml-2 text-xs hover:underline"
+                >
+                  {message.isPinned ? 'UnPin' : 'Pin'}
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           // Plain message
           <div
@@ -106,7 +181,9 @@ export const MessageItem = ({
                 {/* Pin/Unpin button */}
                 <button
                   data-test-id={`${idx}-recieved-pin-unpin-button`}
-                  onClick={() => handlePinMessage(message._id, message.isPinned)}
+                  onClick={() =>
+                    handlePinMessage(message._id, message.isPinned)
+                  }
                   className="text-white-500 ml-2 text-xs hover:underline"
                 >
                   {message.isPinned ? 'UnPin' : 'Pin'}

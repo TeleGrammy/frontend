@@ -65,7 +65,7 @@ const AttachMedia = ({
       <input
         data-test-id="attach-document-input"
         type="file"
-        onChange={handleFileChange}
+        onChange={(event) => handleFileChange(event, 'document_document')}
         className="hidden"
         id="file-input-document"
         accept=".pdf,.doc,.docx,.txt"

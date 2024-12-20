@@ -15,7 +15,8 @@ const getMimeType = (url) => {
 };
 
 const MediaContent = ({ message, handleImageClick, idx }) => {
-  const mimeType = getMimeType(message.mediaUrl);
+  const mimeType =
+    message.messageType === 'document' ? '' : getMimeType(message.mediaUrl);
   return (
     <>
       {message.messageType === 'image' ? (
@@ -34,12 +35,12 @@ const MediaContent = ({ message, handleImageClick, idx }) => {
       ) : (
         <a
           data-test-id={`${idx}-document-link`}
-          href={message.file}
-          download={message.fileName}
+          href={message.mediaUrl}
+          download={message.mediaKey.split('/').pop()}
           className="text-blue-500 hover:underline"
           target="_blank"
         >
-          {message.fileName}
+          {message.mediaKey.split('/').pop()}
         </a>
       )}
     </>

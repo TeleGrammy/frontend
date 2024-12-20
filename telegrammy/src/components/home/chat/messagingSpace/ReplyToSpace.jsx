@@ -3,10 +3,10 @@ import React from 'react';
 const ReplyToSpace = ({ messages, replyToMessageId, setReplyToMessageId }) => {
   return (
     <div className="flex flex-row">
-      <div className="mb-2 flex-grow rounded-lg border-l-[#d56e78] bg-[#fbf0f1] p-2">
+      <div className="mb-2 flex-grow rounded-lg border-l-[#d56e78] bg-[rgb(46,23,21)] p-2">
         <span className="text-xs text-gray-600">Replying to: </span>
-        <p className="text-sm">
-          {messages.find((msg) => msg.id === replyToMessageId)?.content}
+        <p className="text-sm text-text-secondary">
+          {messages.find((msg) => msg._id === replyToMessageId)?.content}
         </p>
       </div>
       <button

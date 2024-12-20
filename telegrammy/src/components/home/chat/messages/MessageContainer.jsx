@@ -1,6 +1,7 @@
 import React from 'react';
 import MessageBottomInfo from './MessageBottomInfo';
 import MediaContent from './MediaContent';
+import ReplyingInfo from './ReplyingInfo';
 
 const MessageContainer = ({ message, messages, idx, handleImageClick }) => {
   return (
@@ -11,11 +12,13 @@ const MessageContainer = ({ message, messages, idx, handleImageClick }) => {
           : 'bg-bg-message-receiver'
       } max-w-sm rounded-lg p-2 text-text-primary`}
     >
-      {message.replyTo && (
+      {message.replyOn && (
         <ReplyingInfo message={message} messages={messages} idx={idx} />
       )}
       {/*Media Content*/}
-      {(message.messageType === 'video' || message.messageType === 'image') && (
+      {(message.messageType === 'video' ||
+        message.messageType === 'image' ||
+        message.messageType === 'document') && (
         <MediaContent
           message={message}
           handleImageClick={handleImageClick}
