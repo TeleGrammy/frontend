@@ -30,8 +30,6 @@ function ChannelInfo() {
   const [searchQuery, setSearchQuery] = useState(''); // State for search query
   const [newInput, setNewInput] = useState(''); // State for the new input field
   const [admins, setAdmins] = useState([]);
-  const [channelSizeLimit, setChannelSizeLimit] = useState();
-  const [channelPrivacy, setChannelPrivacy] = useState();
   const [channelName, setChannelName] = useState();
   const [loading, setLoading] = useState(true); // Loading state
 
@@ -79,7 +77,9 @@ function ChannelInfo() {
         console.log('membersData: ', membersData);
         console.log('channelData: ', channelData);
 
-        setChannelMembers(membersData.participants);
+        setChannelMembers(
+          membersData.participants ? membersData.participants : [],
+        );
         const channelAdmins = membersData.participants
           .filter((member) => member.role !== 'Subscriber')
           .map((admin) => admin.userData.id);
@@ -89,7 +89,7 @@ function ChannelInfo() {
         setIsAdmin(isUserAdmin);
         setChannelDescription(channelData.channelDescription);
         setChannelName(channelData.channelName);
-        setChannelPhoto(channelData.photo);
+        setChannelPhoto(openedChat.photo);
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {

@@ -350,6 +350,7 @@ function Chat() {
         chatId: openedChat.id,
         content: inputValue,
         messageType: 'text',
+        isPost: openedChat.isChannel, // and not comment
         timestamp: new Date().toLocaleTimeString('en-US', {
           hour: 'numeric',
           minute: 'numeric',
