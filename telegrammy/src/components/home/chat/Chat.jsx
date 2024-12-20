@@ -25,6 +25,7 @@ import { setOpenedChat } from '../../../slices/chatsSlice';
 import { useDispatch } from 'react-redux';
 import { closeRightSidebar } from '../../../slices/sidebarSlice';
 import { PiMagicWand } from 'react-icons/pi';
+import { useChats } from '../../../contexts/ChatContext';
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -58,20 +59,17 @@ function Chat() {
   const [ack, setAck] = useState(null);
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
+  const { chats, setChats } = useChats();
 
-  useEffect(() => {
-    console.log('Updated pinnedMsgs222s:', pinnedMsgs); // This logs the updated state after re-render
-  }, [pinnedMsgs]); // This will run every time pinnedMsgs changes
+  useEffect(() => {}, [pinnedMsgs]); // This will run every time pinnedMsgs changes
 
   let it = 0;
   let it1 = 0;
 
   const handlePinMessage = (messageId, isPinned) => {
-    console.log('iam pinned or not');
     console.log(isPinned);
 
     if (!isPinned) {
-      // console.log('laaaa');
       socketGeneralRef.current.emit('message:pin', {
         chatId: openedChat.id,
         messageId: messageId,
@@ -97,22 +95,12 @@ function Chat() {
 
   useEffect(() => {
     console.log(openedChat.draft);
-    setInputValue(openedChat.draft);
+    setInputValue(openedChat.draft || '');
     try {
-      // console.log('Attempting to connect to the socketGeneralRef.current...');
-      // socketGeneralRef.current.connect();
-
       socketGeneralRef.current.on('error', (err) => {
         console.log(err);
       });
-      // socketGeneralRef.current.on('connect', () => {
-      //   console.log('Connected to Socket.IO server');
-      // });
-      // socketGeneralRef.current.on('connect_error', (err) => {
-      //   console.log(err);
-      // });
       socketGeneralRef.current.on('message:pin', (payload) => {
-        // console.log('iam pin', payload);
         setPinnedMsgs((prevPinnedMsgs) => [
           ...prevPinnedMsgs,
           payload.message._id,
@@ -129,7 +117,6 @@ function Chat() {
       });
 
       socketGeneralRef.current.on('message:unpin', (payload) => {
-        console.log('iam here', payload);
         setPinnedMsgs((pinnedMsgs) =>
           pinnedMsgs.filter((msg) => msg !== payload.message._id),
         );
@@ -150,6 +137,7 @@ function Chat() {
         if (message.senderId !== userId) {
           console.log(socketGeneralRef.current);
           console.log('Message received:', message);
+          message['type'] = 'received';
           const ackPayload = {
             chatId: openedChat.id,
             eventIndex: message.eventIndex, // Required
@@ -179,7 +167,8 @@ function Chat() {
 
         setMessages((prevMessages) =>
           prevMessages.filter((msg) => {
-            if (msg._id === response._id) trie.delete(msg.content, msg._id);
+            if (msg.messageType !== 'audio' && msg._id === response._id)
+              trie.delete(msg.content, msg._id);
             return msg._id !== response._id;
           }),
         );
@@ -193,20 +182,13 @@ function Chat() {
   }, [socketGeneralRef]);
 
   useEffect(() => {
-    if (ack) {
-      console.log('Acknowledgment received:', ack);
-    }
-  }, [ack]);
-
-  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    // setInputValue(openedChat.draft);
     const fetchMessages = async () => {
       try {
-        if (openedChat.id === undefined) {
+        if (!openedChat.id) {
           return;
         }
         const response = await fetch(
@@ -254,10 +236,8 @@ function Chat() {
   const handleSearch = (text) => {
     const ids = trie.startsWith(text);
     if (ids.length > 0) {
-      console.log('yes');
       if (it >= ids.length) it = 0;
       console.log(it);
-      console.log('here sir', ids[it]);
       const msg = messageRefs.current[ids[it++]];
       msg.classList.add('bg-yellow-200');
 
@@ -322,18 +302,15 @@ function Chat() {
         chatId: openedChat.id,
         content: inputValue,
         messageType: 'text',
-        timestamp: new Date().toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: 'numeric',
-        }),
+        timestamp: new Date().toISOString(),
         date: new Date().toISOString().slice(0, 10),
-        replyTo: replyToMessageId || null, // Link the reply if there's any
+        replyOn: replyToMessageId || null, // Link the reply if there's any
         type: 'sent',
       };
 
       if (selectedFile) {
         const formData = new FormData();
-        formData.append('media', selectedFile);
+        formData.append(selectedFileType.split('_')[0], selectedFile);
         const mediaResponse = await fetch(
           `${apiUrl}/v1/messaging/upload/${selectedFileType.split('_')[0]}`,
           {
@@ -352,10 +329,6 @@ function Chat() {
         newMessage.mediaUrl = mediaResponseData.signedUrl;
         newMessage.messageType =
           selectedFile !== null ? selectedFileType.split('_')[1] : 'text';
-        // newMessage.file = URL.createObjectURL(selectedFile);
-
-        // newMessage.fileName = selectedFile.name;
-        // newMessage.fileType = selectedFile.type;
       }
 
       if (editingMessageId) {
@@ -365,18 +338,8 @@ function Chat() {
         });
 
         setEditingMessageId(null);
-        setInputValue(''); // Clear the input field
+        setInputValue('');
       } else {
-        const sentMessage = {
-          id: messages.length + 1,
-          ...newMessage,
-          content: encryptMessage(newMessage.content),
-          chatId: openedChat.id,
-          messageType:
-            selectedFile !== null ? selectedFileType.split('_')[1] : 'text',
-          type: 'sent',
-        };
-
         try {
           console.log(newMessage);
           socketGeneralRef.current.emit(
@@ -397,6 +360,7 @@ function Chat() {
                   mediaUrl: newMessage.mediaUrl,
                   messageType: newMessage.messageType,
                   isPinned: false,
+                  replyOn: newMessage.replyOn || null,
                 };
                 console.log(newRenderedMessage);
                 setMessages((prevMessages) => [
@@ -404,7 +368,7 @@ function Chat() {
                   newRenderedMessage,
                 ]);
 
-                setInputValue(''); // Clear the input field
+                setInputValue('');
               } else {
                 console.log(response);
                 console.error('Error:', response.message || 'Unknown error');
@@ -416,7 +380,6 @@ function Chat() {
         }
       }
 
-      // Clear input and reset reply state after sending
       setInputValue('');
       setReplyToMessageId(null);
       setLoading(false);
@@ -424,7 +387,6 @@ function Chat() {
   };
 
   const handleEditMessage = (message) => {
-    console.log(message);
     const messageToEdit = messages.find((msg) => msg._id === message._id);
     if (messageToEdit) {
       setInputValue(messageToEdit.content);
@@ -433,40 +395,20 @@ function Chat() {
   };
 
   const handleForwardMessage = (chat) => {
-    const messageToForward = messages.find(
-      (msg) => msg.id === forwardingMessageId,
+    console.log(chat);
+    console.log(forwardingMessageId);
+    const message = messages.find((msg) => msg._id === forwardingMessageId);
+    socketGeneralRef.current.emit(
+      'message:send',
+      {
+        chatId: chat.id,
+        messageId: forwardingMessageId,
+        messageType: message.messageType,
+      },
+      (response) => {
+        console.log(response);
+      },
     );
-    const length =
-      chat.name === 'user1'
-        ? initialMessages1.length
-        : chat.name === 'user2'
-          ? initialMessages2.length
-          : initialMessages3.length;
-    if (messageToForward) {
-      const newMessage = {
-        ...messageToForward,
-        id: length + 1,
-        type: 'sent',
-        timestamp: new Date().toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: 'numeric',
-        }),
-      };
-      switch (chat.name) {
-        case 'user1':
-          initialMessages1.push(newMessage);
-          break;
-        case 'user2':
-          initialMessages2.push(newMessage);
-          break;
-        case 'user3':
-          initialMessages3.push(newMessage);
-          break;
-        default:
-          break;
-      }
-      setForwardingMessageId(null);
-    }
   };
   const handleDeleteMessage = (message) => {
     socketGeneralRef.current.emit(
@@ -480,27 +422,65 @@ function Chat() {
 
   const handleClickForwardMessage = (id) => {
     setForwardingMessageId(id);
-    setInputValue(''); // Clear input if forwarding
+    setInputValue('');
   };
 
   const handleReplyToMessage = (id) => {
     setReplyToMessageId(id);
-    setInputValue(''); // Clear input if replying
+    setInputValue('');
   };
 
-  const handleSendVoice = (audioBlob) => {
-    const newMessage = {
-      id: messages.length + 1,
-      content: 'Voice Note Sent',
-      type: 'recieved',
-      timestamp: new Date().toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-      }),
-      date: new Date().toISOString().slice(0, 10),
-      voiceNote: URL.createObjectURL(audioBlob),
-    };
-    setMessages([...messages, newMessage]);
+  const handleSendVoice = async (audioFormData) => {
+    try {
+      const mediaResponse = await fetch(`${apiUrl}/v1/messaging/upload/audio`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json', // Specify JSON response expected
+        },
+        credentials: 'include', // Include credentials (cookies)
+        body: audioFormData,
+      });
+      const newMessage = {
+        chatId: openedChat.id,
+        messageType: 'audio',
+        timestamp: new Date().toISOString(),
+        date: new Date().toISOString().slice(0, 10),
+        replyOn: replyToMessageId || null, // Link the reply if there's any
+        type: 'sent',
+      };
+      const mediaResponseData = await mediaResponse.json();
+      console.log(mediaResponseData);
+      newMessage.mediaKey = mediaResponseData.mediaKey;
+      newMessage.mediaUrl = mediaResponseData.signedUrl;
+      socketGeneralRef.current.emit('message:send', newMessage, (response) => {
+        // Callback handles server response
+
+        if (response.status === 'ok') {
+          console.log('Server acknowledgment:', response);
+          const newRenderedMessage = {
+            chatId: openedChat.id,
+            _id: response.data.id,
+            content: newMessage.content,
+            type: newMessage.type,
+            timestamp: newMessage.timestamp,
+            mediaKey: newMessage.mediaKey,
+            mediaUrl: newMessage.mediaUrl,
+            messageType: newMessage.messageType,
+            isPinned: false,
+            replyOn: newMessage.replyOn || null,
+          };
+          console.log(newRenderedMessage);
+          setMessages((prevMessages) => [...prevMessages, newRenderedMessage]);
+
+          setInputValue('');
+        } else {
+          console.log(response);
+          console.error('Error:', response.message || 'Unknown error');
+        }
+      });
+    } catch (error) {
+      console.error('Error sending:', error);
+    }
   };
 
   const handleImageClick = (src) => {
@@ -512,7 +492,6 @@ function Chat() {
   };
 
   const handleSelectItem = (item) => {
-    console.log(item);
     const newMessage = {
       id: messages.length + 1,
       type: 'sent',
@@ -529,7 +508,7 @@ function Chat() {
         minute: 'numeric',
       }),
       date: new Date().toISOString().slice(0, 10),
-      replyTo: replyToMessageId || null,
+      replyOn: replyToMessageId || null,
     };
 
     setMessages([...messages, newMessage]);
@@ -714,7 +693,7 @@ function Chat() {
                 <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
                   Forward to:
                 </h3>
-                {initialChatsLSB.map((chat) => (
+                {chats.map((chat) => (
                   <div
                     data-test-id={`${chat.id}-forward-to-div`}
                     key={chat.id}
@@ -724,7 +703,11 @@ function Chat() {
                     }}
                   >
                     <img
-                      src={chat.picture}
+                      src={
+                        chat.photo
+                          ? chat.photo
+                          : 'https://ui-avatars.com/api/?name=' + chat.name
+                      }
                       alt={chat.name}
                       className="h-8 w-8 rounded-full object-cover"
                     />

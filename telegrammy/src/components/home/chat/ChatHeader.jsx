@@ -17,7 +17,6 @@ function ChatHeader({ handleKey }) {
   const { isRightSidebarOpen } = useSelector((state) => state.sidebar);
 
   const toggleExpand = () => {
-    console.log(openedChat.isGroup);
     setIsExpanded((prev) => !prev);
     if (isRightSidebarOpen) {
       dispatch(closeRightSidebar());

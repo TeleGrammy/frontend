@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   openedChat: {
-    id: '2',
+    id: null,
     name: 'user2',
     type: 'User',
     description: 'hello',
