@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import GroupSettings from './GroupSettings'; // Import the GroupSettings component
+import ChannelSettings from './ChannelSettings'; // Import the ChannelSettings component
 import { useSelector } from 'react-redux';
-import ChannelSettings from './ChannelSettings';
-import { FaAngleRight, FaCreativeCommonsShare, FaPlus } from 'react-icons/fa';
+import {
+  FaAngleRight,
+  FaCreativeCommonsShare,
+  FaDoorOpen,
+  FaPlus,
+  FaTrash,
+} from 'react-icons/fa';
 import AddUsersList from '../leftSidebar/AddUsersList';
 import CloseButton from '../rightSidebar/CloseButton';
 import SelectedInfo from '../rightSidebar/SelectedInfo';
@@ -13,85 +18,90 @@ import { ClipLoader } from 'react-spinners';
 const apiUrl = import.meta.env.VITE_API_URL;
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 
-const initialGroupMembers = [];
+const initialChannelMembers = [];
 
-const initialGroupPhoto = 'https://picsum.photos/50/50';
+const initialChannelPhoto = 'https://picsum.photos/50/50';
 
-function GroupOrChannelInfo() {
-  const { socketGroupRef } = useSocket();
+function ChannelInfo() {
+  const { socketChannelRef } = useSocket();
 
   const { openedChat } = useSelector((state) => state.chats);
   const [isAdmin, setIsAdmin] = useState(true); // Assume the current user is an admin for demonstration
-  const [groupMembers, setGroupMembers] = useState(initialGroupMembers);
+  const [isOwner, setIsOwner] = useState(false);
+  const [channelMembers, setChannelMembers] = useState(initialChannelMembers);
   const [addedMembers, setAddedMembers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [groupPhoto, setGroupPhoto] = useState(initialGroupPhoto);
-  const [groupDescription, setGroupDescription] = useState('hello');
+  const [channelPhoto, setChannelPhoto] = useState(initialChannelPhoto);
+  const [channelDescription, setChannelDescription] = useState('hello');
   const [view, setView] = useState('info');
   const [searchQuery, setSearchQuery] = useState(''); // State for search query
   const [newInput, setNewInput] = useState(''); // State for the new input field
   const [admins, setAdmins] = useState([]);
-  const [groupSizeLimit, setGroupSizeLimit] = useState();
-  const [groupPrivacy, setGroupPrivacy] = useState();
-  const [groupName, setGroupName] = useState();
+  const [channelName, setChannelName] = useState();
   const [loading, setLoading] = useState(true); // Loading state
 
   // Filtered members based on search query
-  const filteredMembers = groupMembers.filter((member) =>
-    member.username.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredMembers = channelMembers.filter((member) =>
+    member.userData.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   useEffect(() => {
-    setGroupPhoto(openedChat.photo);
+    setChannelPhoto(openedChat.photo);
 
-    socketGroupRef.current.on('group:memberLeft', (message) => {
-      console.log('Group Left:', message);
+    socketChannelRef.current.on('channel:memberLeft', (message) => {
+      console.log('Channel Left:', message);
     });
 
-    const fetchGroupData = async () => {
+    socketChannelRef.current.on('error', (message) => {
+      console.log('error in channel: ', message);
+    });
+
+    const fetchChannelData = async () => {
       setLoading(true); // Start loading
       try {
-        const [membersResponse, adminsResponse, groupResponse] =
-          await Promise.all([
-            fetch(`${apiUrl}/v1/groups/${openedChat.groupId}/members`, {
-              method: 'GET',
-              headers: {
-                Accept: 'application/json',
-              },
-              credentials: 'include',
-            }),
-            fetch(`${apiUrl}/v1/groups/${openedChat.groupId}/admins`, {
-              method: 'GET',
-              headers: {
-                Accept: 'application/json',
-              },
-              credentials: 'include',
-            }),
-            fetch(`${apiUrl}/v1/groups/${openedChat.groupId}/`, {
-              method: 'GET',
-              headers: {
-                Accept: 'application/json',
-              },
-              credentials: 'include',
-            }),
-          ]);
+        const [membersResponse, channelResponse] = await Promise.all([
+          fetch(`${apiUrl}/v1/channels/${openedChat.channelId}/participants`, {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          }),
+          fetch(`${apiUrl}/v1/channels/${openedChat.channelId}`, {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          }),
+        ]);
 
         const membersData = await membersResponse.json();
-        const adminsData = await adminsResponse.json();
-        const groupData = await groupResponse.json();
+        const channelData = await channelResponse.json();
 
-        setGroupMembers(membersData.data.members);
-        setAdmins(adminsData.data.admins.map((admin) => admin.id));
-        const isUserAdmin = adminsData.data.admins.some(
-          (member) => member.id === userId,
+        console.log('membersData: ', membersData);
+        console.log('channelData: ', channelData);
+
+        setChannelMembers(
+          membersData.participants ? membersData.participants : [],
         );
+        const channelAdmins = membersData.participants
+          ? membersData.participants
+              .filter((member) => member.role !== 'Subscriber')
+              .map((admin) => admin.userData.id)
+          : [];
+        console.log(channelAdmins);
+        setAdmins(channelAdmins);
+        const isUserAdmin = channelAdmins.includes(userId);
+        const isUserOwner = channelData.channelOwner.id === userId;
+        console.log('isUserOwner: ', isUserOwner);
+        setIsOwner(isUserOwner);
         setIsAdmin(isUserAdmin);
-        setGroupDescription(groupData.data.group.description);
-        setGroupName(groupData.data.group.name);
-        setGroupPhoto(groupData.data.group.image);
-        setGroupPrivacy(groupData.data.group.groupType);
-        setGroupSizeLimit(groupData.data.group.groupSizeLimit);
-        console.log(groupMembers);
+        setChannelDescription(channelData.channelDescription);
+        setChannelName(channelData.channelName);
+        setChannelPhoto(openedChat.photo);
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -99,57 +109,78 @@ function GroupOrChannelInfo() {
       }
     };
 
-    fetchGroupData();
-  }, [socketGroupRef]);
+    fetchChannelData();
+  }, [socketChannelRef, openedChat]);
 
   const makeAdmin = async (id) => {
     if (!admins.includes(id)) {
-      setAdmins([...admins, id]);
       try {
-        const res = await fetch(
-          `${apiUrl}/v1/groups/${openedChat.groupId}/admins/${id}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
+        const payload = {
+          channelId: openedChat.channelId,
+          subscriberId: id,
+        };
+        socketChannelRef.current.emit(
+          'promoteSubscriper',
+          payload,
+          (response) => {
+            console.log('promoting subscriber', response);
+            setAdmins([...admins, id]);
           },
         );
-
-        if (!res.ok) {
-          console.error('Failed to update group.');
-        } else {
-          const result = await res.json();
-          console.log('Info updated successfully', result);
-        }
       } catch (error) {
-        console.error('Error updating group settings:', error);
+        console.error('Error updating channel settings:', error);
       }
     }
   };
 
-  const removeMember = (username) => {
-    setGroupMembers(
-      groupMembers.filter((member) => member.username !== username.username),
-    );
-    const data = {
-      groupId: openedChat.groupId,
-      userId: username.id,
+  const removeMember = (user) => {
+    console.log('to remove: ', user);
+    const payload = {
+      channelId: openedChat.channelId,
+      subscriberId: user.userData.id,
     };
-    socketGroupRef.current.emit('removingParticipant', data);
+    socketChannelRef.current.emit(
+      'removingParticipant',
+      payload,
+      (response) => {
+        console.log('removing participant: ', response);
+        setChannelMembers(channelMembers.filter((member) => member !== user));
+      },
+    );
   };
 
-  const leaveGroup = async (id) => {
-    const data = {
-      groupId: openedChat.groupId,
-    };
-    socketGroupRef.current.emit('leavingGroup', data);
+  const leaveChannel = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/v1/channels/${openedChat.channelId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+      );
+      const data = await response.json();
+      console.log('leave channel: ', data);
+    } catch (error) {
+      console.error('Error leaving channel:', error);
+    }
+  };
 
-    // Remove the member from the groupMembers state
-    setGroupMembers((prevMembers) =>
-      prevMembers.filter((member) => member.id !== id),
-    );
+  const deleteChannel = async () => {
+    try {
+      const payload = {
+        channelId: openedChat.channelId,
+      };
+
+      socketChannelRef.current.emit('removingChannel', payload, (response) => {
+        console.log('removingChannel: ', response);
+      });
+    } catch (error) {
+      console.error('Error leaving channel:', error);
+    }
   };
 
   const setPermissions = (username, permissionType, value) => {
@@ -171,13 +202,25 @@ function GroupOrChannelInfo() {
   const GenerateInviteLink = () => {};
 
   const handleSubmitAddedUsers = () => {
-    setView('info');
+    const payload = {
+      channelId: openedChat.channelId,
+      subscriberIds: addedMembers,
+    };
+    socketChannelRef.current.emit(
+      'addingChannelSubscriper',
+      payload,
+      (response) => {
+        console.log('adding channel subscriper', response);
+        setAddedMembers([]);
+        setView('info');
+      },
+    );
   };
 
   const togglePermission = (username, permissionType) => {
-    setGroupMembers((prevMembers) =>
+    setChannelMembers((prevMembers) =>
       prevMembers.map((member) =>
-        member.username === username
+        member.userData.name === username
           ? { ...member, [permissionType]: !member[permissionType] }
           : member,
       ),
@@ -191,19 +234,23 @@ function GroupOrChannelInfo() {
       let arr = [];
       arr.push(newInput);
       const data = {
-        groupId: openedChat.groupId,
+        channelId: openedChat.channelId,
         phones: arr,
       };
       console.log(data);
-      socketGroupRef.current.emit('addingGroupMemberV2', data, (response) => {
-        // Callback handles server response
-        if (response.status === 'ok') {
-          console.log('Server acknowledgment:', response);
-        } else {
-          console.log(response);
-          console.error('Error:', response.message || 'Unknown error');
-        }
-      });
+      socketChannelRef.current.emit(
+        'addingChannelMemberV2',
+        data,
+        (response) => {
+          // Callback handles server response
+          if (response.status === 'ok') {
+            console.log('Server acknowledgment:', response);
+          } else {
+            console.log(response);
+            console.error('Error:', response.message || 'Unknown error');
+          }
+        },
+      );
     } catch {
       console.log('ERROR');
     }
@@ -211,27 +258,17 @@ function GroupOrChannelInfo() {
 
   const removeAdmin = async (id) => {
     if (admins.includes(id)) {
-      setAdmins(admins.filter((admin) => admin !== id));
       try {
-        const res = await fetch(
-          `${apiUrl}/v1/groups/${openedChat.groupId}/admins/${id}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          },
-        );
-
-        if (!res.ok) {
-          console.error('Failed to remove admin.');
-        } else {
-          const result = await res.json();
-          console.log('Admin removed successfully', result);
-        }
+        const payload = {
+          channelId: openedChat.channelId,
+          subscriberId: id,
+        };
+        socketChannelRef.current.emit('demoteAdmin', payload, (response) => {
+          console.log('demoting admin', response);
+          setAdmins(admins.filter((admin) => admin !== id));
+        });
       } catch (error) {
-        console.error('Error updating group settings:', error);
+        console.error('Error demoting admin:', error);
       }
     }
   };
@@ -244,26 +281,12 @@ function GroupOrChannelInfo() {
         </div>
       ) : (
         <>
-          {/* New input field and button */}
-          <div className="w-full p-4">
-            <input
-              type="text"
-              placeholder="Type something..."
-              value={newInput}
-              onChange={(e) => setNewInput(e.target.value)} // Update state on input change
-              className="w-full rounded bg-bg-secondary p-2 text-text-primary outline-none"
-            />
-            <button
-              onClick={handlePrintInput} // Call the function on button click
-              className="mt-2 rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
-            >
-              Print Input
-            </button>
-          </div>
           {/* Header info */}
           <Header className={'h-[3.4rem]'}>
             <CloseButton />
-            <h1 className="text-xl font-bold text-text-primary">{groupName}</h1>
+            <h1 className="text-lg font-bold text-text-primary">
+              {channelName}
+            </h1>
             <div className="ml-auto flex flex-row gap-2">
               {openedChat.isChannel && (
                 <div
@@ -285,23 +308,7 @@ function GroupOrChannelInfo() {
           </Header>
 
           <div className="relative h-[80%] w-[90%] bg-bg-primary">
-            {view === 'edit' && openedChat.isGroup ? (
-              <GroupSettings
-                groupId={openedChat.id}
-                groupPhoto={groupPhoto}
-                groupDescription={groupDescription}
-                setGroupPhoto={setGroupPhoto}
-                setGroupDescription={setGroupDescription}
-                toggleView={toggleView}
-                isAdmin={isAdmin}
-                groupSizeLimit={groupSizeLimit}
-                setGroupSizeLimit={setGroupSizeLimit}
-                groupName={groupName}
-                setGroupName={setGroupName}
-                groupPrivacy={groupPrivacy}
-                setGroupPrivacy={setGroupPrivacy}
-              />
-            ) : view === 'edit' && openedChat.isChannel ? (
+            {view === 'edit' && openedChat.isChannel ? (
               <ChannelSettings toggleView={toggleView} isAdmin={isAdmin} />
             ) : view === 'addUsers' ? (
               <div className="relative h-full w-full">
@@ -322,16 +329,16 @@ function GroupOrChannelInfo() {
                 <div className="mb-4 flex flex-col items-center">
                   <img
                     src={
-                      groupPhoto
-                        ? groupPhoto
-                        : 'https://ui-avatars.com/api/?name=' + groupName
+                      channelPhoto
+                        ? channelPhoto
+                        : 'https://ui-avatars.com/api/?name=' + channelName
                     }
-                    alt="Group"
+                    alt="Channel"
                     className="mb-2 h-16 w-16 rounded-full"
                   />
                 </div>
                 <p className="mb-2 text-center text-text-primary">
-                  {groupDescription}
+                  {channelDescription}
                 </p>
                 <h2 className="mb-2 text-center text-text-primary">Members</h2>
 
@@ -355,65 +362,66 @@ function GroupOrChannelInfo() {
                       className="mb-2 flex flex-col items-start rounded p-2 hover:bg-bg-secondary"
                     >
                       <div
-                        data-test-id={`${member.username}-toggle-options-button`}
+                        data-test-id={`${member.userData.name}-toggle-options-button`}
                         className="flex cursor-pointer items-center justify-center"
-                        onClick={() => toggleUserOptions(member.username)}
+                        onClick={() => toggleUserOptions(member.userData.name)}
                       >
-                        {member.picture !== null ? (
-                          <img
-                            src={member.picture}
-                            alt={member.username}
-                            className="mr-2 h-8 w-8 rounded-full"
-                          />
-                        ) : (
-                          <div className="mr-2 flex h-8 w-8 items-center justify-center rounded-full bg-gray-300">
-                            <span className="ml-0.5 text-text-primary">👤</span>
-                          </div>
-                        )}
+                        <img
+                          src={
+                            member.userData.profilePicture
+                              ? member.userData.profilePicture
+                              : 'https://ui-avatars.com/api/?name=' +
+                                member.userData.name
+                          }
+                          alt={member.userData.name}
+                          className="mr-2 h-8 w-8 rounded-full"
+                        />
+
                         <span className="text-text-primary">
-                          {member.username}
+                          {member.userData.name}
                         </span>
                       </div>
-                      {isAdmin || member.id === userId ? (
+                      {isAdmin || member.userData.id === userId ? (
                         <div
                           className={`mt-2 flex flex-col items-start space-y-1 transition-all duration-500 ease-in-out ${
-                            selectedUser === member.username
+                            selectedUser === member.userData.name
                               ? 'max-h-40 opacity-100'
                               : 'max-h-0 opacity-0'
                           }`}
                         >
-                          {member.id === userId ? (
+                          {member.userData.id === userId ? (
                             <button
-                              data-test-id={`${member.username}-leave-group-button`}
+                              data-test-id={`${member.userData.name}-leave-channel-button`}
                               className="text-red-500"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                leaveGroup(member.id);
+                                if (isOwner) deleteChannel();
+                                else leaveChannel();
                               }}
                             >
-                              Leave Group
+                              Leave Channel
                             </button>
                           ) : (
                             <>
-                              {!admins.includes(member.id) ? (
+                              {!admins.includes(member.userData.id) ? (
                                 <>
                                   <button
-                                    data-test-id={`${member.username}-make-admin-button`}
+                                    data-test-id={`${member.userData.name}-make-admin-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      makeAdmin(member.id);
+                                      makeAdmin(member.userData.id);
                                     }}
                                   >
                                     Make Admin
                                   </button>
                                   <button
-                                    data-test-id={`${member.username}-allow-messages-button`}
+                                    data-test-id={`${member.userData.name}-allow-messages-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       togglePermission(
-                                        member.username,
+                                        member.userData.name,
                                         'sendMessages',
                                       );
                                     }}
@@ -423,12 +431,12 @@ function GroupOrChannelInfo() {
                                       : 'Allow Messages'}
                                   </button>
                                   <button
-                                    data-test-id={`${member.username}-allow-download-button`}
+                                    data-test-id={`${member.userData.name}-allow-download-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       togglePermission(
-                                        member.username,
+                                        member.userData.name,
                                         'canDownload',
                                       );
                                     }}
@@ -440,18 +448,18 @@ function GroupOrChannelInfo() {
                                 </>
                               ) : (
                                 <button
-                                  data-test-id={`${member.username}-remove-admin-button`}
+                                  data-test-id={`${member.userData.name}-remove-admin-button`}
                                   className="text-red-500"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    removeAdmin(member.id);
+                                    removeAdmin(member.userData.id);
                                   }}
                                 >
                                   Remove Admin
                                 </button>
                               )}
                               <button
-                                data-test-id={`${member.username}-remove-member-button`}
+                                data-test-id={`${member.userData.name}-remove-member-button`}
                                 className="text-red-500"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -475,6 +483,24 @@ function GroupOrChannelInfo() {
                 >
                   <FaPlus className="text-text-primary opacity-70" />
                 </div>
+
+                {isOwner ? (
+                  <div
+                    className="fixed bottom-10 right-20 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
+                    onClick={() => deleteChannel()}
+                    data-test-id="add-memebers-button"
+                  >
+                    <FaTrash className="text-text-primary opacity-70" />
+                  </div>
+                ) : (
+                  <div
+                    className="fixed bottom-10 right-20 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
+                    onClick={() => leaveChannel()}
+                    data-test-id="add-memebers-button"
+                  >
+                    <FaDoorOpen className="text-text-primary opacity-70" />
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -484,4 +510,4 @@ function GroupOrChannelInfo() {
   );
 }
 
-export default GroupOrChannelInfo;
+export default ChannelInfo;

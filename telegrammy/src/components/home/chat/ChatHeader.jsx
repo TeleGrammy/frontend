@@ -21,7 +21,8 @@ function ChatHeader({ handleKey }) {
     if (isRightSidebarOpen) {
       dispatch(closeRightSidebar());
     } else {
-      dispatch(setRightSidebar(`Group Info`));
+      if (openedChat.isGroup) dispatch(setRightSidebar(`Group Info`));
+      else if (openedChat.isChannel) dispatch(setRightSidebar('Channel Info'));
     }
   };
 
@@ -42,7 +43,11 @@ function ChatHeader({ handleKey }) {
         <div className="flex items-center bg-bg-primary p-4">
           <img
             data-test-id="chat-image"
-            src={openedChat.photo}
+            src={
+              openedChat.photo
+                ? openedChat.photo
+                : 'https://ui-avatars.com/api/?name=' + openedChat.name
+            }
             alt=""
             className="h-10 w-10 cursor-pointer rounded-full"
             onClick={toggleExpand}

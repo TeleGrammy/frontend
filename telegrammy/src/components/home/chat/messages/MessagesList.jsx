@@ -12,6 +12,8 @@ export const MessagesList = ({
   handleDeleteMessage,
   handleReplyToMessage,
   handlePinMessage,
+  handleComment,
+  handleShowComments,
   handleImageClick,
   handleClickForwardMessage,
   messagesEndRef,
@@ -36,6 +38,8 @@ export const MessagesList = ({
             handleDeleteMessage={handleDeleteMessage}
             handleClickForwardMessage={handleClickForwardMessage}
             handlePinMessage={handlePinMessage}
+            handleComment={handleComment}
+            handleShowComments={handleShowComments}
             messageRefs={messageRefs}
             showDateDivider={showDateDivider}
             key={message._id || idx}
