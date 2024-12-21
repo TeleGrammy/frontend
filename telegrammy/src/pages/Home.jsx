@@ -68,7 +68,7 @@ function Home() {
 
   // Start the timer only once when the call is accepted
   useEffect(() => {
-    if (callState === 'in call' && !intervalId) {
+    if (callState === 'in call') {
       const interval = setInterval(() => {
         const currentTimeInSeconds = convertToSeconds(callTimeRef.current) + 1;
         const formattedTime = formatTime(currentTimeInSeconds);
@@ -76,14 +76,14 @@ function Home() {
       }, 1000);
 
       dispatch(setIntervalId(interval)); // Store the interval ID in Redux
-    }
 
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [callState, intervalId, dispatch]);
+      return () => {
+        if (interval) {
+          clearInterval(interval);
+        }
+      };
+    }
+  }, [callState]);
 
   return (
     <div className="chat-bg flex h-screen w-screen flex-row">

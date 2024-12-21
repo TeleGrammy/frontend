@@ -136,15 +136,12 @@ function Caller() {
         };
 
         peerConnection.onconnectionstatechange = () => {
-          console.log(
-            `Connection state for receiver ${recieverId}:`,
-            peerConnection.connectionState,
-          );
-
-          if (peerConnection.connectionState === 'connected') {
-            if (callState !== 'in call') dispatch(callConnected());
-          } else if (peerConnection.connectionState === 'connecting') {
-            if (callState !== 'connecting') dispatch(connectingCall());
+          if (callState !== 'in call') {
+            if (peerConnection.connectionState === 'connected') {
+              dispatch(callConnected());
+            } else if (peerConnection.connectionState === 'connecting') {
+              dispatch(connectingCall());
+            }
           }
         };
 
@@ -223,7 +220,7 @@ function Caller() {
     // Close peer connections and stop all local and remote streams for each participant
     console.log('Cleaning up call');
 
-    if (peerConnectionRef.current.size > 0) {
+    if (peerConnectionRef.current) {
       Object.values(peerConnectionRef.current).forEach((peerConnection) => {
         // Close each peer connection
         peerConnection.close();

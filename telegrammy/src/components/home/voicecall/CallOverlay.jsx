@@ -122,10 +122,12 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
           );
 
           peerConnection.onconnectionstatechange = () => {
-            if (peerConnection.connectionState === 'connected') {
-              if (callState !== 'in call') dispatch(callConnected());
-            } else if (peerConnection.connectionState === 'connecting') {
-              if (callState !== 'connecting') dispatch(connectingCall());
+            if (callState !== 'in call') {
+              if (peerConnection.connectionState === 'connected') {
+                dispatch(callConnected());
+              } else if (peerConnection.connectionState === 'connecting') {
+                dispatch(connectingCall());
+              }
             }
           };
 
@@ -243,7 +245,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     // Close peer connections and stop all local and remote streams for each participant
     console.log('Cleaning up call');
 
-    if (peerConnectionRef.current.size > 0) {
+    if (peerConnectionRef.current) {
       Object.values(peerConnectionRef.current).forEach((peerConnection) => {
         // Close each peer connection
         peerConnection.close();
@@ -369,8 +371,8 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
       if (peerConnectionRef.current) {
         console.log('call state from end event in callee', callState);
         console.log('Call ended from end event in callee');
-        cleanup();
         dispatch(endCall());
+        cleanup();
       }
     };
 
