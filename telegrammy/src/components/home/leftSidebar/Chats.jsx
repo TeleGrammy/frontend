@@ -178,9 +178,11 @@ const Chats = ({ searchValue }) => {
                       className="truncate text-sm text-gray-400"
                       data-test-id={`chat-message-${chat.id}`}
                     >
-                      {chat.lastMessage
-                        ? chat.lastMessage.content
-                        : 'Hey there! Are you using Telegrammy?'}
+                      {chat.draftMessage
+                        ? `Draft: ${chat.draftMessage}`
+                        : chat.lastMessage
+                          ? chat.lastMessage.content
+                          : 'Hey there! Are you using Telegrammy?'}
                     </p>
                     {chat.unreadCount > 0 && (
                       <span

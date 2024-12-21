@@ -3,29 +3,19 @@ import VoiceNoteButton from './VoiceNoteButton';
 
 import CryptoJS from 'crypto-js';
 import Trie from './Trie';
-import {
-  initialMessages1,
-  initialMessages2,
-  initialMessages3,
-} from './../../../mocks/mockDataChat';
-import { initialChatsLSB } from '../../../mocks/mockDataChatList';
 import ChatHeader from './ChatHeader';
 import { useSelector } from 'react-redux';
 import { MessagesList } from './messages/MessagesList';
 import AttachMedia from './messagingSpace/attachment/AttachMedia';
 import ViewedImage from './messages/ViewedImage';
-import { ClipLoader } from 'react-spinners';
 import ReplyToSpace from './messagingSpace/ReplyToSpace';
 import ReactionPicker from './messagingSpace/pickerReaction/ReactionPicker';
 import LoadingScreen from './messagingSpace/LoadingScreen';
 import PinnedMessagesBar from './PinnedMessagesBar';
 import { useSocket } from '../../../contexts/SocketContext';
-import { GiConsoleController } from 'react-icons/gi';
-import { setOpenedChat } from '../../../slices/chatsSlice';
 import { useDispatch } from 'react-redux';
-import { closeRightSidebar } from '../../../slices/sidebarSlice';
-import { PiMagicWand } from 'react-icons/pi';
 import { useChats } from '../../../contexts/ChatContext';
+import socket from './utils/Socket';
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -40,7 +30,7 @@ function Chat() {
     (state) => state.chats,
   );
   const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState([initialMessages1]);
+  const [messages, setMessages] = useState([]);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [replyToMessageId, setReplyToMessageId] = useState(null);
   const [forwardingMessageId, setForwardingMessageId] = useState(null);
@@ -60,9 +50,6 @@ function Chat() {
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
   const { chats, setChats } = useChats();
-
-  useEffect(() => {}, [pinnedMsgs]); // This will run every time pinnedMsgs changes
-
   let it = 0;
   let it1 = 0;
 
@@ -99,6 +86,9 @@ function Chat() {
     try {
       socketGeneralRef.current.on('error', (err) => {
         console.log(err);
+      });
+      socketGeneralRef.current.on('draft', (payload) => {
+        console.log(payload);
       });
       socketGeneralRef.current.on('message:pin', (payload) => {
         setPinnedMsgs((prevPinnedMsgs) => [
@@ -216,9 +206,6 @@ function Chat() {
             msg['type'] = 'sent';
           } else {
             msg['type'] = 'received';
-          }
-          if (msg.content.startsWith('https://media1.giphy.com/media/')) {
-            msg['isSticker'] = true;
           }
         });
         setPinnedMsgs(tempPinned);
