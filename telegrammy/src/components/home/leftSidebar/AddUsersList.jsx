@@ -152,10 +152,6 @@ const AddUsersList = ({ addedMembers, setAddedMembers }) => {
         console.log(data);
         console.log(data.data);
         console.log(data.data.contacts[0].contactId._id);
-        console.log(
-          data.data.contacts[0].contactId.screenName[0] +
-            data.data.contacts[0].contactId.screenName[1],
-        );
         setContacts(data.data.contacts);
         console.log(data.data.contacts);
       } catch (error) {

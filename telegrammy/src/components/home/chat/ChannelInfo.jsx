@@ -228,34 +228,6 @@ function ChannelInfo() {
     console.log(`Toggled ${permissionType} permission for ${username}`);
   };
 
-  // Function to handle button press
-  const handlePrintInput = () => {
-    try {
-      let arr = [];
-      arr.push(newInput);
-      const data = {
-        channelId: openedChat.channelId,
-        phones: arr,
-      };
-      console.log(data);
-      socketChannelRef.current.emit(
-        'addingChannelMemberV2',
-        data,
-        (response) => {
-          // Callback handles server response
-          if (response.status === 'ok') {
-            console.log('Server acknowledgment:', response);
-          } else {
-            console.log(response);
-            console.error('Error:', response.message || 'Unknown error');
-          }
-        },
-      );
-    } catch {
-      console.log('ERROR');
-    }
-  };
-
   const removeAdmin = async (id) => {
     if (admins.includes(id)) {
       try {

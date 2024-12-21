@@ -44,6 +44,10 @@ function GroupOrChannelInfo() {
   useEffect(() => {
     setGroupPhoto(openedChat.photo);
 
+    socketGroupRef.current.on('group:memberAdded', (message) => {
+      console.log('Members Added', message);
+    });
+
     socketGroupRef.current.on('group:memberLeft', (message) => {
       console.log('Group Left:', message);
     });
@@ -79,7 +83,8 @@ function GroupOrChannelInfo() {
         const membersData = await membersResponse.json();
         const adminsData = await adminsResponse.json();
         const groupData = await groupResponse.json();
-
+        console.log(membersData);
+        console.log(membersData.data.members);
         setGroupMembers(membersData.data.members);
         setAdmins(adminsData.data.admins.map((admin) => admin.id));
         const isUserAdmin = adminsData.data.admins.some(
@@ -177,7 +182,7 @@ function GroupOrChannelInfo() {
       groupId: openedChat.groupId,
       userIds:addedMembers
     }
-    socketGroupRef.current.emit('addingGroupMember',payload);
+    socketGroupRef.current.emit('addingGroupMemberV2',payload);
     setView('info');
   };
 
@@ -193,28 +198,6 @@ function GroupOrChannelInfo() {
   };
 
   // Function to handle button press
-  const handlePrintInput = () => {
-    try {
-      let arr = [];
-      arr.push(newInput);
-      const data = {
-        groupId: openedChat.groupId,
-        phones: arr,
-      };
-      console.log(data);
-      socketGroupRef.current.emit('addingGroupMemberV2', data, (response) => {
-        // Callback handles server response
-        if (response.status === 'ok') {
-          console.log('Server acknowledgment:', response);
-        } else {
-          console.log(response);
-          console.error('Error:', response.message || 'Unknown error');
-        }
-      });
-    } catch {
-      console.log('ERROR');
-    }
-  };
 
   const removeAdmin = async (id) => {
     if (admins.includes(id)) {

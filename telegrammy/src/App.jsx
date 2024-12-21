@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { useState } from 'react';
 
 import Home from './pages/Home';
 import AuthCallback from './components/registration/AuthCallback';
@@ -9,23 +10,30 @@ import Auth from './pages/Auth';
 import { SocketProvider } from './contexts/SocketContext';
 
 export default function App() {
+  const [isAdmin, setIsAdmin] = useState(JSON.parse(localStorage.getItem('user')).isAdmin);
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route index element={<AuthCallback />} />
-        <Route path="/auth/*" element={<Auth />} />
+        <Route index element={<AuthCallback setIsAdmin={setIsAdmin} />} />
+        <Route path="/auth/*" element={<Auth setIsAdmin={setIsAdmin} />} />
         <Route
           path="/home"
           element={
-            <ProtectedRoute>
-              <SocketProvider>
-                <Home />
-              </SocketProvider>
-            </ProtectedRoute>
+            isAdmin ? (
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            ) : (
+              <ProtectedRoute>
+                <SocketProvider>
+                  <Home />
+                </SocketProvider>
+              </ProtectedRoute>
+            )
           }
         />
       </Routes>
-      {/* <AdminDashboard/> */}
     </BrowserRouter>
   );
 }
