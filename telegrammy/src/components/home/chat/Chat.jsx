@@ -545,9 +545,21 @@ function Chat() {
 
   const handleShowComments = async (postId) => {
     setIsShownComments((prev) => !prev);
+    if (comments.length > 0) {
+      setComments([]);
+      return;
+    }
     try {
       const response = await fetch(
         `${apiUrl}/v1/channels/thread/${postId}/messages`,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
       );
       const data = await response.json();
       console.log(data);
@@ -643,7 +655,6 @@ function Chat() {
       date: new Date().toISOString().slice(0, 10),
       replyOn: replyToMessageId ? { _id: replyToMessageId } : null, // Link the reply if there's any
       type: 'sent',
-      messageType: 'text',
       content: item,
     };
     try {
@@ -763,7 +774,7 @@ function Chat() {
         messageRefs={messageRefs}
       />
 
-      {isShownComments && <Comments comments={initialComments} />}
+      {isShownComments && <Comments comments={comments} />}
 
       <div className="bg-bg-message-receiver p-4">
         {errorMessage && (

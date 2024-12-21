@@ -13,7 +13,11 @@ function RightSidebar() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!openedChat.isChannel && !openedChat.isGroup)
+    if (
+      !openedChat.isChannel &&
+      !openedChat.isGroup &&
+      currentRightSidebar !== 'My Stories'
+    )
       dispatch(closeRightSidebar());
   }, [openedChat]);
 
