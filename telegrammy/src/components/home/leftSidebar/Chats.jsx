@@ -42,27 +42,62 @@ const Chats = ({ searchValue }) => {
     });
   };
 
-  const handleMute = (chatId, duration) => {
-    const updatedChats = ViewedChats.map((chat) => {
-      if (chat.id === chatId) {
-        return { ...chat, isMuted: true, muteDuration: duration };
-      }
-      return chat;
-    });
+  const handleMute = async (chatId, duration) => {
+    try {
+      const response = await fetch(`${apiUrl}/v1/notification/mute`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatId: chatId,
+        }),
+        credentials: 'include',
+      });
 
-    setViewedChats(updatedChats);
+      const updatedChats = ViewedChats.map((chat) => {
+        if (chat.id === chatId) {
+          return { ...chat, isMuted: true, muteDuration: duration };
+        }
+        return chat;
+      });
+      setViewedChats(updatedChats);
+      const data = await response.json();
+      console.log(data);
+
+    } catch (error) {
+      console.error('Error muting chat:', error);
+    }
+
     setContextMenu({ ...contextMenu, visible: false });
   };
 
-  const handleUnmute = (chatId) => {
-    const updatedChats = ViewedChats.map((chat) => {
-      if (chat.id === chatId) {
-        return { ...chat, isMuted: false, muteDuration: null };
-      }
-      return chat;
-    });
+  const handleUnmute = async (chatId) => {
+    try {
+      const response = await fetch(`${apiUrl}/v1/notification/unmute`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatId: chatId,
+        }),
+        credentials: 'include',
+      });
 
-    setViewedChats(updatedChats);
+      const updatedChats = ViewedChats.map((chat) => {
+        if (chat.id === chatId) {
+          return { ...chat, isMuted: false, muteDuration: null };
+        }
+        return chat;
+      });
+
+      setViewedChats(updatedChats);
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error('Error muting chat:', error);
+    }
     setContextMenu({ ...contextMenu, visible: false });
   };
 
@@ -114,7 +149,6 @@ const Chats = ({ searchValue }) => {
 
   const formatTimeStamp = (timestamp) => {
     const options = getDateOptions(timestamp);
-    console.log(options);
     if (options === DATE_OPTIONS.YESTERDAY) return 'Yesterday';
     if (options === DATE_OPTIONS.TODAY)
       return new Date(timestamp).toLocaleTimeString('en-US', options);
