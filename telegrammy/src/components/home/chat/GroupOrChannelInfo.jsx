@@ -345,7 +345,7 @@ function GroupOrChannelInfo() {
                 </div>
 
                 {/* Display filtered members */}
-                <ul className="mb-4 h-full">
+                <ul className="mb-4 h-[calc(100%-12rem)] overflow-y-auto px-4 no-scrollbar">
                   {filteredMembers.map((member, index) => (
                     <li
                       key={index}
@@ -367,9 +367,7 @@ function GroupOrChannelInfo() {
                             <span className="ml-0.5 text-text-primary">👤</span>
                           </div>
                         )}
-                        <span className="text-text-primary">
-                          {member.username}
-                        </span>
+                        <span className="text-text-primary">{member.username}</span>
                       </div>
                       {isAdmin || member.id === userId ? (
                         <div
@@ -415,9 +413,7 @@ function GroupOrChannelInfo() {
                                       );
                                     }}
                                   >
-                                    {member.sendMessages
-                                      ? 'Revoke Messages'
-                                      : 'Allow Messages'}
+                                    {member.sendMessages ? 'Revoke Messages' : 'Allow Messages'}
                                   </button>
                                   <button
                                     data-test-id={`${member.username}-allow-download-button`}
@@ -430,9 +426,7 @@ function GroupOrChannelInfo() {
                                       );
                                     }}
                                   >
-                                    {member.canDownload
-                                      ? 'Revoke Download'
-                                      : 'Allow Download'}
+                                    {member.canDownload ? 'Revoke Download' : 'Allow Download'}
                                   </button>
                                 </>
                               ) : (
@@ -465,8 +459,7 @@ function GroupOrChannelInfo() {
                   ))}
                 </ul>
 
-                <div
-                  className="fixed bottom-10 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
+                <div className="fixed bottom-10 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
                   onClick={() => setView('addUsers')}
                   data-test-id="add-memebers-button"
                 >
