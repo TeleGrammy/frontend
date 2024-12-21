@@ -21,9 +21,11 @@ const MessageContainer = ({ message, messages, idx, handleImageClick }) => {
         message.type === 'sent'
           ? 'bg-bg-message-sender'
           : 'bg-bg-message-receiver'
-      } max-w-sm rounded-lg p-2 text-text-primary`}
+      } min-w-32 max-w-sm rounded-lg p-2 text-text-primary`}
     >
-      <p className="mb-2 font-bold text-text-primary">
+      <p
+        className={`font-semibold ${message.type === 'sent' ? 'text-bg-message-receiver' : 'text-bg-message-sender'}`}
+      >
         {message.type === 'received' ? message.senderId.username : username}
       </p>
       {message.replyOn && (
