@@ -2,6 +2,8 @@ import React from 'react';
 import MessageBottomInfo from './MessageBottomInfo';
 import MediaContent from './MediaContent';
 import ReplyingInfo from './ReplyingInfo';
+const username = JSON.parse(localStorage.getItem('user'))?.username;
+console.log(username);
 
 const MessageContainer = ({ message, messages, idx, handleImageClick }) => {
   if (
@@ -21,6 +23,9 @@ const MessageContainer = ({ message, messages, idx, handleImageClick }) => {
           : 'bg-bg-message-receiver'
       } max-w-sm rounded-lg p-2 text-text-primary`}
     >
+      <p className="mb-2 font-bold text-text-primary">
+        {message.type === 'received' ? message.senderId.username : username}
+      </p>
       {message.replyOn && (
         <ReplyingInfo message={message} messages={messages} idx={idx} />
       )}

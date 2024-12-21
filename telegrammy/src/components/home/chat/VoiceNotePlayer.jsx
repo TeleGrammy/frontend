@@ -63,6 +63,9 @@ const VoiceNotePlayer = ({ message, messages, idx }) => {
       className={`flex flex-col items-start rounded-3xl ${message.type === 'sent' ? 'bg-bg-message-sender' : 'bg-bg-message-receiver'} max-w-sm p-4 text-white shadow-md`}
       data-test-id="voice-note-player"
     >
+      <p className="mb-2 font-bold text-text-primary">
+        {message.type === 'received' ? message.senderId.username : 'Muhammad'}
+      </p>
       {message.replyOn && (
         <ReplyingInfo message={message} messages={messages} idx={idx} />
       )}
