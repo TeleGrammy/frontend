@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getMessaging, getToken } from 'firebase/messaging';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const FirebaseContext = createContext(null);
 
@@ -40,6 +40,9 @@ const generateToken = async () => {
 export const FirebaseProvider = ({ children }) => {
   useEffect(() => {
     generateToken();
+    onMessage(messaging, (payload) => {
+      console.log('Message received. ', payload);
+    });
   }, []);
   return (
     <FirebaseContext.Provider value={{ auth, db, messaging, generateToken }}>
