@@ -234,7 +234,6 @@ function Chat() {
           }
         });
 
-
         data.chat.participants.forEach((participant) => {
           tempUsers.push(participant.userId.username);
         });
@@ -485,6 +484,8 @@ function Chat() {
       setInputValue('');
       setReplyToMessageId(null);
       setLoading(false);
+      setSelectedFile(null);
+      setSelectedFileType(null);
     }
   };
 
@@ -500,18 +501,38 @@ function Chat() {
     console.log(chat);
     console.log(forwardingMessageId);
     const message = messages.find((msg) => msg._id === forwardingMessageId);
-    socketGeneralRef.current.emit(
-      'message:send',
-      {
-        chatId: chat.id,
-        messageId: forwardingMessageId,
-        messageType: message.messageType,
-        isForwarded: true,
-      },
-      (response) => {
-        console.log(response);
-      },
-    );
+    const newMessage = {
+      chatId: chat.id,
+      messageId: forwardingMessageId,
+      messageType: message.messageType,
+      isForwarded: true,
+      content: message.content,
+      timestamp: new Date().toISOString(),
+      type: message.type,
+      mediaKey: message.mediaKey,
+      mediaUrl: message.mediaUrl,
+      isPinned: false,
+      replyOn: message.replyOn || null,
+    };
+    socketGeneralRef.current.emit('message:send', newMessage, (response) => {
+      if (openedChat.id === chat.id) {
+        const newRenderedMessage = {
+          chatId: openedChat.id,
+          _id: response.data.id,
+          isForwarded: true,
+          content: newMessage.content,
+          type: newMessage.type,
+          timestamp: newMessage.timestamp,
+          mediaKey: newMessage.mediaKey,
+          mediaUrl: newMessage.mediaUrl,
+          messageType: newMessage.messageType,
+          isPinned: false,
+          replyOn: newMessage.replyOn || null,
+        };
+        setMessages([...messages, newRenderedMessage]);
+      }
+      console.log(response);
+    });
   };
   const handleDeleteMessage = (message) => {
     socketGeneralRef.current.emit(
