@@ -32,18 +32,14 @@ const generateToken = async () => {
     });
 
     console.log('Token: ', token);
+    return token;
   } else {
     console.error('Notification permission denied.');
+    return null;
   }
 };
 
 export const FirebaseProvider = ({ children }) => {
-  useEffect(() => {
-    generateToken();
-    onMessage(messaging, (payload) => {
-      console.log('Message received. ', payload);
-    });
-  }, []);
   return (
     <FirebaseContext.Provider value={{ auth, db, messaging, generateToken }}>
       {children}

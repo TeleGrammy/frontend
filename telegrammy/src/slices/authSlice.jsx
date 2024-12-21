@@ -17,7 +17,7 @@ const initialState = {
 // Create an async thunk for the login request
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async ({ UUID, password }, { rejectWithValue }) => {
+  async ({ UUID, password, token }, { rejectWithValue }) => {
     try {
       const response = await fetch(`${apiUrl}/v1/auth/login`, {
         method: 'POST',
@@ -28,6 +28,7 @@ export const loginUser = createAsyncThunk(
         body: JSON.stringify({
           UUID,
           password,
+          token,
         }),
       });
 
