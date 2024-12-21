@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import PauseIcon from '../../icons/PauseIcon';
 import PlayIcon from '../../icons/PlayIcon';
 import ReplyingInfo from './messages/ReplyingInfo';
-
+import { FaShare } from 'react-icons/fa';
+const username = JSON.parse(localStorage.getItem('user'))?.username;
 const formatDate = (date) => {
   const options = {
     hour: '2-digit',
@@ -13,13 +14,18 @@ const formatDate = (date) => {
 
 const VoiceNotePlayer = ({ message, messages, idx }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audio] = useState(new Audio(message.mediaUrl));
+  const [audio] = useState(() => {
+    const audioInstance = new Audio(message.mediaUrl);
+    audioInstance.preload = 'metadata';
+    return audioInstance;
+  });
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-
   useEffect(() => {
     // Set audio duration when metadata is loaded
     const handleLoadedMetadata = () => {
+      // if (duration === Infinity) console.log('a7a');
+      console.log(duration);
       setDuration(audio.duration || 0);
     };
 
@@ -63,8 +69,19 @@ const VoiceNotePlayer = ({ message, messages, idx }) => {
       className={`flex flex-col items-start rounded-3xl ${message.type === 'sent' ? 'bg-bg-message-sender' : 'bg-bg-message-receiver'} max-w-sm p-4 text-white shadow-md`}
       data-test-id="voice-note-player"
     >
-      <p className="mb-2 font-bold text-text-primary">
-        {message.type === 'received' ? message.senderId.username : 'Muhammad'}
+      {message.isForwarded && (
+        <div
+          className="mb-2 text-xs text-gray-400"
+          data-test-id="forwarded-indicator"
+        >
+          <FaShare className="mr-1 inline" />
+          Forwarded
+        </div>
+      )}
+      <p
+        className={`${message.type === 'received' ? 'text-bg-message-sender' : 'text-bg-message-receiver'} mb-2 font-bold`}
+      >
+        {message.type === 'received' ? message.senderId.username : username}
       </p>
       {message.replyOn && (
         <ReplyingInfo message={message} messages={messages} idx={idx} />
@@ -105,7 +122,7 @@ const VoiceNotePlayer = ({ message, messages, idx }) => {
             </span>
             <span className="ml-1">•</span>
             <span className="ml-1" data-test-id="duration-time">
-              {formatTime(audio.duration)}
+              {audio.duration !== Infinity && formatTime(audio.duration)}
             </span>
           </div>
         </div>

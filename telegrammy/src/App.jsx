@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import AuthCallback from './components/registration/AuthCallback';
 import ProtectedRoute from './components/shared/ProtectedRoute';
+import AdminDashboard from './pages/AdminDashboard';
 import Auth from './pages/Auth';
 
 import { SocketProvider } from './contexts/SocketContext';
@@ -27,6 +28,7 @@ export default function App() {
           }
         />
       </Routes>
+      {/* <AdminDashboard/> */}
     </BrowserRouter>
   );
 }

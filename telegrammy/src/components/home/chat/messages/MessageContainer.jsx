@@ -2,6 +2,7 @@ import React from 'react';
 import MessageBottomInfo from './MessageBottomInfo';
 import MediaContent from './MediaContent';
 import ReplyingInfo from './ReplyingInfo';
+import { FaShare } from 'react-icons/fa';
 const username = JSON.parse(localStorage.getItem('user'))?.username;
 console.log(username);
 
@@ -23,6 +24,15 @@ const MessageContainer = ({ message, messages, idx, handleImageClick }) => {
           : 'bg-bg-message-receiver'
       } min-w-32 max-w-sm rounded-lg p-2 text-text-primary`}
     >
+      {message.isForwarded && (
+        <div
+          className="mb-2 text-xs text-gray-400"
+          data-test-id="forwarded-indicator"
+        >
+          <FaShare className="mr-1 inline" />
+          Forwarded
+        </div>
+      )}
       <p
         className={`font-semibold ${message.type === 'sent' ? 'text-bg-message-receiver' : 'text-bg-message-sender'}`}
       >

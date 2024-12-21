@@ -13,6 +13,7 @@ function ChannelList({ channelOrGroup }) {
   const [view, setView] = useState('newChannel');
   const [channelName, setChannelName] = useState('');
   const [channelId, setChannelId] = useState(null);
+  const [groupId,setGroupId] = useState(null);
   const [description, setDescription] = useState('');
   const [addedMembers, setAddedMembers] = useState([]);
   const dispatch = useDispatch();
@@ -33,6 +34,7 @@ function ChannelList({ channelOrGroup }) {
   useEffect(() => {
     socketGroupRef.current.on('group:created', (message) => {
       console.log('Group created message received:', message);
+      setGroupId(message.groupId);
     });
 
     socketChannelRef.current.on('error', (message) => {
@@ -41,6 +43,7 @@ function ChannelList({ channelOrGroup }) {
   }, [socketGroupRef, socketChannelRef]); // Empty dependency array means this runs once on mount and cleanup on unmount
 
   async function handleAddSubsribers() {
+    if(channelId){
     try {
       const payload = {
         channelId: channelId,
@@ -59,6 +62,14 @@ function ChannelList({ channelOrGroup }) {
     } catch (error) {
       console.error('Error in createGroup:', error.message);
     }
+  }
+  else if(groupId){
+    const payload = {
+      groupId: groupId,
+      userIds:addedMembers
+    }
+    socketGroupRef.current.emit('addingGroupMember',payload);
+  }
   }
 
   async function handleCreateGroupOrChannel() {
@@ -122,10 +133,44 @@ function ChannelList({ channelOrGroup }) {
     };
     /******  5254d4e3-8f9d-41ed-ad7b-fe9815e54b42  *******/
 
-    function createGroup() {
+    const createGroup = async () => {
+      let mediaUrl;
+      try {
+        if (!imageFile) {
+          console.error('No image selected.');
+          return;
+        }
+        console.log(imageFile);
+        const formData = new FormData();
+        formData.append('media', imageFile);
+        const mediaResponse = await fetch(
+          `${apiUrl}/v1/messaging/upload/media`,
+          {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+            },
+            credentials: 'include',
+            body: formData,
+          },
+        );
+        if (!mediaResponse.ok) {
+          console.error(
+            `Error uploading channel image: ${mediaResponse.status} ${mediaResponse.statusText}`,
+          );
+          return;
+        }
+
+        const mediaResponseData = await mediaResponse.json();
+        console.log(mediaResponseData);
+        mediaUrl = mediaResponseData.signedUrl;
+      } catch (error) {
+        console.error('Error uploading channel image:', error.message);
+      }
       try {
         const groupData = {
           name: channelName,
+          image: imageFile ? mediaUrl : null,
         };
         console.log('Emitting group creation:', groupData);
 
@@ -239,23 +284,25 @@ function ChannelList({ channelOrGroup }) {
                 />
               </div>
 
-              <div>
-                <label
-                  className="block text-sm text-text-primary"
-                  htmlFor="description"
-                >
-                  Description (Optional)
-                </label>
-                <input
-                  data-test-id="description-input"
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="mt-2 w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
-                  placeholder="Description"
-                  aria-label="Description"
-                />
-              </div>
+              {channelOrGroup === 'channel' && (
+                <div>
+                  <label
+                    className="block text-sm text-text-primary"
+                    htmlFor="description"
+                  >
+                    Description (Optional)
+                  </label>
+                  <input
+                    data-test-id="description-input"
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="mt-2 w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
+                    placeholder="Description"
+                    aria-label="Description"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
