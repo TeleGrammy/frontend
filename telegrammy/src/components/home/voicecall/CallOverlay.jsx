@@ -122,11 +122,6 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
           );
 
           peerConnection.onconnectionstatechange = () => {
-            console.log(
-              `Connection state for receiver ${recieverId}:`,
-              peerConnection.connectionState,
-            );
-
             if (peerConnection.connectionState === 'connected') {
               if (callState !== 'in call') dispatch(callConnected());
             } else if (peerConnection.connectionState === 'connecting') {
