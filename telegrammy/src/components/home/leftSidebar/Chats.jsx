@@ -78,6 +78,48 @@ const Chats = ({ searchValue }) => {
     }
   };
 
+  const DATE_OPTIONS = Object.freeze({
+    TODAY: {
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+    YESTERDAY: 'YESTERDAY',
+    DEFAULT: {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    },
+  });
+
+  const getDateOptions = (timestamp) => {
+    const givenDate = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const compareDate = (givenDate, comparedDay) => {
+      return (
+        givenDate.getFullYear() === comparedDay.getFullYear() &&
+        givenDate.getMonth() === comparedDay.getMonth() &&
+        givenDate.getDate() === comparedDay.getDate()
+      );
+    };
+    // Compare the date parts
+    if (compareDate(givenDate, today)) {
+      return DATE_OPTIONS.TODAY;
+    } else if (compareDate(givenDate, yesterday)) {
+      return DATE_OPTIONS.YESTERDAY;
+    } else return DATE_OPTIONS.DEFAULT;
+  };
+
+  const formatTimeStamp = (timestamp) => {
+    const options = getDateOptions(timestamp);
+    console.log(options);
+    if (options === DATE_OPTIONS.YESTERDAY) return 'Yesterday';
+    if (options === DATE_OPTIONS.TODAY)
+      return new Date(timestamp).toLocaleTimeString('en-US', options);
+    return new Date(timestamp).toLocaleDateString('en-US', options);
+  };
   useEffect(() => {
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('click', handleClickInside);
@@ -170,7 +212,7 @@ const Chats = ({ searchValue }) => {
                       className="text-sm text-gray-400"
                       data-test-id={`chat-timestamp-${chat.id}`}
                     >
-                      Last Seen {chat.lastSeen}
+                      Last Seen {formatTimeStamp(chat.lastSeen)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
