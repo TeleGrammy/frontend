@@ -70,6 +70,14 @@ const AttachMedia = ({
         id="file-input-document"
         accept=".pdf,.doc,.docx,.txt"
       />
+      <input
+        data-test-id="attach-audio-input"
+        type="file"
+        onChange={(event) => handleFileChange(event, 'audio_audio')}
+        className="hidden"
+        id="file-input-audio"
+        accept="audio/*"
+      />
     </>
   );
 };

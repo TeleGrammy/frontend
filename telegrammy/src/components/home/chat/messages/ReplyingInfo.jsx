@@ -4,7 +4,9 @@ const ReplyingInfo = ({ message, messages, idx }) => {
   const [repliedMessage, setRepliedMessage] = useState(null);
 
   useEffect(() => {
-    const foundMessage = messages?.find((msg) => msg._id === message.replyOn);
+    const foundMessage = messages?.find(
+      (msg) => msg._id === message.replyOn._id,
+    );
     setRepliedMessage(foundMessage);
   }, [messages, message.replyOn]);
 
