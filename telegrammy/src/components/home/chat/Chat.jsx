@@ -21,7 +21,6 @@ import socket from './utils/Socket';
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
-const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
 let trie = new Trie();
 
 const initialComments = [
@@ -69,6 +68,7 @@ function Chat() {
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
   const [prevChat, setPrevChat] = useState(null);
   const [ack, setAck] = useState(null);
+  const [mentionUsers, setMentionUsers] = useState([]);
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
   const { chats, setChats } = useChats();
@@ -224,6 +224,7 @@ function Chat() {
         console.log(data.messages.data);
         let tempMessages = data.messages.data;
         let tempPinned = [];
+        let tempUsers = [];
         tempMessages.map((msg) => {
           if (msg.isPinned) tempPinned.push(msg._id);
           if (msg.senderId._id === userId) {
@@ -232,6 +233,13 @@ function Chat() {
             msg['type'] = 'received';
           }
         });
+
+
+        data.chat.participants.forEach((participant) => {
+          tempUsers.push(participant.userId.username);
+        });
+
+        setMentionUsers(tempUsers);
         setPinnedMsgs(tempPinned);
 
         tempMessages.sort(
