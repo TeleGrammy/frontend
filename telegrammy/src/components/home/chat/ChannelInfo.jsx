@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import ChannelSettings from './ChannelSettings'; // Import the ChannelSettings component
 import { useSelector } from 'react-redux';
-import { FaAngleRight, FaCreativeCommonsShare, FaPlus } from 'react-icons/fa';
+import {
+  FaAngleRight,
+  FaCreativeCommonsShare,
+  FaDoorOpen,
+  FaPlus,
+  FaTrash,
+} from 'react-icons/fa';
 import AddUsersList from '../leftSidebar/AddUsersList';
 import CloseButton from '../rightSidebar/CloseButton';
 import SelectedInfo from '../rightSidebar/SelectedInfo';
@@ -9,7 +15,6 @@ import Header from '../leftSidebar/Header';
 import { useSocket } from '../../../contexts/SocketContext';
 import { use } from 'react';
 import { ClipLoader } from 'react-spinners';
-import LeaveButton from './LeaveButton';
 const apiUrl = import.meta.env.VITE_API_URL;
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 
@@ -22,6 +27,7 @@ function ChannelInfo() {
 
   const { openedChat } = useSelector((state) => state.chats);
   const [isAdmin, setIsAdmin] = useState(true); // Assume the current user is an admin for demonstration
+  const [isOwner, setIsOwner] = useState(false);
   const [channelMembers, setChannelMembers] = useState(initialChannelMembers);
   const [addedMembers, setAddedMembers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -82,11 +88,16 @@ function ChannelInfo() {
           membersData.participants ? membersData.participants : [],
         );
         const channelAdmins = membersData.participants
-          .filter((member) => member.role !== 'Subscriber')
-          .map((admin) => admin.userData.id);
+          ? membersData.participants
+              .filter((member) => member.role !== 'Subscriber')
+              .map((admin) => admin.userData.id)
+          : [];
         console.log(channelAdmins);
         setAdmins(channelAdmins);
         const isUserAdmin = channelAdmins.includes(userId);
+        const isUserOwner = channelData.channelOwner.id === userId;
+        console.log('isUserOwner: ', isUserOwner);
+        setIsOwner(isUserOwner);
         setIsAdmin(isUserAdmin);
         setChannelDescription(channelData.channelDescription);
         setChannelName(channelData.channelName);
@@ -270,26 +281,10 @@ function ChannelInfo() {
         </div>
       ) : (
         <>
-          {/* New input field and button */}
-          <div className="w-full p-4">
-            <input
-              type="text"
-              placeholder="Type something..."
-              value={newInput}
-              onChange={(e) => setNewInput(e.target.value)} // Update state on input change
-              className="w-full rounded bg-bg-secondary p-2 text-text-primary outline-none"
-            />
-            <button
-              onClick={handlePrintInput} // Call the function on button click
-              className="mt-2 rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
-            >
-              Print Input
-            </button>
-          </div>
           {/* Header info */}
           <Header className={'h-[3.4rem]'}>
             <CloseButton />
-            <h1 className="text-xl font-bold text-text-primary">
+            <h1 className="text-lg font-bold text-text-primary">
               {channelName}
             </h1>
             <div className="ml-auto flex flex-row gap-2">
@@ -400,7 +395,8 @@ function ChannelInfo() {
                               className="text-red-500"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                leaveChannel(member.userData.id);
+                                if (isOwner) deleteChannel();
+                                else leaveChannel();
                               }}
                             >
                               Leave Channel
@@ -488,7 +484,23 @@ function ChannelInfo() {
                   <FaPlus className="text-text-primary opacity-70" />
                 </div>
 
-                <LeaveButton handleLeave={leaveChannel} />
+                {isOwner ? (
+                  <div
+                    className="fixed bottom-10 right-20 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
+                    onClick={() => deleteChannel()}
+                    data-test-id="add-memebers-button"
+                  >
+                    <FaTrash className="text-text-primary opacity-70" />
+                  </div>
+                ) : (
+                  <div
+                    className="fixed bottom-10 right-20 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
+                    onClick={() => leaveChannel()}
+                    data-test-id="add-memebers-button"
+                  >
+                    <FaDoorOpen className="text-text-primary opacity-70" />
+                  </div>
+                )}
               </>
             )}
           </div>

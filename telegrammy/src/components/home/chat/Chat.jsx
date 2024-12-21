@@ -26,11 +26,30 @@ import { useDispatch } from 'react-redux';
 import { closeRightSidebar } from '../../../slices/sidebarSlice';
 import { PiMagicWand } from 'react-icons/pi';
 import { useChats } from '../../../contexts/ChatContext';
+import CommentToSpace from './messagingSpace/CommentToSpace';
+import Comments from './messages/Comments';
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
 let trie = new Trie();
+
+const initialComments = [
+  {
+    id: 1,
+    name: 'Ahmed Aladdin',
+    avatar: 'https://ui-avatars.com/api/?name=Ahmed-Aladdin', // Replace with actual URL
+    timestamp: '٢٠٢٤/١٢/١٨',
+    message: 'هو الكويز في الاستراحة ولا ايه؟',
+  },
+  {
+    id: 2,
+    name: 'Ahmed Hamdy',
+    avatar: 'https://ui-avatars.com/api/?name=Ahmed-Hamdy', // Replace with actual URL
+    timestamp: '٢٠٢٤/١٢/١٨',
+    message: 'بداية الفترة الثالثة عادي',
+  },
+];
 
 function Chat() {
   const { socketGeneralRef } = useSocket();
@@ -43,6 +62,7 @@ function Chat() {
   const [messages, setMessages] = useState([initialMessages1]);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [replyToMessageId, setReplyToMessageId] = useState(null);
+  const [commentToMessageId, setCommentToMessageId] = useState(null);
   const [forwardingMessageId, setForwardingMessageId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFileType, setSelectedFileType] = useState(null);
@@ -52,6 +72,8 @@ function Chat() {
   const [mentionIndex, setMentionIndex] = useState(0); // For navigating suggestions
   const [isMentioning, setIsMentioning] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isShownComments, setIsShownComments] = useState(false);
+  const [comments, setComments] = useState([]);
   const messagesEndRef = useRef(null);
   const messageRefs = useRef({});
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
@@ -186,6 +208,8 @@ function Chat() {
   }, [messages]);
 
   useEffect(() => {
+    setCommentToMessageId(null);
+    setReplyToMessageId(null);
     const fetchMessages = async () => {
       try {
         if (!openedChat.id) {
@@ -209,6 +233,50 @@ function Chat() {
         const data = await response.json();
         console.log(data.messages.data);
         let tempMessages = data.messages.data;
+        let tempPinned = [];
+        tempMessages.map((msg) => {
+          if (msg.isPinned) tempPinned.push(msg._id);
+          if (msg.senderId._id === userId) {
+            msg['type'] = 'sent';
+          } else {
+            msg['type'] = 'received';
+          }
+        });
+        setPinnedMsgs(tempPinned);
+
+        tempMessages.sort(
+          (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+        );
+        tempMessages.map((msg) => trie.insert(msg.content, msg._id));
+        setMessages(tempMessages);
+      } catch (error) {
+        console.error('Error fetching Chats:', error);
+      }
+    };
+
+    const fetchChannelMessages = async () => {
+      try {
+        if (!openedChat.channelId) {
+          return;
+        }
+        const response = await fetch(
+          `${apiUrl}/v1/channels/${openedChat.channelId}/chat`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          },
+        );
+        if (!response.ok) {
+          console.error('Failed to fetch chats.');
+        } else {
+          console.log('Chats have been fetched successfully.');
+        }
+        const data = await response.json();
+        console.log(data);
+        let tempMessages = data.messages;
         let tempPinned = [];
         tempMessages.map((msg) => {
           if (msg.isPinned) tempPinned.push(msg._id);
@@ -256,9 +324,12 @@ function Chat() {
       }
     };
 
-    if (openedChat.isChannel) fetchChannelInfo();
-
-    fetchMessages();
+    if (openedChat.isChannel) {
+      fetchChannelInfo();
+      fetchChannelMessages();
+    } else {
+      fetchMessages();
+    }
   }, [openedChat]);
 
   const handleSearch = (text) => {
@@ -330,10 +401,11 @@ function Chat() {
         chatId: openedChat.id,
         content: inputValue,
         messageType: 'text',
-        isPost: openedChat.isChannel, // and not comment
+        isPost: openedChat.isChannel && !commentToMessageId, // and not comment
         timestamp: new Date().toISOString(),
         date: new Date().toISOString().slice(0, 10),
         replyOn: replyToMessageId || null, // Link the reply if there's any
+        parentPost: commentToMessageId || null,
         type: 'sent',
       };
 
@@ -449,6 +521,11 @@ function Chat() {
     );
   };
 
+  const handleComment = async (parentId) => {
+    setCommentToMessageId(parentId);
+    setInputValue('');
+  };
+
   const handleClickForwardMessage = (id) => {
     setForwardingMessageId(id);
     setInputValue('');
@@ -457,6 +534,20 @@ function Chat() {
   const handleReplyToMessage = (id) => {
     setReplyToMessageId(id);
     setInputValue('');
+  };
+
+  const handleShowComments = async (postId) => {
+    setIsShownComments((prev) => !prev);
+    try {
+      const response = await fetch(
+        `${apiUrl}/v1/channels/thread/${postId}/messages`,
+      );
+      const data = await response.json();
+      console.log(data);
+      setComments(data.messages);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleSendVoice = async (audioFormData) => {
@@ -617,11 +708,16 @@ function Chat() {
         handleEditMessage={handleEditMessage}
         handleDeleteMessage={handleDeleteMessage}
         handleReplyToMessage={handleReplyToMessage}
+        handleComment={handleComment}
+        handleShowComments={handleShowComments}
         handleImageClick={handleImageClick}
         handleClickForwardMessage={handleClickForwardMessage}
         messagesEndRef={messagesEndRef}
         messageRefs={messageRefs}
       />
+
+      {isShownComments && <Comments comments={initialComments} />}
+
       <div className="bg-bg-message-receiver p-4">
         {errorMessage && (
           <div
@@ -638,73 +734,87 @@ function Chat() {
             setReplyToMessageId={setReplyToMessageId}
           />
         )}
-        <div className="flex items-center space-x-2">
-          {/* Emoji/Sticker/GIF Picker Button */}
-          <ReactionPicker
-            handleSelectItem={handleSelectItem}
-            setInputValue={setInputValue}
+        {commentToMessageId && (
+          <CommentToSpace
+            messages={messages}
+            commentToMessageId={commentToMessageId}
+            setCommentToMessageId={setCommentToMessageId}
           />
-          {isMentioning && filteredUsers.length > 0 && (
-            <div className="absolute bottom-16 left-4 z-50 w-64 rounded-lg bg-white shadow-lg dark:bg-gray-800">
-              {filteredUsers.map((user, index) => (
-                <div
-                  data-test-id={`${index}-to-mention-user`}
-                  key={index}
-                  className={`cursor-pointer p-2 ${
-                    mentionIndex === index ? 'bg-gray-300' : ''
-                  }`}
-                  onMouseDown={() => handleSelectUser(user)}
-                  onMouseEnter={() => setMentionIndex(index)}
-                >
-                  {user}
-                </div>
-              ))}
-            </div>
-          )}
-          <input
-            data-test-id="message-input"
-            disabled={openedChat.isChannel && !isAdmin}
-            type="text"
-            placeholder={
-              !isAdmin && openedChat.isChannel
-                ? "YOU DON'T HAVE PERMISSION!"
-                : editingMessageId
+        )}
+        {(openedChat.isChannel && isAdmin) ||
+        (openedChat.isChannel && !isAdmin && commentToMessageId) ||
+        !openedChat.isChannel ? (
+          <div className="flex items-center space-x-2">
+            {/* Emoji/Sticker/GIF Picker Button */}
+            <ReactionPicker
+              handleSelectItem={handleSelectItem}
+              setInputValue={setInputValue}
+            />
+            {isMentioning && filteredUsers.length > 0 && (
+              <div className="absolute bottom-16 left-4 z-50 w-64 rounded-lg bg-white shadow-lg dark:bg-gray-800">
+                {filteredUsers.map((user, index) => (
+                  <div
+                    data-test-id={`${index}-to-mention-user`}
+                    key={index}
+                    className={`cursor-pointer p-2 ${
+                      mentionIndex === index ? 'bg-gray-300' : ''
+                    }`}
+                    onMouseDown={() => handleSelectUser(user)}
+                    onMouseEnter={() => setMentionIndex(index)}
+                  >
+                    {user}
+                  </div>
+                ))}
+              </div>
+            )}
+            <input
+              data-test-id="message-input"
+              type="text"
+              placeholder={
+                editingMessageId
                   ? 'Edit your message...'
                   : replyToMessageId
                     ? 'Type your reply...'
                     : 'Type your message...'
-            }
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            className="flex-grow rounded-lg border border-gray-300 px-4 py-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          />
-          <AttachMedia
-            setErrorMessage={setErrorMessage}
-            setSelectedFile={setSelectedFile}
-            setSelectedFileType={setSelectedFileType}
-          />
-          <VoiceNoteButton onSendVoice={handleSendVoice} />
-          <button
-            data-test-id="send-message-button"
-            onClick={handleSendMessage}
-            className="hover:bg-bg-message-sender-hover rounded-lg bg-bg-message-sender px-4 py-2 text-white"
-          >
-            {editingMessageId ? 'Update' : 'Send'}
-          </button>
-          {editingMessageId && (
+              }
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              className="flex-grow rounded-lg border border-gray-300 px-4 py-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            />
+            {!(openedChat.isChannel && commentToMessageId) && (
+              <>
+                <AttachMedia
+                  setErrorMessage={setErrorMessage}
+                  setSelectedFile={setSelectedFile}
+                  setSelectedFileType={setSelectedFileType}
+                />
+                <VoiceNoteButton onSendVoice={handleSendVoice} />
+              </>
+            )}
             <button
-              data-test-id="cancel-edit-message-button"
-              onClick={() => {
-                setEditingMessageId(null);
-                setInputValue('');
-              }}
-              className="rounded-lg bg-gray-200 px-4 py-2 text-black hover:bg-gray-300"
+              data-test-id="send-message-button"
+              onClick={handleSendMessage}
+              className="hover:bg-bg-message-sender-hover rounded-lg bg-bg-message-sender px-4 py-2 text-white"
             >
-              Cancel
+              {editingMessageId ? 'Update' : 'Send'}
             </button>
-          )}
-        </div>
+            {editingMessageId && (
+              <button
+                data-test-id="cancel-edit-message-button"
+                onClick={() => {
+                  setEditingMessageId(null);
+                  setInputValue('');
+                }}
+                className="rounded-lg bg-gray-200 px-4 py-2 text-black hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="text-center">You are not an admin in this channel!</p>
+        )}
       </div>
       {viewingImage && (
         <ViewedImage
