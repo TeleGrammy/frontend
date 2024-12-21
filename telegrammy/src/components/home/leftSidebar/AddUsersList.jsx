@@ -157,6 +157,7 @@ const AddUsersList = ({ addedMembers, setAddedMembers }) => {
             data.data.contacts[0].contactId.screenName[1],
         );
         setContacts(data.data.contacts);
+        console.log(data.data.contacts);
       } catch (error) {
         console.error('Error fetching user contacts:', error);
       }
@@ -189,8 +190,8 @@ const AddUsersList = ({ addedMembers, setAddedMembers }) => {
                 data-test-id={`user-avatar-${contact.contactId._id}`}
               >
                 {' '}
-                {contact.contactId.screenName[0] +
-                  contact.contactId.screenName[1]}{' '}
+                {contact.contactId.username[0] +
+                  contact.contactId.username[1]}{' '}
               </div>
             )}
             <div className="flex-1">
@@ -198,7 +199,7 @@ const AddUsersList = ({ addedMembers, setAddedMembers }) => {
                 className="text-sm font-medium"
                 data-test-id={`user-name-${contact.contactId._id}`}
               >
-                {contact.contactId.screenName}
+                {contact.contactId.username}
               </p>
               <p
                 className="text-xs text-gray-400"

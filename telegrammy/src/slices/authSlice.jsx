@@ -36,7 +36,7 @@ export const loginUser = createAsyncThunk(
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
       }
-
+      // console.log(data);
       const user = data.data.updatedUser;
       return user; // Return the full user object
     } catch (error) {

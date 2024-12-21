@@ -171,6 +171,13 @@ function GroupOrChannelInfo() {
   const GenerateInviteLink = () => {};
 
   const handleSubmitAddedUsers = () => {
+    console.log(openedChat.groupId);
+    console.log(addedMembers);
+    const payload = {
+      groupId: openedChat.groupId,
+      userIds:addedMembers
+    }
+    socketGroupRef.current.emit('addingGroupMember',payload);
     setView('info');
   };
 
@@ -244,22 +251,6 @@ function GroupOrChannelInfo() {
         </div>
       ) : (
         <>
-          {/* New input field and button */}
-          <div className="w-full p-4">
-            <input
-              type="text"
-              placeholder="Type something..."
-              value={newInput}
-              onChange={(e) => setNewInput(e.target.value)} // Update state on input change
-              className="w-full rounded bg-bg-secondary p-2 text-text-primary outline-none"
-            />
-            <button
-              onClick={handlePrintInput} // Call the function on button click
-              className="mt-2 rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
-            >
-              Print Input
-            </button>
-          </div>
           {/* Header info */}
           <Header className={'h-[3.4rem]'}>
             <CloseButton />
