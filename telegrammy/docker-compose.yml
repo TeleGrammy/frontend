@@ -1,6 +1,6 @@
 services:
   backend:
-    image: telegrammy/backend:group-channel-management # telegrammy/backend:[module_name] (check with the backend repo)
+    image: telegrammy/backend:push-notification # telegrammy/backend:[module_name] (check with the backend repo)
     ports:
       - '${PORT}:${PORT}'
     env_file:

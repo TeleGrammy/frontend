@@ -77,7 +77,7 @@ function Chat() {
 
   const handlePinMessage = (messageId, isPinned) => {
     console.log(isPinned);
-
+    console.log(messageId);
     if (!isPinned) {
       socketGeneralRef.current.emit('message:pin', {
         chatId: openedChat.id,

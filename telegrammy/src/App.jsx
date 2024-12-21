@@ -6,6 +6,7 @@ import ProtectedRoute from './components/shared/ProtectedRoute';
 import Auth from './pages/Auth';
 
 import { SocketProvider } from './contexts/SocketContext';
+import { FirebaseProvider } from './contexts/FirebaseContext';
 
 export default function App() {
   return (
@@ -18,7 +19,9 @@ export default function App() {
           element={
             <ProtectedRoute>
               <SocketProvider>
-                <Home />
+                <FirebaseProvider> 
+                  <Home/>
+                </FirebaseProvider>
               </SocketProvider>
             </ProtectedRoute>
           }
