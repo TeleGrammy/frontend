@@ -5,6 +5,8 @@ import ReplyingInfo from './ReplyingInfo';
 import MessageBottomInfo from './MessageBottomInfo';
 import MediaContent from './MediaContent';
 import MessageContainer from './MessageContainer';
+import { useSelector } from 'react-redux';
+import { FaReply } from 'react-icons/fa';
 
 export const MessageItem = ({
   message,
@@ -12,6 +14,8 @@ export const MessageItem = ({
   handleDeleteMessage,
   handleReplyToMessage,
   handlePinMessage,
+  handleComment,
+  handleShowComments,
   handleImageClick,
   handleClickForwardMessage,
   messages,
@@ -19,12 +23,13 @@ export const MessageItem = ({
   messageRefs,
   showDateDivider,
 }) => {
+  const { openedChat } = useSelector((state) => state.chats);
   return (
     <React.Fragment key={message._id}>
       <div
         ref={(el) => (messageRefs.current[message._id] = el)}
         key={message._id}
-        className=""
+        className="relative"
       >
         {showDateDivider && <DateDivider message={message} />}
         {message.messageType === 'audio' ? (
@@ -70,13 +75,19 @@ export const MessageItem = ({
                 >
                   {message.isPinned ? 'UnPin' : 'Pin'}
                 </button>
+                {/* comment button */}
+                {openedChat.isChannel && (
+                  <button
+                    data-test-id={`${idx}-message-comment-button`}
+                    onClick={() => handleComment(message._id)}
+                    className="mr-2 text-xs text-yellow-600 hover:underline"
+                  >
+                    Comment
+                  </button>
+                )}
               </div>
             )}
-            <VoiceNotePlayer
-              src={message.voiceNote}
-              time={message.timestamp}
-              type={message.type}
-            />
+            <VoiceNotePlayer message={message} messages={messages} idx={idx} />
             {message.type === 'received' && (
               <div className="flex flex-row space-x-2 pr-2">
                 {/* Forward button */}
@@ -88,13 +99,16 @@ export const MessageItem = ({
                   Forward
                 </button>
                 {/* Reply button */}
-                <button
-                  data-test-id={`${idx}-recieved-reply-button`}
-                  onClick={() => handleReplyToMessage(message._id)}
-                  className="ml-2 text-xs text-blue-500 hover:underline"
-                >
-                  Reply
-                </button>
+                {!openedChat.isChannel && (
+                  <button
+                    data-test-id={`${idx}-recieved-reply-button`}
+                    onClick={() => handleReplyToMessage(message._id)}
+                    className="ml-2 text-xs text-blue-500 hover:underline"
+                  >
+                    Reply
+                  </button>
+                )}
+
                 {/* Pin/Unpin button */}
                 <button
                   data-test-id={`${idx}-recieved-pin-unpin-button`}
@@ -105,6 +119,16 @@ export const MessageItem = ({
                 >
                   {message.isPinned ? 'UnPin' : 'Pin'}
                 </button>
+                {/* comment button */}
+                {openedChat.isChannel && (
+                  <button
+                    data-test-id={`${idx}-message-comment-button`}
+                    onClick={() => handleComment(message._id)}
+                    className="mr-2 text-xs text-yellow-600 hover:underline"
+                  >
+                    Comment
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -152,6 +176,16 @@ export const MessageItem = ({
                 >
                   {message.isPinned ? 'UnPin' : 'Pin'}
                 </button>
+                {/* comment button */}
+                {openedChat.isChannel && (
+                  <button
+                    data-test-id={`${idx}-message-comment-button`}
+                    onClick={() => handleComment(message._id)}
+                    className="mr-2 text-xs text-yellow-600 hover:underline"
+                  >
+                    Comment
+                  </button>
+                )}
               </div>
             )}
             <MessageContainer
@@ -171,13 +205,15 @@ export const MessageItem = ({
                   Forward
                 </button>
                 {/* Reply button */}
-                <button
-                  data-test-id={`${idx}-recieved-reply-button`}
-                  onClick={() => handleReplyToMessage(message._id)}
-                  className="ml-2 text-xs text-blue-500 hover:underline"
-                >
-                  Reply
-                </button>
+                {!openedChat.isChannel && (
+                  <button
+                    data-test-id={`${idx}-recieved-reply-button`}
+                    onClick={() => handleReplyToMessage(message._id)}
+                    className="ml-2 text-xs text-blue-500 hover:underline"
+                  >
+                    Reply
+                  </button>
+                )}
                 {/* Pin/Unpin button */}
                 <button
                   data-test-id={`${idx}-recieved-pin-unpin-button`}
@@ -188,8 +224,27 @@ export const MessageItem = ({
                 >
                   {message.isPinned ? 'UnPin' : 'Pin'}
                 </button>
+                {openedChat.isChannel && (
+                  <button
+                    data-test-id={`${idx}-message-comment-button`}
+                    onClick={() => handleComment(message._id)}
+                    className="mr-2 text-xs text-yellow-600 hover:underline"
+                  >
+                    Comment
+                  </button>
+                )}
               </div>
             )}
+          </div>
+        )}
+
+        {message.commentsCount > 0 && (
+          <div
+            onClick={() => handleShowComments(message._id)}
+            className={`absolute bottom-[-16px] ${message.type === 'sent' ? 'right-4' : 'left-14'} flex cursor-pointer flex-row gap-4 rounded-lg bg-bg-secondary px-2 py-1 text-xs`}
+          >
+            <FaReply />
+            <span>{message.commentsCount} comments</span>
           </div>
         )}
       </div>

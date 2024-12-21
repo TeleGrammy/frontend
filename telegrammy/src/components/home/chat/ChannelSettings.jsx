@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 function ChannelSettings({ toggleView, isAdmin }) {
   const { openedChat } = useSelector((state) => state.chats);
   const [channelPhoto, setChannelPhoto] = useState(openedChat.picture);
@@ -8,6 +10,9 @@ function ChannelSettings({ toggleView, isAdmin }) {
     openedChat.description,
   );
   const [privacy, setPrivacy] = useState('Public');
+  const [allowDownload, setAllowDownload] = useState(false); // New state for allow download
+  const [allowComments, setAllowComments] = useState(false); // New state for allow comments
+
   const fileInputRef = useRef(null);
 
   const handleDescriptionChange = (e) => {
@@ -29,15 +34,36 @@ function ChannelSettings({ toggleView, isAdmin }) {
     setPrivacy(e.target.value);
   };
 
-  const saveChanges = () => {
+  const saveChanges = async () => {
     if (isAdmin) {
       console.log('Channel description:', channelDescription);
       console.log('Channel photo URL:', channelPhoto);
       console.log('Channel privacy:', privacy);
-      console.log('Mute duration:', muteDuration);
-      setChannelDescription(channelDescription);
-      setChannelPhoto(channelPhoto);
-      toggleView('info');
+      console.log(openedChat);
+      try {
+        const response = await fetch(
+          `${apiUrl}/v1/channels/${openedChat.channelId}/privacy`,
+          {
+            method: 'PATCH',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              privacy: privacy === 'Public',
+              comments: allowComments,
+              download: allowDownload,
+            }),
+            credentials: 'include',
+          },
+        );
+        const data = await response.json();
+        console.log(data);
+        toggleView('info');
+      } catch (error) {
+        console.error('Error creating channel:', error.message);
+      }
+
       // Logic to save changes to the server or state
     } else {
       console.log('Only admins can save changes.');
@@ -65,7 +91,11 @@ function ChannelSettings({ toggleView, isAdmin }) {
       </h2>
       <div className="mb-4 flex flex-col items-center">
         <img
-          src={channelPhoto}
+          src={
+            channelPhoto
+              ? channelPhoto
+              : 'https://ui-avatars.com/api/?name=' + openedChat.name
+          }
           alt="Channel"
           className="mb-2 h-16 w-16 rounded-full"
         />
@@ -120,6 +150,28 @@ function ChannelSettings({ toggleView, isAdmin }) {
           </select>
         ) : (
           <p className="mb-2 text-center text-text-primary">{privacy}</p>
+        )}
+        {isAdmin && (
+          <div className="mt-4 flex w-3/4 flex-col items-start">
+            <label className="mb-2 text-sm text-text-primary">
+              <input
+                type="checkbox"
+                checked={allowDownload}
+                onChange={() => setAllowDownload(!allowDownload)}
+                className="mr-2"
+              />
+              Allow Download
+            </label>
+            <label className="mb-2 text-sm text-text-primary">
+              <input
+                type="checkbox"
+                checked={allowComments}
+                onChange={() => setAllowComments(!allowComments)}
+                className="mr-2"
+              />
+              Allow Comments
+            </label>
+          </div>
         )}
       </div>
       {isAdmin && (

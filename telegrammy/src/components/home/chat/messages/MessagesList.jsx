@@ -1,12 +1,19 @@
 import React from 'react';
 import { MessageItem } from './MessageItem';
 
+const getDateFromTimestamp = (timestamp) => {
+  const date = new Date(timestamp);
+  return date.toDateString();
+};
+
 export const MessagesList = ({
   messages,
   handleEditMessage,
   handleDeleteMessage,
   handleReplyToMessage,
   handlePinMessage,
+  handleComment,
+  handleShowComments,
   handleImageClick,
   handleClickForwardMessage,
   messagesEndRef,
@@ -20,7 +27,7 @@ export const MessagesList = ({
           !lastDate ||
           new Date(message.timestamp).toDateString() !==
             new Date(lastDate).toDateString();
-        lastDate = message.date;
+        lastDate = getDateFromTimestamp(message.timestamp);
         return (
           <MessageItem
             message={message}
@@ -31,6 +38,8 @@ export const MessagesList = ({
             handleDeleteMessage={handleDeleteMessage}
             handleClickForwardMessage={handleClickForwardMessage}
             handlePinMessage={handlePinMessage}
+            handleComment={handleComment}
+            handleShowComments={handleShowComments}
             messageRefs={messageRefs}
             showDateDivider={showDateDivider}
             key={message._id || idx}

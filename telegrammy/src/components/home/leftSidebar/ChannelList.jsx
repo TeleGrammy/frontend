@@ -4,37 +4,65 @@ import { useState, useEffect } from 'react';
 import AddUsersList from './AddUsersList';
 import { FaAngleRight } from 'react-icons/fa';
 import { useSocket } from '../../../contexts/SocketContext';
+import { use } from 'react';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function ChannelList({ channelOrGroup }) {
-  const {socketGroupRef} = useSocket();
+  const { socketGroupRef, socketChannelRef } = useSocket();
   const [view, setView] = useState('newChannel');
   const [channelName, setChannelName] = useState('');
+  const [channelId, setChannelId] = useState(null);
   const [description, setDescription] = useState('');
   const [addedMembers, setAddedMembers] = useState([]);
   const dispatch = useDispatch();
 
   const [image, setImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file); // Create a preview URL
+      setImageFile(file);
       setImage(imageUrl);
+      console.log(imageUrl);
     }
   };
 
   useEffect(() => {
-
     socketGroupRef.current.on('group:created', (message) => {
       console.log('Group created message received:', message);
     });
 
+    socketChannelRef.current.on('error', (message) => {
+      console.log('error in channel: ', message);
+    });
+  }, [socketGroupRef, socketChannelRef]); // Empty dependency array means this runs once on mount and cleanup on unmount
 
-  }, [socketGroupRef]); // Empty dependency array means this runs once on mount and cleanup on unmount
+  async function handleAddSubsribers() {
+    try {
+      const payload = {
+        channelId: channelId,
+        subscriberIds: addedMembers,
+      };
+      console.log('Emitting channel adding subscribers:', payload);
 
-  function handleCreateGroupOrChannel() {
+      // Emit the correct message type for creating a group
+      socketChannelRef.current.emit(
+        'addingChannelSubscriper',
+        payload,
+        (ackMessage) => {
+          console.log('subsriber added successfully', ackMessage);
+        },
+      );
+    } catch (error) {
+      console.error('Error in createGroup:', error.message);
+    }
+  }
+
+  async function handleCreateGroupOrChannel() {
+    let mediaUrl = null;
     const createChannel = async () => {
       try {
         const response = await fetch(`${apiUrl}/v1/channels/`, {
@@ -46,15 +74,53 @@ function ChannelList({ channelOrGroup }) {
           body: JSON.stringify({
             name: channelName,
             description: description,
+            image: imageFile ? mediaUrl : null,
           }),
           credentials: 'include',
         });
         const data = await response.json();
         console.log(data);
+        setChannelId(data.channelId);
       } catch (error) {
-        console.error('Error creating group or channel:', error.message);
+        console.error('Error creating channel:', error.message);
       }
     };
+
+    const uploadChannelImage = async () => {
+      try {
+        if (!imageFile) {
+          console.error('No image selected.');
+          return;
+        }
+        console.log(imageFile);
+        const formData = new FormData();
+        formData.append('media', imageFile);
+        const mediaResponse = await fetch(
+          `${apiUrl}/v1/messaging/upload/media`,
+          {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+            },
+            credentials: 'include',
+            body: formData,
+          },
+        );
+        if (!mediaResponse.ok) {
+          console.error(
+            `Error uploading channel image: ${mediaResponse.status} ${mediaResponse.statusText}`,
+          );
+          return;
+        }
+
+        const mediaResponseData = await mediaResponse.json();
+        console.log(mediaResponseData);
+        mediaUrl = mediaResponseData.signedUrl;
+      } catch (error) {
+        console.error('Error uploading channel image:', error.message);
+      }
+    };
+    /******  5254d4e3-8f9d-41ed-ad7b-fe9815e54b42  *******/
 
     function createGroup() {
       try {
@@ -69,7 +135,11 @@ function ChannelList({ channelOrGroup }) {
         console.error('Error in createGroup:', error.message);
       }
     }
-    createGroup();
+    if (channelOrGroup === 'group') createGroup();
+    else {
+      if (image) uploadChannelImage().then(createChannel);
+      else createChannel();
+    }
   }
 
   return (
@@ -243,8 +313,10 @@ function ChannelList({ channelOrGroup }) {
             if (view === 'newChannel') {
               handleCreateGroupOrChannel();
               setView('addMembers');
-            } else if (view === 'addMembers')
+            } else if (view === 'addMembers') {
+              handleAddSubsribers();
               dispatch(setcurrentMenu('ChatList'));
+            }
           }}
         >
           <FaAngleRight className="text-text-primary opacity-70" />
