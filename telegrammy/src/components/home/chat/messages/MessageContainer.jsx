@@ -4,6 +4,15 @@ import MediaContent from './MediaContent';
 import ReplyingInfo from './ReplyingInfo';
 
 const MessageContainer = ({ message, messages, idx, handleImageClick }) => {
+  if (
+    message.content &&
+    message.content.includes('giphy') &&
+    message.content.includes('media') &&
+    message.content.length > 100
+  ) {
+    message['isSticker'] = true;
+  }
+
   return (
     <div
       className={`${
@@ -26,9 +35,17 @@ const MessageContainer = ({ message, messages, idx, handleImageClick }) => {
         />
       )}
       {/*Message content*/}
-      {message.content && (
-        <p className={`${message.file ? 'mt-2' : ''}`}>{message.content}</p>
-      )}
+      {message.content &&
+        (message.isSticker ? (
+          <img
+            key={messages.length + 1}
+            src={message.content} // Adjust according to the response structure
+            alt="Sticker"
+            width="100"
+          />
+        ) : (
+          <p className={`${message.file ? 'mt-2' : ''}`}>{message.content}</p>
+        ))}
       <MessageBottomInfo message={message} />
     </div>
   );

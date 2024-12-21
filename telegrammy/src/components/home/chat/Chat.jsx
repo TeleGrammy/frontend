@@ -156,7 +156,7 @@ function Chat() {
       socketGeneralRef.current.on('message:sent', (message) => {
         trie.insert(message.content, message._id);
         console.log(message.senderId);
-        if (message.senderId !== userId) {
+        if (message.senderId._id !== userId) {
           console.log(socketGeneralRef.current);
           console.log('Message received:', message);
           message['type'] = 'received';
@@ -241,6 +241,9 @@ function Chat() {
           } else {
             msg['type'] = 'received';
           }
+          if (msg.content.startsWith('https://media1.giphy.com/media/')) {
+            msg['isSticker'] = true;
+          }
         });
         setPinnedMsgs(tempPinned);
 
@@ -284,6 +287,9 @@ function Chat() {
             msg['type'] = 'sent';
           } else {
             msg['type'] = 'received';
+          }
+          if (msg.content.startsWith('https://media1.giphy.com/media/')) {
+            msg['isSticker'] = true;
           }
         });
         setPinnedMsgs(tempPinned);
@@ -404,7 +410,7 @@ function Chat() {
         isPost: openedChat.isChannel && !commentToMessageId, // and not comment
         timestamp: new Date().toISOString(),
         date: new Date().toISOString().slice(0, 10),
-        replyOn: replyToMessageId || null, // Link the reply if there's any
+        replyOn: replyToMessageId ? { _id: replyToMessageId } : null, // Link the reply if there's any
         parentPost: commentToMessageId || null,
         type: 'sent',
       };
@@ -505,6 +511,7 @@ function Chat() {
         chatId: chat.id,
         messageId: forwardingMessageId,
         messageType: message.messageType,
+        isForwarded: true,
       },
       (response) => {
         console.log(response);
@@ -565,7 +572,7 @@ function Chat() {
         messageType: 'audio',
         timestamp: new Date().toISOString(),
         date: new Date().toISOString().slice(0, 10),
-        replyOn: replyToMessageId || null, // Link the reply if there's any
+        replyOn: replyToMessageId ? { _id: replyToMessageId } : null, // Link the reply if there's any
         type: 'sent',
       };
       const mediaResponseData = await mediaResponse.json();
@@ -611,27 +618,67 @@ function Chat() {
     setViewingImage(null);
   };
 
-  const handleSelectItem = (item) => {
+  const handleSelectItem = async (item) => {
     const newMessage = {
-      id: messages.length + 1,
-      type: 'sent',
-      content: (
-        <img
-          key={messages.length + 1}
-          src={item} // Adjust according to the response structure
-          alt="Sticker"
-          width="100"
-        />
-      ),
-      timestamp: new Date().toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-      }),
+      // id: messages.length + 1,
+      // type: 'sent',
+      // content: (
+      //   <img
+      //     key={messages.length + 1}
+      //     src={item} // Adjust according to the response structure
+      //     alt="Sticker"
+      //     width="100"
+      //   />
+      // ),
+      // timestamp: new Date().toLocaleTimeString('en-US', {
+      //   hour: 'numeric',
+      //   minute: 'numeric',
+      // }),
+      // date: new Date().toISOString().slice(0, 10),
+      // replyOn: replyToMessageId ? { _id: replyToMessageId } : null,
+      chatId: openedChat.id,
+      messageType: 'text',
+      isSticker: true,
+      timestamp: new Date().toISOString(),
       date: new Date().toISOString().slice(0, 10),
-      replyOn: replyToMessageId || null,
+      replyOn: replyToMessageId ? { _id: replyToMessageId } : null, // Link the reply if there's any
+      type: 'sent',
+      messageType: 'text',
+      content: item,
     };
+    try {
+      console.log(newMessage);
+      socketGeneralRef.current.emit('message:send', newMessage, (response) => {
+        // Callback handles server response
 
-    setMessages([...messages, newMessage]);
+        if (response.status === 'ok') {
+          console.log('Server acknowledgment:', response);
+          const newRenderedMessage = {
+            chatId: openedChat.id,
+            _id: response.data.id,
+            content: newMessage.content,
+            type: newMessage.type,
+            timestamp: newMessage.timestamp,
+            mediaKey: newMessage.mediaKey,
+            mediaUrl: newMessage.mediaUrl,
+            messageType: newMessage.messageType,
+            isSticker: true,
+            isPinned: false,
+            replyOn: newMessage.replyOn || null,
+          };
+          console.log(newRenderedMessage);
+          setMessages((prevMessages) => [...prevMessages, newRenderedMessage]);
+
+          setInputValue('');
+        } else {
+          console.log(response);
+          console.error('Error:', response.message || 'Unknown error');
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+    setReplyToMessageId(null);
   };
 
   const handleKeyDown = (event) => {

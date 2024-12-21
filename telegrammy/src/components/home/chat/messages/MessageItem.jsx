@@ -87,11 +87,7 @@ export const MessageItem = ({
                 )}
               </div>
             )}
-            <VoiceNotePlayer
-              src={message.voiceNote}
-              time={message.timestamp}
-              type={message.type}
-            />
+            <VoiceNotePlayer message={message} messages={messages} idx={idx} />
             {message.type === 'received' && (
               <div className="flex flex-row space-x-2 pr-2">
                 {/* Forward button */}

@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import PauseIcon from '../../icons/PauseIcon';
 import PlayIcon from '../../icons/PlayIcon';
+import ReplyingInfo from './messages/ReplyingInfo';
 
-const VoiceNotePlayer = ({ src, time, type }) => {
+const formatDate = (date) => {
+  const options = {
+    hour: '2-digit',
+    minute: '2-digit',
+  };
+  return new Date(date).toLocaleTimeString('en-US', options);
+};
+
+const VoiceNotePlayer = ({ message, messages, idx }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audio] = useState(new Audio(src));
+  const [audio] = useState(new Audio(message.mediaUrl));
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
 
@@ -51,9 +60,12 @@ const VoiceNotePlayer = ({ src, time, type }) => {
 
   return (
     <div
-      className={`flex flex-col items-start rounded-3xl ${type === 'sent' ? 'bg-bg-message-sender' : 'bg-gray-700'} max-w-sm p-4 text-white shadow-md`}
+      className={`flex flex-col items-start rounded-3xl ${message.type === 'sent' ? 'bg-bg-message-sender' : 'bg-bg-message-receiver'} max-w-sm p-4 text-white shadow-md`}
       data-test-id="voice-note-player"
     >
+      {message.replyOn && (
+        <ReplyingInfo message={message} messages={messages} idx={idx} />
+      )}
       <div className="flex w-full items-center space-x-4">
         {/* Play/Pause Button */}
         <button
@@ -97,7 +109,7 @@ const VoiceNotePlayer = ({ src, time, type }) => {
       </div>
 
       <div className="mt-2 flex w-full justify-between text-sm text-white/80">
-        <span data-test-id="message-time">{time}</span>
+        <span data-test-id="message-time">{formatDate(message.timestamp)}</span>
         <span data-test-id="read-receipt">✔✔</span>
       </div>
     </div>
