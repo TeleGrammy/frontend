@@ -241,7 +241,7 @@ export const MessageItem = ({
         {message.commentsCount > 0 && (
           <div
             onClick={() => handleShowComments(message._id)}
-            className="absolute bottom-[-16px] left-14 flex cursor-pointer flex-row gap-4 rounded-lg bg-bg-secondary px-2 py-1 text-xs"
+            className={`absolute bottom-[-16px] ${message.type === 'sent' ? 'right-4' : 'left-14'} flex cursor-pointer flex-row gap-4 rounded-lg bg-bg-secondary px-2 py-1 text-xs`}
           >
             <FaReply />
             <span>{message.commentsCount} comments</span>
