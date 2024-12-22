@@ -5,8 +5,8 @@ import io from 'socket.io-client';
 const socketContext = createContext(null);
 
 const SOCKET_URL_GENERAL = import.meta.env.VITE_WS_URL;
-const SOCKET_URL_GROUP = `${SOCKET_URL_GENERAL}group/`;
-const SOCKET_URL_CHANNEL = `${SOCKET_URL_GENERAL}channel/`;
+// const SOCKET_URL_GROUP = `${SOCKET_URL_GENERAL}group/`;
+// const SOCKET_URL_CHANNEL = `${SOCKET_URL_GENERAL}channel/`;
 
 // Helper function to get a cookie by name
 function getCookie(name) {
@@ -27,8 +27,8 @@ export const SocketProvider = ({ children }) => {
   const token = getCookie('accessToken');
 
   const [connectedGeneral, setConnectedGeneral] = useState(false);
-  const [connectedGroup, setConnectedGroup] = useState(false);
-  const [connectedChannel, setConnectedChannel] = useState(false);
+  // const [connectedGroup, setConnectedGroup] = useState(false);
+  // const [connectedChannel, setConnectedChannel] = useState(false);
 
   useEffect(() => {
     const connectSockets = () => {
@@ -44,33 +44,35 @@ export const SocketProvider = ({ children }) => {
           console.log('Connected to Socket_General.IO server');
           setConnectedGeneral(true);
         });
+        socketGroupRef.current = socketGeneralRef.current;
+        socketChannelRef.current = socketGeneralRef.current;
       }
-      if (!socketGroupRef.current) {
-        // Initialize the socket connection
-        socketGroupRef.current = io(SOCKET_URL_GROUP, {
-          query: { token },
-        });
-        socketGroupRef.current.on('connect_error', (err) => {
-          console.log(err);
-        });
-        socketGroupRef.current.on('connect', () => {
-          console.log('Connected to Socket_Group.IO server');
-          setConnectedGroup(true);
-        });
-      }
-      if (!socketChannelRef.current) {
-        // Initialize the socket connection
-        socketChannelRef.current = io(SOCKET_URL_CHANNEL, {
-          query: { token },
-        });
-        socketChannelRef.current.on('connect_error', (err) => {
-          console.log(err);
-        });
-        socketChannelRef.current.on('connect', () => {
-          console.log('Connected to Socket_Channel.IO server');
-          setConnectedChannel(true);
-        });
-      }
+      // if (!socketGroupRef.current) {
+      //   // Initialize the socket connection
+      //   socketGroupRef.current = io(SOCKET_URL_GROUP, {
+      //     query: { token },
+      //   });
+      //   socketGroupRef.current.on('connect_error', (err) => {
+      //     console.log(err);
+      //   });
+      //   socketGroupRef.current.on('connect', () => {
+      //     console.log('Connected to Socket_Group.IO server');
+      //     setConnectedGroup(true);
+      //   });
+      // }
+      // if (!socketChannelRef.current) {
+      //   // Initialize the socket connection
+      //   socketChannelRef.current = io(SOCKET_URL_CHANNEL, {
+      //     query: { token },
+      //   });
+      //   socketChannelRef.current.on('connect_error', (err) => {
+      //     console.log(err);
+      //   });
+      //   socketChannelRef.current.on('connect', () => {
+      //     console.log('Connected to Socket_Channel.IO server');
+      //     setConnectedChannel(true);
+      //   });
+      // }
     };
 
     connectSockets();
@@ -81,20 +83,20 @@ export const SocketProvider = ({ children }) => {
         socketGeneralRef.current = null;
         setConnectedGeneral(false);
       }
-      if (socketGroupRef.current) {
-        socketGroupRef.current.disconnect();
-        socketGroupRef.current = null;
-        setConnectedGroup(false);
-      }
-      if (socketChannelRef.current) {
-        socketChannelRef.current.disconnect();
-        socketChannelRef.current = null;
-        setConnectedChannel(false);
-      }
+      // if (socketGroupRef.current) {
+      //   socketGroupRef.current.disconnect();
+      //   socketGroupRef.current = null;
+      //   setConnectedGroup(false);
+      // }
+      // if (socketChannelRef.current) {
+      //   socketChannelRef.current.disconnect();
+      //   socketChannelRef.current = null;
+      //   setConnectedChannel(false);
+      // }
     };
   }, [token]);
 
-  if (!connectedGeneral || !connectedGroup || !connectedChannel) {
+  if (!connectedGeneral) {
     // Optionally, return a loading indicator or null while waiting
     return null;
   }
