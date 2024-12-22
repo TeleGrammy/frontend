@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 const socketContext = createContext(null);
 
 const SOCKET_URL_GENERAL = import.meta.env.VITE_WS_URL;
-const SOCKET_URL_GROUP = `${SOCKET_URL_GENERAL}group/`;
+const SOCKET_URL_GROUP = SOCKET_URL_GENERAL;
 const SOCKET_URL_CHANNEL = `${SOCKET_URL_GENERAL}channel/`;
 
 // Helper function to get a cookie by name
