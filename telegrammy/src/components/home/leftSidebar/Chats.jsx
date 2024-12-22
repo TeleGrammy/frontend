@@ -114,7 +114,6 @@ const Chats = ({ searchValue }) => {
 
   const formatTimeStamp = (timestamp) => {
     const options = getDateOptions(timestamp);
-    console.log(options);
     if (options === DATE_OPTIONS.YESTERDAY) return 'Yesterday';
     if (options === DATE_OPTIONS.TODAY)
       return new Date(timestamp).toLocaleTimeString('en-US', options);
