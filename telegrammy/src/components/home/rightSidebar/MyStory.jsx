@@ -6,7 +6,7 @@ function MyStory({ story, index, handleClick }) {
       <div
         className="relative"
         onClick={handleClick}
-        data-test-id={`${index}-show-my-story-div`}
+        data-testid={`${index}-show-my-story-div`}
       >
         <div className="absolute bottom-0 left-0 flex select-none flex-row items-center p-1">
           {/* <FaRegEye className="text-sm text-white" /> */}

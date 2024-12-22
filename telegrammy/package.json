@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "jest"
+    "test": "jest --config jest.config.mjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.3.0",
@@ -28,7 +28,10 @@
     "react-router-dom": "^6.27.0",
     "react-spinners": "^0.14.1",
     "react-toastify": "^10.0.6",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "redux": "^5.0.1",
+    "redux-mock-store": "^1.5.5",
+    "redux-thunk": "^3.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
