@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import VoiceNoteButton from './VoiceNoteButton';
-
+import { toast } from 'react-toastify';
 import CryptoJS from 'crypto-js';
 import Trie from './Trie';
 import ChatHeader from './ChatHeader';
@@ -18,6 +18,8 @@ import { useChats } from '../../../contexts/ChatContext';
 import CommentToSpace from './messagingSpace/CommentToSpace';
 import Comments from './messages/Comments';
 import socket from './utils/Socket';
+import { onMessage } from 'firebase/messaging';
+import { useFirebase } from '../../../contexts/FirebaseContext';
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -72,6 +74,7 @@ function Chat() {
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
   const { chats, setChats } = useChats();
+  const { generateToken, messaging } = useFirebase();
   let it = 0;
   let it1 = 0;
 
@@ -98,6 +101,18 @@ function Chat() {
   const decryptMessage = (cipherText) => {
     const bytes = CryptoJS.AES.decrypt(cipherText, secretKey);
     return bytes.toString(CryptoJS.enc.Utf8);
+  };
+
+  const showToast = (message, success) => {
+    if (success) {
+      toast.success(message, {
+        position: 'top-right',
+      });
+    } else {
+      toast.error(message, {
+        position: 'top-right',
+      });
+    }
   };
 
   // useEffects for socketGeneralRef.current
@@ -250,6 +265,11 @@ function Chat() {
         console.error('Error fetching Chats:', error);
       }
     };
+
+    onMessage(messaging, (payload) => {
+        console.log('Message received 23. ', payload);
+     
+    });
 
     const fetchChannelMessages = async () => {
       try {
