@@ -40,8 +40,6 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
   const peerConnectionRef = useRef(null);
   const combinedRemoteStream = useRef(null);
 
-  const callStateRef = useRef(callState);
-
   const {
     participants,
     callState,
@@ -51,6 +49,8 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     callID,
     isMute,
   } = useSelector((state) => state.call);
+
+  const callStateRef = useRef(callState);
 
   const currentUserId = JSON.parse(localStorage.getItem('user'))._id;
 
