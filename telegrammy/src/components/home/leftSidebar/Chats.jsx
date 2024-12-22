@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import MuteIcon from '../../icons/MuteIcon';
-import { setOpenedChat } from '../../../slices/chatsSlice';
-import { useChats } from '../../../contexts/ChatContext';
+import { setOpenedChat, setChats } from '../../../slices/chatsSlice';
 const apiUrl = import.meta.env.VITE_API_URL;
 const userId = JSON.parse(localStorage.getItem('user'))?.id;
 const Chats = ({ searchValue }) => {
   const dispatch = useDispatch();
-  const { chats, setChats } = useChats();
+  const { chats } = useSelector((state) => state.chats);
   const [ViewedChats, setViewedChats] = useState(chats);
 
   const [contextMenu, setContextMenu] = useState({
@@ -64,7 +63,6 @@ const Chats = ({ searchValue }) => {
       setViewedChats(updatedChats);
       const data = await response.json();
       console.log(data);
-
     } catch (error) {
       console.error('Error muting chat:', error);
     }
@@ -192,7 +190,7 @@ const Chats = ({ searchValue }) => {
         }
         const data = await response.json();
         console.log(data.chats);
-        setChats(data.chats);
+        dispatch(setChats(data.chats));
         // setChats(data.data.chats);
       } catch (error) {
         console.error('Error fetching Chats:', error);

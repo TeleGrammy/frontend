@@ -8,7 +8,6 @@ import Sidebar from '../components/home/leftSidebar/Sidebar';
 import Chat from '../components/home/chat/Chat';
 import RightSidebar from '../components/home/rightSidebar/RightSidebar';
 import MediaShower from '../components/home/imageShower/MediaShower';
-import { ChatsProvider } from '../contexts/ChatContext';
 
 function Home() {
   const {
@@ -35,30 +34,28 @@ function Home() {
 
   return (
     <div className="chat-bg flex h-screen w-screen flex-row">
-      <ChatsProvider>
-        <Sidebar />
+      <Sidebar />
 
-        <Chat />
+      <Chat />
 
-        {isRightSidebarOpen && <RightSidebar />}
+      {isRightSidebarOpen && <RightSidebar />}
 
-        {showedMyStoryIndex !== null && (
-          <MediaShower
-            medias={myStories}
-            profile={user}
-            initialStoryIndex={showedMyStoryIndex}
-          />
-        )}
-        {showedOtherStoryIndex !== null && (
-          <MediaShower
-            medias={otherStories[showedOtherUserIndex].stories}
-            profile={otherStories[showedOtherStoryIndex].profile}
-            initialStoryIndex={showedOtherStoryIndex}
-          />
-        )}
+      {showedMyStoryIndex !== null && (
+        <MediaShower
+          medias={myStories}
+          profile={user}
+          initialStoryIndex={showedMyStoryIndex}
+        />
+      )}
+      {showedOtherStoryIndex !== null && (
+        <MediaShower
+          medias={otherStories[showedOtherUserIndex].stories}
+          profile={otherStories[showedOtherStoryIndex].profile}
+          initialStoryIndex={showedOtherStoryIndex}
+        />
+      )}
 
-        <ToastContainer />
-      </ChatsProvider>
+      <ToastContainer />
     </div>
   );
 }

@@ -14,10 +14,8 @@ import LoadingScreen from './messagingSpace/LoadingScreen';
 import PinnedMessagesBar from './PinnedMessagesBar';
 import { useSocket } from '../../../contexts/SocketContext';
 import { useDispatch } from 'react-redux';
-import { useChats } from '../../../contexts/ChatContext';
 import CommentToSpace from './messagingSpace/CommentToSpace';
 import Comments from './messages/Comments';
-import socket from './utils/Socket';
 import { onMessage } from 'firebase/messaging';
 import { useFirebase } from '../../../contexts/FirebaseContext';
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
@@ -46,7 +44,7 @@ function Chat() {
   const { socketGeneralRef } = useSocket();
 
   const [isAdmin, setIsAdmin] = useState(false);
-  const { openedChat, searchVisible, searchText } = useSelector(
+  const { chats, openedChat, searchVisible, searchText } = useSelector(
     (state) => state.chats,
   );
   const [inputValue, setInputValue] = useState('');
@@ -73,7 +71,6 @@ function Chat() {
   const [mentionUsers, setMentionUsers] = useState([]);
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
-  const { chats, setChats } = useChats();
   const { generateToken, messaging } = useFirebase();
   let it = 0;
   let it1 = 0;
@@ -267,8 +264,7 @@ function Chat() {
     };
 
     onMessage(messaging, (payload) => {
-        console.log('Message received 23. ', payload);
-     
+      console.log('Message received 23. ', payload);
     });
 
     const fetchChannelMessages = async () => {

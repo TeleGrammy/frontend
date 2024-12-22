@@ -17,6 +17,7 @@ const initialState = {
   },
   searchVisible: false,
   searchText: '',
+  chats: [],
 };
 
 const chatsSlice = createSlice({
@@ -32,10 +33,14 @@ const chatsSlice = createSlice({
     setSearchText(state, action) {
       state.searchText = action.payload;
     },
+    setChats(state, action) {
+      console.log(state.chats, action.payload);
+      state.chats = action.payload;
+    },
   },
 });
 
-export const { setOpenedChat, setSearchVisible, setSearchText } =
+export const { setOpenedChat, setSearchVisible, setSearchText, setChats } =
   chatsSlice.actions;
 
 export default chatsSlice.reducer;
