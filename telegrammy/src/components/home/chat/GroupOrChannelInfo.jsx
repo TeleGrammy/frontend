@@ -35,6 +35,7 @@ function GroupOrChannelInfo() {
   const [groupPrivacy, setGroupPrivacy] = useState();
   const [groupName, setGroupName] = useState();
   const [loading, setLoading] = useState(true); // Loading state
+  const [newState,setNewState] = useState(false);
 
   // Filtered members based on search query
   const filteredMembers = groupMembers.filter((member) =>
@@ -45,7 +46,11 @@ function GroupOrChannelInfo() {
     setGroupPhoto(openedChat.photo);
 
     socketGroupRef.current.on('group:memberAdded', (message) => {
-      console.log('Members Added', message);
+      console.log('Members Added', message.newMemberData);
+      if (!groupMembers.some(member => member.id === message.newMemberData.id)) {
+        // If the new member ID doesn't exist, add the new member to groupMembers
+        setGroupMembers(prevMembers => [...prevMembers, message.newMemberData]);
+      }
     });
 
     socketGroupRef.current.on('group:memberLeft', (message) => {
@@ -173,7 +178,6 @@ function GroupOrChannelInfo() {
     setView(view === 'info' ? 'edit' : 'info');
   };
 
-  const GenerateInviteLink = () => {};
 
   const handleSubmitAddedUsers = () => {
     console.log(openedChat.groupId);
@@ -186,15 +190,57 @@ function GroupOrChannelInfo() {
     setView('info');
   };
 
-  const togglePermission = (username, permissionType) => {
+  const togglePermission = async (username, permissionType) => {
     setGroupMembers((prevMembers) =>
-      prevMembers.map((member) =>
-        member.username === username
-          ? { ...member, [permissionType]: !member[permissionType] }
-          : member,
-      ),
+      prevMembers.map((member) => {
+        if (member.username === username.username) {
+          const newPermissionState = !member.permissions[permissionType];
+          console.log(newPermissionState);
+          setNewState(newPermissionState);
+          // Update the member's permissions
+          const updatedMember = {
+            ...member,
+            permissions: {
+              ...member.permissions,
+              [permissionType]: newPermissionState,
+            },
+          };
+          // Log the new state
+          console.log(`Toggled ${permissionType} permission for ${username.username} to ${newPermissionState}`);
+          return updatedMember;
+        }
+        return member;
+      })
     );
-    console.log(`Toggled ${permissionType} permission for ${username}`);
+    let data;
+    console.log(newState);
+    if(permissionType === 'sendMessages'){
+      data = {
+        sendMessages: newState
+      };
+    }
+    else 
+      data = {
+        downloadVideos: newState
+      };
+    console.log(username);
+    const res = await fetch(
+      `${apiUrl}/v1/groups/${openedChat.groupId}/members/${username.id}/permissions`,
+      {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      },
+    );
+    if (!res.ok) {
+      console.error('Failed to update group.');
+    } else {
+      const result = await res.json();
+      console.log('Info updated successfully', result);
+    }
   };
 
   // Function to handle button press
@@ -380,30 +426,30 @@ function GroupOrChannelInfo() {
                                     Make Admin
                                   </button>
                                   <button
-                                    data-test-id={`${member.username}-allow-messages-button`}
+                                    data-test-id={`${member}-allow-messages-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       togglePermission(
-                                        member.username,
+                                        member,
                                         'sendMessages',
                                       );
                                     }}
                                   >
-                                    {member.sendMessages ? 'Revoke Messages' : 'Allow Messages'}
+                                    {member.permissions.sendMessages ? 'Revoke Messages' : 'Allow Messages'}
                                   </button>
                                   <button
-                                    data-test-id={`${member.username}-allow-download-button`}
+                                    data-test-id={`${member}-allow-download-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       togglePermission(
-                                        member.username,
-                                        'canDownload',
+                                        member,
+                                        'downloadVideos',
                                       );
                                     }}
                                   >
-                                    {member.canDownload ? 'Revoke Download' : 'Allow Download'}
+                                    {member.permissions.downloadVideos ? 'Revoke Download' : 'Allow Download'}
                                   </button>
                                 </>
                               ) : (

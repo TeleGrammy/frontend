@@ -135,11 +135,8 @@ function ChannelList({ channelOrGroup }) {
 
     const createGroup = async () => {
       let mediaUrl;
-      try {
-        if (!imageFile) {
-          console.error('No image selected.');
-          return;
-        }
+      if(imageFile)
+      {try {
         console.log(imageFile);
         const formData = new FormData();
         formData.append('media', imageFile);
@@ -166,7 +163,7 @@ function ChannelList({ channelOrGroup }) {
         mediaUrl = mediaResponseData.signedUrl;
       } catch (error) {
         console.error('Error uploading channel image:', error.message);
-      }
+      }}
       try {
         const groupData = {
           name: channelName,

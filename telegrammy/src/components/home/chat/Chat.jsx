@@ -69,6 +69,7 @@ function Chat() {
   const [prevChat, setPrevChat] = useState(null);
   const [ack, setAck] = useState(null);
   const [mentionUsers, setMentionUsers] = useState([]);
+  const [canMessage,setCanMessage] = useState(true);
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
   const { chats, setChats } = useChats();
@@ -104,6 +105,7 @@ function Chat() {
 
   useEffect(() => {
     console.log(openedChat.draft);
+
     setInputValue(openedChat.draft || '');
     try {
       socketGeneralRef.current.on('error', (err) => {
@@ -198,6 +200,30 @@ function Chat() {
   }, [messages]);
 
   useEffect(() => {
+
+    if(openedChat.isGroup){
+      const getPermissions = async () => {
+        try {
+          const response = await fetch(
+            `${apiUrl}/v1/groups/${openedChat.groupId}/user-info/`,
+            {
+              method: 'GET',
+              headers: {
+                Accept: 'application/json',
+              },
+              credentials: 'include',
+            },
+          );
+          const data = await response.json();
+          setCanMessage((data.data.user.customTitle === 'Owner') || (data.data.user.customTitle === 'Admin') || (data.data.user.permissions.sendMessages));
+          console.log(data.data.user);
+          // console.log(response);
+        } catch (error) {
+          console.error('Error fetching user permissions:', error);
+        }
+      }
+      getPermissions();
+    }
     setCommentToMessageId(null);
     setReplyToMessageId(null);
     const fetchMessages = async () => {
@@ -796,7 +822,7 @@ function Chat() {
         )}
         {(openedChat.isChannel && isAdmin) ||
         (openedChat.isChannel && !isAdmin && commentToMessageId) ||
-        !openedChat.isChannel ? (
+        (!openedChat.isChannel && !openedChat.isGroup) || (canMessage) ? (
           <div className="flex items-center space-x-2">
             {/* Emoji/Sticker/GIF Picker Button */}
             <ReactionPicker
@@ -866,7 +892,7 @@ function Chat() {
             )}
           </div>
         ) : (
-          <p className="text-center">You are not an admin in this channel!</p>
+          <p className="text-center text-text-primary">You are not allowed to send messages in this chat!</p>
         )}
       </div>
       {viewingImage && (
