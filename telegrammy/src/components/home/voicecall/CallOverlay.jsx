@@ -40,6 +40,8 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
   const peerConnectionRef = useRef(null);
   const combinedRemoteStream = useRef(null);
 
+  const callStateRef = useRef(callState);
+
   const {
     participants,
     callState,
@@ -122,7 +124,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
           );
 
           peerConnection.onconnectionstatechange = () => {
-            if (callState !== 'in call') {
+            if (callStateRef.current !== 'in call') {
               if (peerConnection.connectionState === 'connected') {
                 dispatch(callConnected());
               } else if (peerConnection.connectionState === 'connecting') {
@@ -270,6 +272,10 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     console.log('Call resources cleaned up successfully.');
   };
 
+  useEffect(() => {
+    callStateRef.current = callState;
+  }, [callState]);
+
   // listen for sockets events
   useEffect(() => {
     const handleIncomingCall = async (response, callback) => {
@@ -369,7 +375,6 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
     const handleEndCallFromCaller = (response) => {
       if (peerConnectionRef.current) {
-        console.log('call state from end event in callee', callState);
         console.log('Call ended from end event in callee');
         dispatch(endCall());
         cleanup();

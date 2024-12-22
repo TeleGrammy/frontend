@@ -46,6 +46,8 @@ function Caller() {
   const peerConnectionRef = useRef(null);
   const combinedRemoteStream = useRef(null);
 
+  const callStateRef = useRef(callState);
+
   const createCall = () => {
     if (callState !== 'no call') return;
 
@@ -136,7 +138,7 @@ function Caller() {
         };
 
         peerConnection.onconnectionstatechange = () => {
-          if (callState !== 'in call') {
+          if (callStateRef.current !== 'in call') {
             if (peerConnection.connectionState === 'connected') {
               dispatch(callConnected());
             } else if (peerConnection.connectionState === 'connecting') {
@@ -245,6 +247,10 @@ function Caller() {
     console.log('Call resources cleaned up successfully.');
   };
 
+  useEffect(() => {
+    callStateRef.current = callState;
+  }, [callState]);
+
   // listen for sockets events
   useEffect(() => {
     // need to change for groups check for recieved id to add answer of it to its peer connection
@@ -295,7 +301,6 @@ function Caller() {
 
     const handleEndCallFromCallee = (response) => {
       if (peerConnectionRef.current) {
-        console.log('call state from end event in caller', callState);
         console.log('Call ended from end event in caller');
         if (response.status === 'rejected') dispatch(calldeclined());
         else dispatch(endCall());
