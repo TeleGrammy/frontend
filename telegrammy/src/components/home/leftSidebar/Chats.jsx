@@ -5,11 +5,12 @@ import MuteIcon from '../../icons/MuteIcon';
 
 import { setOpenedChat } from '../../../slices/chatsSlice';
 import { initialChatsLSB } from '../../../mocks/mockDataChatList';
-
+const apiUrl = import.meta.env.VITE_API_URL;
+const userId = JSON.parse(localStorage.getItem('user'))?.id;
 const Chats = ({ searchValue }) => {
   const dispatch = useDispatch();
 
-  const [chats, setChats] = useState(initialChatsLSB);
+  const [chats, setChats] = useState([]);
   const [ViewedChats, setViewedChats] = useState(chats);
 
   const [contextMenu, setContextMenu] = useState({
@@ -22,6 +23,7 @@ const Chats = ({ searchValue }) => {
   const containerRef = useRef(null);
 
   const handleClickChat = (chat) => {
+    console.log('Chat clicked:', chat);
     dispatch(setOpenedChat(chat));
   };
 
@@ -100,6 +102,33 @@ const Chats = ({ searchValue }) => {
     }
   }, [searchValue, chats]);
 
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/v1/chats/all-chats`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          console.error('Failed to fetch chats.');
+        } else {
+          console.log('Chats have been fetched successfully.');
+        }
+        const data = await response.json();
+        console.log(data.chats);
+        setChats(data.chats);
+        // setChats(data.data.chats);
+      } catch (error) {
+        console.error('Error fetching Chats:', error);
+      }
+    };
+
+    fetchChats();
+  }, []);
+
   return (
     <div
       ref={containerRef}
@@ -107,68 +136,76 @@ const Chats = ({ searchValue }) => {
       data-test-id="viewed-chats-container"
     >
       <ul className="divide-y divide-gray-700" data-test-id="chats-list">
-        {ViewedChats.map((chat) => (
-          <li
-            key={chat.id}
-            className="flex w-full cursor-pointer items-center p-4 transition hover:bg-gray-700"
-            onContextMenu={(e) => handleContextMenu(e, chat.id)}
-            onClick={() => handleClickChat(chat)}
-            data-test-id={`chat-item-${chat.id}`}
-          >
-            {/* Profile Picture */}
-            <img
-              src={chat.picture}
-              alt={`${chat.name}'s avatar`}
-              className="h-12 w-12 rounded-full object-cover"
-              data-test-id={`chat-avatar-${chat.id}`}
-            />
-            {/* Chat Details */}
-            <div
-              className="ml-4 flex-1"
-              data-test-id={`chat-details-${chat.id}`}
+        {ViewedChats &&ViewedChats.map((chat) => {
+          return (
+            <li
+              key={chat.id}
+              className="flex w-full cursor-pointer items-center p-4 transition hover:bg-gray-700"
+              onContextMenu={(e) => handleContextMenu(e, chat.id)}
+              onClick={() => handleClickChat(chat)}
+              data-test-id={`chat-item-${chat.id}`}
             >
-              <div className="flex items-center justify-between">
-                <h3
-                  className="truncate font-semibold"
-                  data-test-id={`chat-name-${chat.id}`}
-                >
-                  {chat.name}
-                </h3>
-                <span
-                  className="text-sm text-gray-400"
-                  data-test-id={`chat-timestamp-${chat.id}`}
-                >
-                  {chat.lastMessage.timeStamp}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <p
-                  className="truncate text-sm text-gray-400"
-                  data-test-id={`chat-message-${chat.id}`}
-                >
-                  {chat.lastMessage.content}
-                </p>
-                {chat.unreadCount > 0 && (
-                  <span
-                    className="ml-2 rounded-full bg-blue-500 px-2 py-1 text-xs text-white"
-                    data-test-id={`chat-unread-${chat.id}`}
-                  >
-                    {chat.unreadCount}
-                  </span>
-                )}
-              </div>
-            </div>
-            {/* Muted Icon */}
-            {chat.isMuted && (
+              {/* Profile Picture */}
+              <img
+                src={
+                  chat.photo
+                    ? chat.photo
+                    : 'https://ui-avatars.com/api/?name=' + chat.name
+                }
+                alt={`${chat.name}'s avatar`}
+                className="h-12 w-12 rounded-full object-cover"
+                data-test-id={`chat-avatar-${chat.id}`}
+              />
+              {/* Chat Details */}
               <div
-                className="ml-2 text-gray-400"
-                data-test-id={`chat-muted-icon-${chat.id}`}
+                className="ml-4 flex-1"
+                data-test-id={`chat-details-${chat.id}`}
               >
-                <MuteIcon />
+                <div className="flex items-center justify-between">
+                  <h3
+                    className="truncate font-semibold"
+                    data-test-id={`chat-name-${chat.id}`}
+                  >
+                    {chat.name}
+                  </h3>
+                  <span
+                    className="text-sm text-gray-400"
+                    data-test-id={`chat-timestamp-${chat.id}`}
+                  >
+                    Last Seen {chat.lastSeen}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p
+                    className="truncate text-sm text-gray-400"
+                    data-test-id={`chat-message-${chat.id}`}
+                  >
+                    {chat.lastMessage
+                      ? chat.lastMessage.content
+                      : 'Hey there! Are you using Telegrammy?'}
+                  </p>
+                  {chat.unreadCount > 0 && (
+                    <span
+                      className="ml-2 rounded-full bg-blue-500 px-2 py-1 text-xs text-white"
+                      data-test-id={`chat-unread-${chat.id}`}
+                    >
+                      {/* {chat.unreadCount} */}3
+                    </span>
+                  )}
+                </div>
               </div>
-            )}
-          </li>
-        ))}
+              {/* Muted Icon */}
+              {chat.isMuted && (
+                <div
+                  className="ml-2 text-gray-400"
+                  data-test-id={`chat-muted-icon-${chat.id}`}
+                >
+                  <MuteIcon />
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       {/* Context Menu */}

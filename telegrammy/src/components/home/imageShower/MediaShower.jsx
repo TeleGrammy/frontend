@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import CloseButton from '../../../components/home/rightSidebar/CloseButton';
+import CloseButton from '../rightSidebar/CloseButton';
 import {
   setShowedMyStoryIndex,
   setShowedOtherStoryIndex,
@@ -42,7 +42,7 @@ function MediaShower({ medias, initialStoryIndex }) {
 
   return (
     <div
-      className="fixed z-10 flex h-screen w-screen items-center justify-around bg-bg-primary opacity-90"
+      className="fixed z-[100] flex h-screen w-screen items-center justify-around bg-bg-primary opacity-90"
       onClick={handleCloseStory}
     >
       <div
@@ -106,7 +106,7 @@ function MediaShower({ medias, initialStoryIndex }) {
 
         {isOptionsOpen && (
           <div
-            className={`border-border absolute right-5 top-20 w-[50%] min-w-40 rounded-lg border bg-bg-primary opacity-80 shadow-xl`}
+            className={`absolute right-5 top-20 w-[50%] min-w-40 rounded-lg border border-border bg-bg-primary opacity-80 shadow-xl`}
           >
             <ul className="text-l flex w-full flex-col justify-start space-y-2 p-2">
               <li className="mx-2 rounded-lg hover:bg-bg-hover">

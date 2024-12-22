@@ -144,6 +144,7 @@ const Edit = ({
     // Handle profile picture update
     if (selectedFile) {
       try {
+        console.log(selectedFile);
         const formData = new FormData();
         const dataUrl = URL.createObjectURL(selectedFile);
         const response = await fetch(dataUrl);

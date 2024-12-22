@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import AuthCallback from './components/registration/AuthCallback';
 import ProtectedRoute from './components/shared/ProtectedRoute';
 import Auth from './pages/Auth';
+import { SocketProvider } from './contexts/SocketContext';
+import { CallProvider } from './contexts/CallContext';
 
 export default function App() {
   return (
@@ -15,7 +17,11 @@ export default function App() {
           path="/home"
           element={
             <ProtectedRoute>
-              <Home />
+              <SocketProvider>
+                <CallProvider>
+                  <Home />
+                </CallProvider>
+              </SocketProvider>
             </ProtectedRoute>
           }
         />

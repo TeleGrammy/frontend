@@ -5,6 +5,7 @@ import Resizer from './Resizer';
 import ChatList from './ChatList';
 import Settings from '../../../components/Settings/Settings';
 import ChannelList from './ChannelList';
+import ContactList from './ContactList';
 const minWidth = 300; // Minimum sidebar width
 const maxWidth = 600; // Maximum sidebar width
 
@@ -28,6 +29,7 @@ const SideBar = () => {
         <ChannelList channelOrGroup="channel" />
       )}
       {currentMenu === 'GroupList' && <ChannelList channelOrGroup="group" />}
+      {currentMenu === 'ContactList' && <ContactList />}
       {/* {currentMenu === 'EditSettings' && <EditSettings />}*/}
       {/* Resizer handle */}
       <Resizer setWidth={setWidth} />
