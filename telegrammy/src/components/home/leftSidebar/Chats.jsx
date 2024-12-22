@@ -170,7 +170,7 @@ const Chats = ({ searchValue }) => {
   return (
     <div
       ref={containerRef}
-      className="ViewedChats-container flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white"
+      className="scrollable ViewedChats-container overflow-x-hiddenbg-bg-primary flex h-full w-full flex-col overflow-y-auto text-white"
       data-test-id="viewed-chats-container"
     >
       <ul className="divide-y divide-gray-700" data-test-id="chats-list">

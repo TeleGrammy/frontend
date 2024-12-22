@@ -6,9 +6,12 @@ import Header from './Header';
 import Chats from './Chats';
 import CreateButton from './CreateButton';
 import StoriesList from './StoriesList';
+import SearchNav from './SearchNav';
+import Texts from './Texts';
 
 function ChatList() {
   const [searchValue, setSearchValue] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Chats');
 
   return (
     <>
@@ -17,8 +20,17 @@ function ChatList() {
         <Menu />
         <Searchbar setSearchValue={setSearchValue} searchValue={searchValue} />
       </Header>
+      <SearchNav
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
       <StoriesList />
-      <Chats searchValue={searchValue} />
+      {((searchValue && selectedCategory === 'Chats') || !searchValue) && (
+        <Chats searchValue={searchValue} />
+      )}
+      {searchValue && selectedCategory !== 'Chats' && (
+        <Texts searchQuery={searchValue} selectedCategory={selectedCategory} />
+      )}
       <CreateButton />
       {/* chats */}
       {/* component of users */}
