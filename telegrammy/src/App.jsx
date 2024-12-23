@@ -31,7 +31,7 @@ export default function App() {
   }, []);
 
   const [isAdmin, setIsAdmin] = useState(
-    JSON.parse(localStorage.getItem('user')).isAdmin,
+    JSON.parse(localStorage.getItem('user'))?.isAdmin,
   );
 
   return (

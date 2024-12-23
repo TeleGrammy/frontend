@@ -15,8 +15,8 @@ function RightSidebar() {
 
   useEffect(() => {
     if (
-      !openedChat.isChannel &&
-      !openedChat.isGroup &&
+      !openedChat?.isChannel &&
+      !openedChat?.isGroup &&
       currentRightSidebar !== 'My Stories' &&
       currentRightSidebar !== 'Calls'
     )

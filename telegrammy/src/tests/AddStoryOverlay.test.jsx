@@ -2,6 +2,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import '@testing-library/jest-dom'; // For matchers like toBeInTheDocument
 import AddStoryOverlay from '../components/home/rightSidebar/AddStoryOverlay';
+import { MemoryRouter } from 'react-router-dom';
+import { createStore } from 'redux';
+import { Provider, useSelector } from 'react-redux';
+
 import js from '@eslint/js';
 
 global.fetch = jest.fn();
@@ -12,6 +16,18 @@ jest.mock('react-toastify', () => ({
     error: jest.fn(),
   },
 }));
+const mockDispatch = jest.fn();
+jest.mock('react-redux', () => ({
+  ...jest.requireActual('react-redux'),
+  useDispatch: () => mockDispatch,
+  useSelector: jest.fn(),
+}));
+
+const mockStore = {
+  stories: {
+    myStories: [],
+  },
+};
 
 jest.mock('react-konva', () => {
   const React = require('react'); // Import React within the mock factory
@@ -64,6 +80,12 @@ describe('AddStoryOverlay Component', () => {
         json: jest.fn().mockResolvedValue({ message: 'Success' }),
       });
 
+    mockDispatch.mockClear();
+
+    useSelector.mockImplementation((selector) => {
+      return { myStories: [] };
+    });
+
     // Suppress warnings in the console
     jest.spyOn(console, 'warn').mockImplementation(() => {});
     jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -76,12 +98,16 @@ describe('AddStoryOverlay Component', () => {
 
   it('renders correctly with necessary elements', () => {
     render(
-      <AddStoryOverlay
-        file={mockFile}
-        previewUrl={mockPreviewUrl}
-        onClose={mockOnClose}
-        fileType="image"
-      />,
+      <MemoryRouter>
+        <Provider store={createStore(() => mockStore)}>
+          <AddStoryOverlay
+            file={mockFile}
+            previewUrl={mockPreviewUrl}
+            onClose={mockOnClose}
+            fileType="image"
+          />
+        </Provider>
+      </MemoryRouter>,
     );
 
     expect(screen.getByTestId('caption-story-input')).toBeInTheDocument();
@@ -107,12 +133,16 @@ describe('AddStoryOverlay Component', () => {
 
   it('updates the caption input when typed into', () => {
     render(
-      <AddStoryOverlay
-        file={mockFile}
-        previewUrl={mockPreviewUrl}
-        onClose={mockOnClose}
-        fileType="image"
-      />,
+      <MemoryRouter>
+        <Provider store={createStore(() => mockStore)}>
+          <AddStoryOverlay
+            file={mockFile}
+            previewUrl={mockPreviewUrl}
+            onClose={mockOnClose}
+            fileType="image"
+          />
+        </Provider>
+      </MemoryRouter>,
     );
 
     const captionInput = screen.getByTestId('caption-story-input');
@@ -122,12 +152,16 @@ describe('AddStoryOverlay Component', () => {
 
   it('uploads a story successfully', async () => {
     render(
-      <AddStoryOverlay
-        file={mockFile}
-        previewUrl={mockPreviewUrl}
-        onClose={mockOnClose}
-        fileType="image"
-      />,
+      <MemoryRouter>
+        <Provider store={createStore(() => mockStore)}>
+          <AddStoryOverlay
+            file={mockFile}
+            previewUrl={mockPreviewUrl}
+            onClose={mockOnClose}
+            fileType="image"
+          />
+        </Provider>
+      </MemoryRouter>,
     );
 
     const uploadButton = screen.getByTestId('upload-story-button');
@@ -145,12 +179,16 @@ describe('AddStoryOverlay Component', () => {
     });
 
     render(
-      <AddStoryOverlay
-        file={mockFile}
-        previewUrl={mockPreviewUrl}
-        onClose={mockOnClose}
-        fileType="image"
-      />,
+      <MemoryRouter>
+        <Provider store={createStore(() => mockStore)}>
+          <AddStoryOverlay
+            file={mockFile}
+            previewUrl={mockPreviewUrl}
+            onClose={mockOnClose}
+            fileType="image"
+          />
+        </Provider>
+      </MemoryRouter>,
     );
 
     const uploadButton = screen.getByTestId('upload-story-button');
