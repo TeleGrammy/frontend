@@ -176,60 +176,57 @@ function Chat() {
       });
 
       socketGeneralRef.current.on('message:seen', (payload) => {
-        console.log('seen', payload);
-        
+        // console.log('seen', payload);
       });
 
       socketGeneralRef.current.on('message:sent', (message) => {
-        socketGeneralRef.current.on('message:sent', (message) => {
-          trie.insert(message.content, message._id);
-          console.log(message.senderId);
-          if (message.senderId._id !== userId && openedChat) {
-            socketGeneralRef.current.emit('message:seen', {
-              chatId: openedChat?.id,
-              messageId: message._id,
-            });
-            console.log(socketGeneralRef.current);
-            console.log('Message received:', message);
-            message['type'] = 'received';
-            const ackPayload = {
-              chatId: openedChat?.id,
-              eventIndex: message.eventIndex, // Required
-            };
-            socketGeneralRef.current.emit('ack_event', ackPayload);
-            setMessages((prevMessages) => [...prevMessages, message]);
-          }
-        });
+        trie.insert(message.content, message._id);
+        console.log(message.senderId);
+        if (message.senderId._id !== userId && openedChat) {
+          socketGeneralRef.current.emit('message:seen', {
+            chatId: openedChat?.id,
+            messageId: message._id,
+          });
+          console.log(socketGeneralRef.current);
+          console.log('Message received:', message);
+          message['type'] = 'received';
+          const ackPayload = {
+            chatId: openedChat?.id,
+            eventIndex: message.eventIndex, // Required
+          };
+          socketGeneralRef.current.emit('ack_event', ackPayload);
+          setMessages((prevMessages) => [...prevMessages, message]);
+        }
+      });
 
-        socketGeneralRef.current.on('message:updated', (response) => {
-          console.log('recieved updated', response);
-          setMessages((prevMessages) =>
-            prevMessages.map((msg) => {
-              const newMessage = { ...msg, ...response };
-              if (msg._id === response._id) {
-                trie.delete(msg.content, msg._id);
-                return newMessage;
-              }
-              return msg;
-            }),
-          );
-          trie.insert(response.content, response._id);
-          setEditingMessageId(null);
-        });
-        socketGeneralRef.current.on('message:deleted', (response) => {
-          console.log('recieved deleted', response);
+      socketGeneralRef.current.on('message:updated', (response) => {
+        console.log('recieved updated', response);
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => {
+            const newMessage = { ...msg, ...response };
+            if (msg._id === response._id) {
+              trie.delete(msg.content, msg._id);
+              return newMessage;
+            }
+            return msg;
+          }),
+        );
+        trie.insert(response.content, response._id);
+        setEditingMessageId(null);
+      });
+      socketGeneralRef.current.on('message:deleted', (response) => {
+        console.log('recieved deleted', response);
 
-          setMessages((prevMessages) =>
-            prevMessages.filter((msg) => {
-              if (msg.messageType !== 'audio' && msg._id === response._id)
-                trie.delete(msg.content, msg._id);
-              return msg._id !== response._id;
-            }),
-          );
-          setPinnedMsgs((prevMessages) =>
-            prevMessages.filter((msg) => msg !== response._id),
-          );
-        });
+        setMessages((prevMessages) =>
+          prevMessages.filter((msg) => {
+            if (msg.messageType !== 'audio' && msg._id === response._id)
+              trie.delete(msg.content, msg._id);
+            return msg._id !== response._id;
+          }),
+        );
+        setPinnedMsgs((prevMessages) =>
+          prevMessages.filter((msg) => msg !== response._id),
+        );
       });
     } catch (err) {
       console.log(err);
@@ -328,6 +325,9 @@ function Chat() {
     onMessage(messaging, (payload) => {
       console.log('Message received 23. ', payload);
       const title = payload.notification.title;
+      const senderId = payload.data.senderId;
+      console.log('THIS IS SENDER', senderId, userId);
+      if (senderId !== userId)
       showToast(title);
     });
 
