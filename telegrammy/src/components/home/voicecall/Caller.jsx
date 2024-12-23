@@ -141,8 +141,6 @@ function Caller() {
           if (callStateRef.current !== 'in call') {
             if (peerConnection.connectionState === 'connected') {
               dispatch(callConnected());
-            } else if (peerConnection.connectionState === 'connecting') {
-              dispatch(connectingCall());
             }
           }
         };
@@ -259,6 +257,13 @@ function Caller() {
     const handleIncomingAnswer = (response) => {
       if (peerConnectionRef.current) {
         console.log('handleAcceptCall');
+
+        if (
+          callStateRef.current !== 'in call' &&
+          callStateRef.current !== 'connecting'
+        ) {
+          dispatch(connectingCall());
+        }
 
         const senderId = response.senderId; // senderId is the ID of the participant who accepted the call
         const peerConnection = peerConnectionRef.current.get(senderId);

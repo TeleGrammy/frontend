@@ -2,6 +2,7 @@ import { useSelector } from 'react-redux';
 
 import MyStories from './MyStories';
 import GroupOrChannelInfo from '../chat/GroupOrChannelInfo';
+import CallsLog from './CallsLog';
 
 function RightSidebar() {
   const { currentRightSidebar } = useSelector((state) => state.sidebar);
@@ -16,6 +17,8 @@ function RightSidebar() {
       {currentRightSidebar === 'My Stories' && <MyStories />}
       {currentRightSidebar === 'Group Info' && <GroupOrChannelInfo />}
       {currentRightSidebar === 'Channel Info' && <GroupOrChannelInfo />}
+
+      {currentRightSidebar === 'Calls' && <CallsLog />}
 
       {/** setting component */}
       {/* {currentRightSidebar === '' && < />} */}
