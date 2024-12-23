@@ -48,34 +48,36 @@ function ChatHeader({ handleKey }) {
   useEffect(() => {
     const checkOnGoingCall = async () => {
       try {
-        const response = await fetch(`${apiUrl}/v1/call/${openedChat.id}`, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json', // Specify JSON response expected
-          },
-          credentials: 'include', // Include credentials (cookies)
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch checkOnGoingCall');
+        if (openedChat?.id) {
+          const response = await fetch(`${apiUrl}/v1/call/${openedChat.id}`, {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json', // Specify JSON response expected
+            },
+            credentials: 'include', // Include credentials (cookies)
+          });
+          if (!response.ok) {
+            throw new Error('Failed to fetch checkOnGoingCall');
+          }
+          const data = await response.json();
+          const call = data.call;
+          // console.log('call from header', call);
+          setActiveCall(call);
         }
-        const data = await response.json();
-        const call = data.call;
-        // console.log('call from header', call);
-        setActiveCall(call);
       } catch (error) {
         console.error('Failed to fetch checkOnGoingCall', error);
       }
     };
 
     //checkOnGoingCall();
-  }, [openedChat.id, setActiveCall]);
+  }, [openedChat, setActiveCall]);
 
   return (
     <>
       <div>
-        <div className="flex flex-row items-center justify-between bg-bg-primary p-4">
-          <div className="flex flex-row">
-            {openedChat && (
+        {openedChat && (
+          <div className="flex flex-row items-center justify-between bg-bg-primary p-4">
+            <div className="flex flex-row">
               <img
                 data-test-id="chat-image"
                 src={
@@ -87,45 +89,49 @@ function ChatHeader({ handleKey }) {
                 className="h-10 w-10 cursor-pointer rounded-full"
                 onClick={toggleExpand}
               />
-            )}
-            <h1 className="mb-1 ml-5 text-xl font-semibold text-text-primary">
-              {openedChat?.name}
-            </h1>
-          </div>
-          <div className="flex flex-row items-center space-x-3">
-            {searchVisible ? (
-              <>
-                <input
-                  data-test-id="search-in-chat-input"
-                  type="text"
-                  value={searchText}
-                  onChange={handleSearchChange}
-                  className="mr-2 rounded border border-gray-300 p-1 text-gray-500 focus:outline-none" // Apply gray text color
-                  placeholder="Search..."
-                  onKeyDown={handleKey}
-                />
-                <FaTimes
+
+              <h1 className="mb-1 ml-5 text-xl font-semibold text-text-primary">
+                {openedChat?.name}
+              </h1>
+            </div>
+            <div className="flex flex-row items-center space-x-3">
+              {searchVisible ? (
+                <>
+                  <input
+                    data-test-id="search-in-chat-input"
+                    type="text"
+                    value={searchText}
+                    onChange={handleSearchChange}
+                    className="mr-2 rounded border border-gray-300 p-1 text-gray-500 focus:outline-none" // Apply gray text color
+                    placeholder="Search..."
+                    onKeyDown={handleKey}
+                  />
+                  <FaTimes
+                    size={17}
+                    data-test-id="close-search-in-chat-button"
+                    className="cursor-pointer text-gray-600 hover:text-gray-900"
+                    onClick={toggleSearch}
+                  />
+                </>
+              ) : (
+                <FaSearch
                   size={17}
-                  data-test-id="close-search-in-chat-button"
+                  data-test-id="open-search-in-chat-button"
                   className="cursor-pointer text-gray-600 hover:text-gray-900"
                   onClick={toggleSearch}
                 />
-              </>
-            ) : (
-              <FaSearch
-                size={17}
-                data-test-id="open-search-in-chat-button"
-                className="cursor-pointer text-gray-600 hover:text-gray-900"
-                onClick={toggleSearch}
-              />
-            )}
-            {Object.keys(activeCall).length !== 0 ? (
-              <JoinCall activeCall={activeCall} setActiveCall={setActiveCall} />
-            ) : (
-              <Caller />
-            )}
+              )}
+              {Object.keys(activeCall).length !== 0 ? (
+                <JoinCall
+                  activeCall={activeCall}
+                  setActiveCall={setActiveCall}
+                />
+              ) : (
+                <Caller />
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
