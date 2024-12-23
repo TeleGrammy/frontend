@@ -18,6 +18,8 @@ import {
   FaSignOutAlt,
 } from 'react-icons/fa';
 
+import { MdCall } from 'react-icons/md';
+
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const Menuitems = [
@@ -37,6 +39,12 @@ const Menuitems = [
     Name: 'My Stories',
     icon: <FaBullseye />,
     newMenu: 'My Stories',
+    isRightSidebar: true,
+  },
+  {
+    Name: 'Calls',
+    icon: <MdCall />,
+    newMenu: 'Calls',
     isRightSidebar: true,
   },
 ];

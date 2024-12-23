@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { useDispatch, useSelector } from 'react-redux';
+
 import { FaSearch, FaTimes } from 'react-icons/fa';
 import { setSearchText, setSearchVisible } from '../../../slices/chatsSlice';
 import {
@@ -7,9 +9,14 @@ import {
   setRightSidebar,
 } from '../../../slices/sidebarSlice';
 import Caller from '../voicecall/Caller';
+import JoinCall from '../voicecall/JoinCall';
+
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function ChatHeader({ handleKey }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [activeCall, setActiveCall] = useState({});
+
   const dispatch = useDispatch();
 
   const { openedChat, searchVisible, searchText } = useSelector(
@@ -37,6 +44,31 @@ function ChatHeader({ handleKey }) {
   const handleSearchChange = (event) => {
     dispatch(setSearchText(event.target.value)); // Update search text in state
   };
+
+  useEffect(() => {
+    const checkOnGoingCall = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/v1/call/${openedChat.id}`, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json', // Specify JSON response expected
+          },
+          credentials: 'include', // Include credentials (cookies)
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch checkOnGoingCall');
+        }
+        const data = await response.json();
+        const call = data.call;
+        // console.log('call from header', call);
+        setActiveCall(call);
+      } catch (error) {
+        console.error('Failed to fetch checkOnGoingCall', error);
+      }
+    };
+
+    //checkOnGoingCall();
+  }, [openedChat.id, setActiveCall]);
 
   return (
     <>
@@ -81,7 +113,11 @@ function ChatHeader({ handleKey }) {
                 onClick={toggleSearch}
               />
             )}
-            <Caller />
+            {Object.keys(activeCall).length !== 0 ? (
+              <JoinCall activeCall={activeCall} setActiveCall={setActiveCall} />
+            ) : (
+              <Caller />
+            )}
           </div>
         </div>
       </div>

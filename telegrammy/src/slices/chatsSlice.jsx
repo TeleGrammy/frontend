@@ -15,6 +15,7 @@ const initialState = {
     picture: 'https://picsum.photos/seed/sports/50/50',
     isMuted: true,
   },
+  chats: [],
   searchVisible: false,
   searchText: '',
 };
@@ -32,10 +33,13 @@ const chatsSlice = createSlice({
     setSearchText(state, action) {
       state.searchText = action.payload;
     },
+    setChats(state, action) {
+      state.chats = action.payload;
+    },
   },
 });
 
-export const { setOpenedChat, setSearchVisible, setSearchText } =
+export const { setOpenedChat, setSearchVisible, setSearchText, setChats } =
   chatsSlice.actions;
 
 export default chatsSlice.reducer;

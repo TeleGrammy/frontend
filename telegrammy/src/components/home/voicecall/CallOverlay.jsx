@@ -113,6 +113,8 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
     if (peerConnectionRef.current && callState !== 'no call') {
       console.log('Accepting call');
 
+      dispatch(connectingCall());
+
       const participantsToIterate = chatId.participants;
 
       console.log('participantsToIterate', participantsToIterate);
@@ -127,8 +129,6 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
             if (callStateRef.current !== 'in call') {
               if (peerConnection.connectionState === 'connected') {
                 dispatch(callConnected());
-              } else if (peerConnection.connectionState === 'connecting') {
-                dispatch(connectingCall());
               }
             }
           };
@@ -394,11 +394,15 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
     return () => {
       // Cleanup socketGeneralRef listeners
-      socketGeneralRef.current.off('call:incomingCall', handleIncomingCall);
-      socketGeneralRef.current.off('call:incomingOffer', handleIncomingOffer);
-      socketGeneralRef.current.off('call:incomingAnswer', handleIncomingAnswer);
-      socketGeneralRef.current.off('call:addedICE', handleIncomingICE);
-      socketGeneralRef.current.off('call:endedCall', handleEndCallFromCaller);
+
+      socketGeneralRef.current?.off('call:incomingCall', handleIncomingCall);
+      socketGeneralRef.current?.off('call:incomingOffer', handleIncomingOffer);
+      socketGeneralRef.current?.off(
+        'call:incomingAnswer',
+        handleIncomingAnswer,
+      );
+      socketGeneralRef.current?.off('call:addedICE', handleIncomingICE);
+      socketGeneralRef.current?.off('call:endedCall', handleEndCallFromCaller);
 
       // Cleanup PeerConnection
 
@@ -421,7 +425,9 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
         <div>
           <img
-            src={pictureToShow || 'https://via.placeholder.com/100'}
+            src={
+              pictureToShow || 'https://ui-avatars.com/api/?name=' + nameToShow
+            }
             alt="Participant"
             className="mx-auto mb-4 h-24 w-24 rounded-full"
           />
