@@ -17,7 +17,8 @@ function RightSidebar() {
     if (
       !openedChat.isChannel &&
       !openedChat.isGroup &&
-      currentRightSidebar !== 'My Stories'
+      currentRightSidebar !== 'My Stories' &&
+      currentRightSidebar !== 'Calls'
     )
       dispatch(closeRightSidebar());
   }, [openedChat]);
