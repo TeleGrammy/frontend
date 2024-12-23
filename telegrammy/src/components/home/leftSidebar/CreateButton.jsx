@@ -9,7 +9,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 const CreateButtonitems = [
   {
-    Name: 'New Contact',
+    Name: 'Search',
     icon: <FaUser />,
     newMenu: 'ContactList',
     isRightSidebar: false,

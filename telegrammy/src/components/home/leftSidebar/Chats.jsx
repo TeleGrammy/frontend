@@ -1,18 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-
 import MuteIcon from '../../icons/MuteIcon';
-
 import { setOpenedChat, setChats } from '../../../slices/chatsSlice';
-import { initialChatsLSB } from '../../../mocks/mockDataChatList';
 const apiUrl = import.meta.env.VITE_API_URL;
 const userId = JSON.parse(localStorage.getItem('user'))?.id;
 const Chats = ({ searchValue }) => {
   const dispatch = useDispatch();
-
   const { chats } = useSelector((state) => state.chats);
-
-  // const [chats, setChats] = useState([]);
   const [ViewedChats, setViewedChats] = useState(chats);
 
   const [contextMenu, setContextMenu] = useState({
@@ -47,27 +41,61 @@ const Chats = ({ searchValue }) => {
     });
   };
 
-  const handleMute = (chatId, duration) => {
-    const updatedChats = ViewedChats.map((chat) => {
-      if (chat.id === chatId) {
-        return { ...chat, isMuted: true, muteDuration: duration };
-      }
-      return chat;
-    });
+  const handleMute = async (chatId, duration) => {
+    try {
+      const response = await fetch(`${apiUrl}/v1/notification/mute`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatId: chatId,
+        }),
+        credentials: 'include',
+      });
 
-    setViewedChats(updatedChats);
+      const updatedChats = ViewedChats.map((chat) => {
+        if (chat.id === chatId) {
+          return { ...chat, isMuted: true, muteDuration: duration };
+        }
+        return chat;
+      });
+      setViewedChats(updatedChats);
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error('Error muting chat:', error);
+    }
+
     setContextMenu({ ...contextMenu, visible: false });
   };
 
-  const handleUnmute = (chatId) => {
-    const updatedChats = ViewedChats.map((chat) => {
-      if (chat.id === chatId) {
-        return { ...chat, isMuted: false, muteDuration: null };
-      }
-      return chat;
-    });
+  const handleUnmute = async (chatId) => {
+    try {
+      const response = await fetch(`${apiUrl}/v1/notification/unmute`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatId: chatId,
+        }),
+        credentials: 'include',
+      });
 
-    setViewedChats(updatedChats);
+      const updatedChats = ViewedChats.map((chat) => {
+        if (chat.id === chatId) {
+          return { ...chat, isMuted: false, muteDuration: null };
+        }
+        return chat;
+      });
+
+      setViewedChats(updatedChats);
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error('Error muting chat:', error);
+    }
     setContextMenu({ ...contextMenu, visible: false });
   };
 
@@ -83,6 +111,47 @@ const Chats = ({ searchValue }) => {
     }
   };
 
+  const DATE_OPTIONS = Object.freeze({
+    TODAY: {
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+    YESTERDAY: 'YESTERDAY',
+    DEFAULT: {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    },
+  });
+
+  const getDateOptions = (timestamp) => {
+    const givenDate = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const compareDate = (givenDate, comparedDay) => {
+      return (
+        givenDate.getFullYear() === comparedDay.getFullYear() &&
+        givenDate.getMonth() === comparedDay.getMonth() &&
+        givenDate.getDate() === comparedDay.getDate()
+      );
+    };
+    // Compare the date parts
+    if (compareDate(givenDate, today)) {
+      return DATE_OPTIONS.TODAY;
+    } else if (compareDate(givenDate, yesterday)) {
+      return DATE_OPTIONS.YESTERDAY;
+    } else return DATE_OPTIONS.DEFAULT;
+  };
+
+  const formatTimeStamp = (timestamp) => {
+    const options = getDateOptions(timestamp);
+    if (options === DATE_OPTIONS.YESTERDAY) return 'Yesterday';
+    if (options === DATE_OPTIONS.TODAY)
+      return new Date(timestamp).toLocaleTimeString('en-US', options);
+    return new Date(timestamp).toLocaleDateString('en-US', options);
+  };
   useEffect(() => {
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('click', handleClickInside);
@@ -134,7 +203,7 @@ const Chats = ({ searchValue }) => {
   return (
     <div
       ref={containerRef}
-      className="ViewedChats-container flex h-full w-full flex-col overflow-y-auto bg-bg-primary text-white"
+      className="scrollable ViewedChats-container overflow-x-hiddenbg-bg-primary flex h-full w-full flex-col overflow-y-auto text-white"
       data-test-id="viewed-chats-container"
     >
       <ul className="divide-y divide-gray-700" data-test-id="chats-list">

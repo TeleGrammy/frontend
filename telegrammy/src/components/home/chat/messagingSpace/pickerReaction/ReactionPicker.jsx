@@ -39,6 +39,7 @@ const ReactionPicker = ({ setInputValue, handleSelectItem }) => {
     const url = `https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${query}&limit=5&offset=0&rating=g&lang=en`; // Giphy API endpoint for searching Stickers
     try {
       const response = await axios.get(url);
+      console.log(response.data.data);
       setGifs(response.data.data);
     } catch (error) {
       console.error('Error fetching GIFs:', error);
@@ -50,6 +51,7 @@ const ReactionPicker = ({ setInputValue, handleSelectItem }) => {
     const url = `https://api.giphy.com/v1/stickers/search?api_key=${API_KEY}&q=${query}&limit=5`; // Giphy API endpoint for searching Stickers
     try {
       const response = await axios.get(url);
+      console.log(response.data.data);
       setStickers(response.data.data);
       // console.log(response.data.data);
     } catch (error) {

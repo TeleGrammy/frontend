@@ -1,49 +1,59 @@
 import React, { useState, useEffect, useRef } from 'react';
 import VoiceNoteButton from './VoiceNoteButton';
-
+import { toast } from 'react-toastify';
 import CryptoJS from 'crypto-js';
 import Trie from './Trie';
-import {
-  initialMessages1,
-  initialMessages2,
-  initialMessages3,
-} from './../../../mocks/mockDataChat';
-import { initialChatsLSB } from '../../../mocks/mockDataChatList';
 import ChatHeader from './ChatHeader';
 import { useSelector } from 'react-redux';
 import { MessagesList } from './messages/MessagesList';
 import AttachMedia from './messagingSpace/attachment/AttachMedia';
 import ViewedImage from './messages/ViewedImage';
-import { ClipLoader } from 'react-spinners';
 import ReplyToSpace from './messagingSpace/ReplyToSpace';
 import ReactionPicker from './messagingSpace/pickerReaction/ReactionPicker';
 import LoadingScreen from './messagingSpace/LoadingScreen';
 import PinnedMessagesBar from './PinnedMessagesBar';
+import { useSocket } from '../../../contexts/SocketContext';
 import { GiConsoleController } from 'react-icons/gi';
 import { setOpenedChat } from '../../../slices/chatsSlice';
 import { useDispatch } from 'react-redux';
-
-import { useSocket } from '../../../contexts/SocketContext';
-
-import { closeRightSidebar } from '../../../slices/sidebarSlice';
-import { PiMagicWand } from 'react-icons/pi';
+import CommentToSpace from './messagingSpace/CommentToSpace';
+import Comments from './messages/Comments';
+import { onMessage } from 'firebase/messaging';
+import { useFirebase } from '../../../contexts/FirebaseContext';
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 const apiUrl = import.meta.env.VITE_API_URL;
 
-const mentionUsers = ['Alice', 'Bob', 'Charlie', 'Diana'];
 let trie = new Trie();
+
+const initialComments = [
+  {
+    id: 1,
+    name: 'Ahmed Aladdin',
+    avatar: 'https://ui-avatars.com/api/?name=Ahmed-Aladdin', // Replace with actual URL
+    timestamp: '٢٠٢٤/١٢/١٨',
+    message: 'هو الكويز في الاستراحة ولا ايه؟',
+  },
+  {
+    id: 2,
+    name: 'Ahmed Hamdy',
+    avatar: 'https://ui-avatars.com/api/?name=Ahmed-Hamdy', // Replace with actual URL
+    timestamp: '٢٠٢٤/١٢/١٨',
+    message: 'بداية الفترة الثالثة عادي',
+  },
+];
 
 function Chat() {
   const { socketGeneralRef } = useSocket();
 
-  const isAdmin = false;
-  const { openedChat, searchVisible, searchText } = useSelector(
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { chats, openedChat, searchVisible, searchText } = useSelector(
     (state) => state.chats,
   );
   const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState([initialMessages1]);
+  const [messages, setMessages] = useState([]);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [replyToMessageId, setReplyToMessageId] = useState(null);
+  const [commentToMessageId, setCommentToMessageId] = useState(null);
   const [forwardingMessageId, setForwardingMessageId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFileType, setSelectedFileType] = useState(null);
@@ -53,34 +63,32 @@ function Chat() {
   const [mentionIndex, setMentionIndex] = useState(0); // For navigating suggestions
   const [isMentioning, setIsMentioning] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isShownComments, setIsShownComments] = useState(false);
+  const [comments, setComments] = useState([]);
   const messagesEndRef = useRef(null);
   const messageRefs = useRef({});
   const [pinnedMsgs, setPinnedMsgs] = useState([]);
   const [prevChat, setPrevChat] = useState(null);
   const [ack, setAck] = useState(null);
+  const [mentionUsers, setMentionUsers] = useState([]);
+  const [canMessage, setCanMessage] = useState(true);
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    console.log('Updated pinnedMsgs222s:', pinnedMsgs); // This logs the updated state after re-render
-  }, [pinnedMsgs]); // This will run every time pinnedMsgs changes
-
+  const { generateToken, messaging } = useFirebase();
   let it = 0;
   let it1 = 0;
 
   const handlePinMessage = (messageId, isPinned) => {
-    console.log('iam pinned or not');
     console.log(isPinned);
-
+    console.log(messageId);
     if (!isPinned) {
-      // console.log('laaaa');
       socketGeneralRef.current.emit('message:pin', {
-        chatId: openedChat.id,
+        chatId: openedChat?.id,
         messageId: messageId,
       });
     } else {
       socketGeneralRef.current.emit('message:unpin', {
-        chatId: openedChat.id,
+        chatId: openedChat?.id,
         messageId: messageId,
       });
     }
@@ -95,26 +103,32 @@ function Chat() {
     return bytes.toString(CryptoJS.enc.Utf8);
   };
 
+  const showToast = (message, success) => {
+    if (success) {
+      toast.success(message, {
+        position: 'top-right',
+      });
+    } else {
+      toast.error(message, {
+        position: 'top-right',
+      });
+    }
+  };
+
   // useEffects for socketGeneralRef.current
 
   useEffect(() => {
-    console.log(openedChat.draft);
-    setInputValue(openedChat.draft);
-    try {
-      // console.log('Attempting to connect to the socketGeneralRef.current...');
-      // socketGeneralRef.current.connect();
+    console.log(openedChat?.draft);
 
+    setInputValue(openedChat?.draft || '');
+    try {
       socketGeneralRef.current.on('error', (err) => {
         console.log(err);
       });
-      // socketGeneralRef.current.on('connect', () => {
-      //   console.log('Connected to Socket.IO server');
-      // });
-      // socketGeneralRef.current.on('connect_error', (err) => {
-      //   console.log(err);
-      // });
+      socketGeneralRef.current.on('draft', (payload) => {
+        console.log(payload);
+      });
       socketGeneralRef.current.on('message:pin', (payload) => {
-        // console.log('iam pin', payload);
         setPinnedMsgs((prevPinnedMsgs) => [
           ...prevPinnedMsgs,
           payload.message._id,
@@ -131,7 +145,6 @@ function Chat() {
       });
 
       socketGeneralRef.current.on('message:unpin', (payload) => {
-        console.log('iam here', payload);
         setPinnedMsgs((pinnedMsgs) =>
           pinnedMsgs.filter((msg) => msg !== payload.message._id),
         );
@@ -147,77 +160,98 @@ function Chat() {
       });
 
       socketGeneralRef.current.on('message:sent', (message) => {
-        trie.insert(message.content, message._id);
+        socketGeneralRef.current.on('message:sent', (message) => {
+          trie.insert(message.content, message._id);
+          console.log(message.senderId);
+          if (message.senderId._id !== userId && openedChat) {
+            console.log(socketGeneralRef.current);
+            console.log('Message received:', message);
+            message['type'] = 'received';
+            const ackPayload = {
+              chatId: openedChat?.id,
+              eventIndex: message.eventIndex, // Required
+            };
+            socketGeneralRef.current.emit('ack_event', ackPayload);
+            setMessages((prevMessages) => [...prevMessages, message]);
+          }
+        });
 
-        if (message.senderId !== userId) {
-          console.log(socketGeneralRef.current);
-          console.log('Message received:', message);
-          const ackPayload = {
-            chatId: openedChat.id,
-            eventIndex: message.eventIndex, // Required
-          };
-          socketGeneralRef.current.emit('ack_event', ackPayload);
-          setMessages((prevMessages) => [...prevMessages, message]);
-        }
-      });
+        socketGeneralRef.current.on('message:updated', (response) => {
+          console.log('recieved updated', response);
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) => {
+              const newMessage = { ...msg, ...response };
+              if (msg._id === response._id) {
+                trie.delete(msg.content, msg._id);
+                return newMessage;
+              }
+              return msg;
+            }),
+          );
+          trie.insert(response.content, response._id);
+          setEditingMessageId(null);
+        });
+        socketGeneralRef.current.on('message:deleted', (response) => {
+          console.log('recieved deleted', response);
 
-      socketGeneralRef.current.on('message:updated', (response) => {
-        console.log('recieved updated', response);
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) => {
-            const newMessage = { ...msg, ...response };
-            if (msg._id === response._id) {
-              trie.delete(msg.content, msg._id);
-              return newMessage;
-            }
-            return msg;
-          }),
-        );
-        trie.insert(response.content, response._id);
-        setEditingMessageId(null);
-      });
-      socketGeneralRef.current.on('message:deleted', (response) => {
-        console.log('recieved deleted', response);
-
-        setMessages((prevMessages) =>
-          prevMessages.filter((msg) => {
-            if (msg._id === response._id) trie.delete(msg.content, msg._id);
-            return msg._id !== response._id;
-          }),
-        );
-        setPinnedMsgs((prevMessages) =>
-          prevMessages.filter((msg) => msg !== response._id),
-        );
+          setMessages((prevMessages) =>
+            prevMessages.filter((msg) => {
+              if (msg.messageType !== 'audio' && msg._id === response._id)
+                trie.delete(msg.content, msg._id);
+              return msg._id !== response._id;
+            }),
+          );
+          setPinnedMsgs((prevMessages) =>
+            prevMessages.filter((msg) => msg !== response._id),
+          );
+        });
       });
     } catch (err) {
       console.log(err);
     }
-
-    // return () => {
-    //   socketGeneralRef.current.disconnect();
-    //   console.log('dscnnctd');
-    // };
-  }, [socketGeneralRef]);
-
-  useEffect(() => {
-    if (ack) {
-      console.log('Acknowledgment received:', ack);
-    }
-  }, [ack]);
+  }, [socketGeneralRef, openedChat]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    // setInputValue(openedChat.draft);
+    if (openedChat?.isGroup) {
+      const getPermissions = async () => {
+        try {
+          const response = await fetch(
+            `${apiUrl}/v1/groups/${openedChat?.groupId}/user-info/`,
+            {
+              method: 'GET',
+              headers: {
+                Accept: 'application/json',
+              },
+              credentials: 'include',
+            },
+          );
+          const data = await response.json();
+          setCanMessage(
+            data.data.user.customTitle === 'Owner' ||
+              data.data.user.customTitle === 'Admin' ||
+              data.data.user.permissions.sendMessages,
+          );
+          console.log(data.data.user);
+          // console.log(response);
+        } catch (error) {
+          console.error('Error fetching user permissions:', error);
+        }
+      };
+      getPermissions();
+    }
+    setCommentToMessageId(null);
+    setReplyToMessageId(null);
     const fetchMessages = async () => {
       try {
-        if (openedChat.id === undefined) {
+        if (!openedChat?.id) {
           return;
         }
         const response = await fetch(
-          `${apiUrl}/v1/chats/chat/${openedChat.id}`,
+          `${apiUrl}/v1/chats/chat/${openedChat?.id}`,
           {
             method: 'GET',
             headers: {
@@ -235,12 +269,70 @@ function Chat() {
         console.log(data.messages.data);
         let tempMessages = data.messages.data;
         let tempPinned = [];
+        let tempUsers = [];
         tempMessages.map((msg) => {
           if (msg.isPinned) tempPinned.push(msg._id);
           if (msg.senderId._id === userId) {
             msg['type'] = 'sent';
           } else {
             msg['type'] = 'received';
+          }
+        });
+
+        data.chat.participants.forEach((participant) => {
+          tempUsers.push(participant.userId.username);
+        });
+
+        setMentionUsers(tempUsers);
+        setPinnedMsgs(tempPinned);
+
+        tempMessages.sort(
+          (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+        );
+        tempMessages.map((msg) => trie.insert(msg.content, msg._id));
+        setMessages(tempMessages);
+      } catch (error) {
+        console.error('Error fetching Chats:', error);
+      }
+    };
+
+    onMessage(messaging, (payload) => {
+      console.log('Message received 23. ', payload);
+    });
+
+    const fetchChannelMessages = async () => {
+      try {
+        if (!openedChat?.channelId) {
+          return;
+        }
+        const response = await fetch(
+          `${apiUrl}/v1/channels/${openedChat?.channelId}/chat`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          },
+        );
+        if (!response.ok) {
+          console.error('Failed to fetch chats.');
+        } else {
+          console.log('Chats have been fetched successfully.');
+        }
+        const data = await response.json();
+        console.log(data);
+        let tempMessages = data.messages;
+        let tempPinned = [];
+        tempMessages.map((msg) => {
+          if (msg.isPinned) tempPinned.push(msg._id);
+          if (msg.senderId._id === userId) {
+            msg['type'] = 'sent';
+          } else {
+            msg['type'] = 'received';
+          }
+          if (msg.content.startsWith('https://media1.giphy.com/media/')) {
+            msg['isSticker'] = true;
           }
         });
         setPinnedMsgs(tempPinned);
@@ -255,16 +347,45 @@ function Chat() {
       }
     };
 
-    fetchMessages();
+    const fetchChannelInfo = async () => {
+      try {
+        const response = await fetch(
+          `${apiUrl}/v1/channels/${openedChat?.channelId}`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          },
+        );
+        if (!response.ok) {
+          console.error('Failed to fetch channel info.');
+        } else {
+          console.log('Channel info have been fetched successfully.');
+        }
+        const data = await response.json();
+        console.log(data);
+        setIsAdmin(data.channelOwner.id === userId);
+      } catch (error) {
+        console.error('Error fetching channel info:', error);
+      }
+    };
+
+    if (openedChat?.isChannel) {
+      fetchChannelInfo();
+      fetchChannelMessages();
+    } else {
+      fetchMessages();
+    }
   }, [openedChat]);
 
   const handleSearch = (text) => {
     const ids = trie.startsWith(text);
     if (ids.length > 0) {
-      console.log('yes');
       if (it >= ids.length) it = 0;
       console.log(it);
-      console.log('here sir', ids[it]);
       const msg = messageRefs.current[ids[it++]];
       msg.classList.add('bg-yellow-200');
 
@@ -291,7 +412,7 @@ function Chat() {
     setInputValue(value);
     socketGeneralRef.current.emit(
       'draft',
-      { chatId: openedChat.id, draft: value },
+      { chatId: openedChat?.id, draft: value },
       (res) => {
         console.log(res);
       },
@@ -326,21 +447,20 @@ function Chat() {
       if (selectedFile) setLoading(true);
 
       const newMessage = {
-        chatId: openedChat.id,
+        chatId: openedChat?.id,
         content: inputValue,
         messageType: 'text',
-        timestamp: new Date().toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: 'numeric',
-        }),
+        isPost: openedChat?.isChannel && !commentToMessageId, // and not comment
+        timestamp: new Date().toISOString(),
         date: new Date().toISOString().slice(0, 10),
-        replyTo: replyToMessageId || null, // Link the reply if there's any
+        replyOn: replyToMessageId ? { _id: replyToMessageId } : null, // Link the reply if there's any
+        parentPost: commentToMessageId || null,
         type: 'sent',
       };
 
       if (selectedFile) {
         const formData = new FormData();
-        formData.append('media', selectedFile);
+        formData.append(selectedFileType.split('_')[0], selectedFile);
         const mediaResponse = await fetch(
           `${apiUrl}/v1/messaging/upload/${selectedFileType.split('_')[0]}`,
           {
@@ -359,10 +479,6 @@ function Chat() {
         newMessage.mediaUrl = mediaResponseData.signedUrl;
         newMessage.messageType =
           selectedFile !== null ? selectedFileType.split('_')[1] : 'text';
-        // newMessage.file = URL.createObjectURL(selectedFile);
-
-        // newMessage.fileName = selectedFile.name;
-        // newMessage.fileType = selectedFile.type;
       }
 
       if (editingMessageId) {
@@ -372,18 +488,8 @@ function Chat() {
         });
 
         setEditingMessageId(null);
-        setInputValue(''); // Clear the input field
+        setInputValue('');
       } else {
-        const sentMessage = {
-          id: messages.length + 1,
-          ...newMessage,
-          content: encryptMessage(newMessage.content),
-          chatId: openedChat.id,
-          messageType:
-            selectedFile !== null ? selectedFileType.split('_')[1] : 'text',
-          type: 'sent',
-        };
-
         try {
           console.log(newMessage);
           socketGeneralRef.current.emit(
@@ -423,15 +529,15 @@ function Chat() {
         }
       }
 
-      // Clear input and reset reply state after sending
       setInputValue('');
       setReplyToMessageId(null);
       setLoading(false);
+      setSelectedFile(null);
+      setSelectedFileType(null);
     }
   };
 
   const handleEditMessage = (message) => {
-    console.log(message);
     const messageToEdit = messages.find((msg) => msg._id === message._id);
     if (messageToEdit) {
       setInputValue(messageToEdit.content);
@@ -440,40 +546,41 @@ function Chat() {
   };
 
   const handleForwardMessage = (chat) => {
-    const messageToForward = messages.find(
-      (msg) => msg.id === forwardingMessageId,
-    );
-    const length =
-      chat.name === 'user1'
-        ? initialMessages1.length
-        : chat.name === 'user2'
-          ? initialMessages2.length
-          : initialMessages3.length;
-    if (messageToForward) {
-      const newMessage = {
-        ...messageToForward,
-        id: length + 1,
-        type: 'sent',
-        timestamp: new Date().toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: 'numeric',
-        }),
-      };
-      switch (chat.name) {
-        case 'user1':
-          initialMessages1.push(newMessage);
-          break;
-        case 'user2':
-          initialMessages2.push(newMessage);
-          break;
-        case 'user3':
-          initialMessages3.push(newMessage);
-          break;
-        default:
-          break;
+    console.log(chat);
+    console.log(forwardingMessageId);
+    const message = messages.find((msg) => msg._id === forwardingMessageId);
+    const newMessage = {
+      chatId: chat.id,
+      messageId: forwardingMessageId,
+      messageType: message.messageType,
+      isForwarded: true,
+      content: message.content,
+      timestamp: new Date().toISOString(),
+      type: message.type,
+      mediaKey: message.mediaKey,
+      mediaUrl: message.mediaUrl,
+      isPinned: false,
+      replyOn: message.replyOn || null,
+    };
+    socketGeneralRef.current.emit('message:send', newMessage, (response) => {
+      if (openedChat.id === chat.id) {
+        const newRenderedMessage = {
+          chatId: openedChat.id,
+          _id: response.data.id,
+          isForwarded: true,
+          content: newMessage.content,
+          type: newMessage.type,
+          timestamp: newMessage.timestamp,
+          mediaKey: newMessage.mediaKey,
+          mediaUrl: newMessage.mediaUrl,
+          messageType: newMessage.messageType,
+          isPinned: false,
+          replyOn: newMessage.replyOn || null,
+        };
+        setMessages([...messages, newRenderedMessage]);
       }
-      setForwardingMessageId(null);
-    }
+      console.log(response);
+    });
   };
   const handleDeleteMessage = (message) => {
     socketGeneralRef.current.emit(
@@ -485,29 +592,98 @@ function Chat() {
     );
   };
 
+  const handleComment = async (parentId) => {
+    setCommentToMessageId(parentId);
+    setInputValue('');
+  };
+
   const handleClickForwardMessage = (id) => {
     setForwardingMessageId(id);
-    setInputValue(''); // Clear input if forwarding
+    setInputValue('');
   };
 
   const handleReplyToMessage = (id) => {
     setReplyToMessageId(id);
-    setInputValue(''); // Clear input if replying
+    setInputValue('');
   };
 
-  const handleSendVoice = (audioBlob) => {
-    const newMessage = {
-      id: messages.length + 1,
-      content: 'Voice Note Sent',
-      type: 'recieved',
-      timestamp: new Date().toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-      }),
-      date: new Date().toISOString().slice(0, 10),
-      voiceNote: URL.createObjectURL(audioBlob),
-    };
-    setMessages([...messages, newMessage]);
+  const handleShowComments = async (postId) => {
+    setIsShownComments((prev) => !prev);
+    if (comments.length > 0) {
+      setComments([]);
+      return;
+    }
+    try {
+      const response = await fetch(
+        `${apiUrl}/v1/channels/thread/${postId}/messages`,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+      );
+      const data = await response.json();
+      console.log(data);
+      setComments(data.messages);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleSendVoice = async (audioFormData) => {
+    try {
+      const mediaResponse = await fetch(`${apiUrl}/v1/messaging/upload/audio`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json', // Specify JSON response expected
+        },
+        credentials: 'include', // Include credentials (cookies)
+        body: audioFormData,
+      });
+      const newMessage = {
+        chatId: openedChat?.id,
+        messageType: 'audio',
+        timestamp: new Date().toISOString(),
+        date: new Date().toISOString().slice(0, 10),
+        replyOn: replyToMessageId ? { _id: replyToMessageId } : null, // Link the reply if there's any
+        type: 'sent',
+      };
+      const mediaResponseData = await mediaResponse.json();
+      console.log(mediaResponseData);
+      newMessage.mediaKey = mediaResponseData.mediaKey;
+      newMessage.mediaUrl = mediaResponseData.signedUrl;
+      socketGeneralRef.current.emit('message:send', newMessage, (response) => {
+        // Callback handles server response
+
+        if (response.status === 'ok') {
+          console.log('Server acknowledgment:', response);
+          const newRenderedMessage = {
+            chatId: openedChat?.id,
+            _id: response.data.id,
+            content: newMessage.content,
+            type: newMessage.type,
+            timestamp: newMessage.timestamp,
+            mediaKey: newMessage.mediaKey,
+            mediaUrl: newMessage.mediaUrl,
+            messageType: newMessage.messageType,
+            isPinned: false,
+            replyOn: newMessage.replyOn || null,
+          };
+          console.log(newRenderedMessage);
+          setMessages((prevMessages) => [...prevMessages, newRenderedMessage]);
+
+          setInputValue('');
+        } else {
+          console.log(response);
+          console.error('Error:', response.message || 'Unknown error');
+        }
+      });
+    } catch (error) {
+      console.error('Error sending:', error);
+    }
   };
 
   const handleImageClick = (src) => {
@@ -518,28 +694,66 @@ function Chat() {
     setViewingImage(null);
   };
 
-  const handleSelectItem = (item) => {
-    console.log(item);
+  const handleSelectItem = async (item) => {
     const newMessage = {
-      id: messages.length + 1,
-      type: 'sent',
-      content: (
-        <img
-          key={messages.length + 1}
-          src={item} // Adjust according to the response structure
-          alt="Sticker"
-          width="100"
-        />
-      ),
-      timestamp: new Date().toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-      }),
+      // id: messages.length + 1,
+      // type: 'sent',
+      // content: (
+      //   <img
+      //     key={messages.length + 1}
+      //     src={item} // Adjust according to the response structure
+      //     alt="Sticker"
+      //     width="100"
+      //   />
+      // ),
+      // timestamp: new Date().toLocaleTimeString('en-US', {
+      //   hour: 'numeric',
+      //   minute: 'numeric',
+      // }),
+      // date: new Date().toISOString().slice(0, 10),
+      // replyOn: replyToMessageId ? { _id: replyToMessageId } : null,
+      chatId: openedChat?.id,
+      messageType: 'text',
+      isSticker: true,
+      timestamp: new Date().toISOString(),
       date: new Date().toISOString().slice(0, 10),
-      replyTo: replyToMessageId || null,
+      replyOn: replyToMessageId ? { _id: replyToMessageId } : null, // Link the reply if there's any
+      type: 'sent',
+      content: item,
     };
+    try {
+      console.log(newMessage);
+      socketGeneralRef.current.emit('message:send', newMessage, (response) => {
+        // Callback handles server response
 
-    setMessages([...messages, newMessage]);
+        if (response.status === 'ok') {
+          console.log('Server acknowledgment:', response);
+          const newRenderedMessage = {
+            chatId: openedChat?.id,
+            _id: response.data.id,
+            content: newMessage.content,
+            type: newMessage.type,
+            timestamp: newMessage.timestamp,
+            mediaKey: newMessage.mediaKey,
+            mediaUrl: newMessage.mediaUrl,
+            messageType: newMessage.messageType,
+            isSticker: true,
+            isPinned: false,
+            replyOn: newMessage.replyOn || null,
+          };
+          console.log(newRenderedMessage);
+          setMessages((prevMessages) => [...prevMessages, newRenderedMessage]);
+
+          setInputValue('');
+        } else {
+          console.log(response);
+          console.error('Error:', response.message || 'Unknown error');
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+    setReplyToMessageId(null);
   };
 
   const handleKeyDown = (event) => {
@@ -616,11 +830,16 @@ function Chat() {
         handleEditMessage={handleEditMessage}
         handleDeleteMessage={handleDeleteMessage}
         handleReplyToMessage={handleReplyToMessage}
+        handleComment={handleComment}
+        handleShowComments={handleShowComments}
         handleImageClick={handleImageClick}
         handleClickForwardMessage={handleClickForwardMessage}
         messagesEndRef={messagesEndRef}
         messageRefs={messageRefs}
       />
+
+      {isShownComments && <Comments comments={comments} />}
+
       <div className="bg-bg-message-receiver p-4">
         {errorMessage && (
           <div
@@ -637,73 +856,90 @@ function Chat() {
             setReplyToMessageId={setReplyToMessageId}
           />
         )}
-        <div className="flex items-center space-x-2">
-          {/* Emoji/Sticker/GIF Picker Button */}
-          <ReactionPicker
-            handleSelectItem={handleSelectItem}
-            setInputValue={setInputValue}
+        {commentToMessageId && (
+          <CommentToSpace
+            messages={messages}
+            commentToMessageId={commentToMessageId}
+            setCommentToMessageId={setCommentToMessageId}
           />
-          {isMentioning && filteredUsers.length > 0 && (
-            <div className="absolute bottom-16 left-4 z-50 w-64 rounded-lg bg-white shadow-lg dark:bg-gray-800">
-              {filteredUsers.map((user, index) => (
-                <div
-                  data-test-id={`${index}-to-mention-user`}
-                  key={index}
-                  className={`cursor-pointer p-2 ${
-                    mentionIndex === index ? 'bg-gray-300' : ''
-                  }`}
-                  onMouseDown={() => handleSelectUser(user)}
-                  onMouseEnter={() => setMentionIndex(index)}
-                >
-                  {user}
-                </div>
-              ))}
-            </div>
-          )}
-          <input
-            data-test-id="message-input"
-            disabled={openedChat.type === 'Channel' && !isAdmin}
-            type="text"
-            placeholder={
-              !isAdmin && openedChat.type === 'Channel'
-                ? "YOU DON'T HAVE PERMISSION!"
-                : editingMessageId
+        )}
+        {(openedChat?.isChannel && isAdmin) ||
+        (openedChat?.isChannel && !isAdmin && commentToMessageId) ||
+        (!openedChat?.isChannel && !openedChat?.isGroup) ||
+        canMessage ? (
+          <div className="flex items-center space-x-2">
+            {/* Emoji/Sticker/GIF Picker Button */}
+            <ReactionPicker
+              handleSelectItem={handleSelectItem}
+              setInputValue={setInputValue}
+            />
+            {isMentioning && filteredUsers.length > 0 && (
+              <div className="absolute bottom-16 left-4 z-50 w-64 rounded-lg bg-white shadow-lg dark:bg-gray-800">
+                {filteredUsers.map((user, index) => (
+                  <div
+                    data-test-id={`${index}-to-mention-user`}
+                    key={index}
+                    className={`cursor-pointer p-2 ${
+                      mentionIndex === index ? 'bg-gray-300' : ''
+                    }`}
+                    onMouseDown={() => handleSelectUser(user)}
+                    onMouseEnter={() => setMentionIndex(index)}
+                  >
+                    {user}
+                  </div>
+                ))}
+              </div>
+            )}
+            <input
+              data-test-id="message-input"
+              type="text"
+              placeholder={
+                editingMessageId
                   ? 'Edit your message...'
                   : replyToMessageId
                     ? 'Type your reply...'
                     : 'Type your message...'
-            }
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            className="flex-grow rounded-lg border border-gray-300 px-4 py-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          />
-          <AttachMedia
-            setErrorMessage={setErrorMessage}
-            setSelectedFile={setSelectedFile}
-            setSelectedFileType={setSelectedFileType}
-          />
-          <VoiceNoteButton onSendVoice={handleSendVoice} />
-          <button
-            data-test-id="send-message-button"
-            onClick={handleSendMessage}
-            className="hover:bg-bg-message-sender-hover rounded-lg bg-bg-message-sender px-4 py-2 text-white"
-          >
-            {editingMessageId ? 'Update' : 'Send'}
-          </button>
-          {editingMessageId && (
+              }
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              className="flex-grow rounded-lg border border-gray-300 px-4 py-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            />
+            {!(openedChat?.isChannel && commentToMessageId) && (
+              <>
+                <AttachMedia
+                  setErrorMessage={setErrorMessage}
+                  setSelectedFile={setSelectedFile}
+                  setSelectedFileType={setSelectedFileType}
+                />
+                <VoiceNoteButton onSendVoice={handleSendVoice} />
+              </>
+            )}
             <button
-              data-test-id="cancel-edit-message-button"
-              onClick={() => {
-                setEditingMessageId(null);
-                setInputValue('');
-              }}
-              className="rounded-lg bg-gray-200 px-4 py-2 text-black hover:bg-gray-300"
+              data-test-id="send-message-button"
+              onClick={handleSendMessage}
+              className="hover:bg-bg-message-sender-hover rounded-lg bg-bg-message-sender px-4 py-2 text-white"
             >
-              Cancel
+              {editingMessageId ? 'Update' : 'Send'}
             </button>
-          )}
-        </div>
+            {editingMessageId && (
+              <button
+                data-test-id="cancel-edit-message-button"
+                onClick={() => {
+                  setEditingMessageId(null);
+                  setInputValue('');
+                }}
+                className="rounded-lg bg-gray-200 px-4 py-2 text-black hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="text-center text-text-primary">
+            You are not allowed to send messages in this chat!
+          </p>
+        )}
       </div>
       {viewingImage && (
         <ViewedImage
@@ -721,7 +957,7 @@ function Chat() {
                 <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
                   Forward to:
                 </h3>
-                {initialChatsLSB.map((chat) => (
+                {chats.map((chat) => (
                   <div
                     data-test-id={`${chat.id}-forward-to-div`}
                     key={chat.id}
@@ -731,7 +967,11 @@ function Chat() {
                     }}
                   >
                     <img
-                      src={chat.picture}
+                      src={
+                        chat.photo
+                          ? chat.photo
+                          : 'https://ui-avatars.com/api/?name=' + chat.name
+                      }
                       alt={chat.name}
                       className="h-8 w-8 rounded-full object-cover"
                     />

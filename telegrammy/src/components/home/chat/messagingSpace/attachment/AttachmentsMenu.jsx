@@ -24,6 +24,13 @@ const AttachmentsMenu = ({ handleFileTypeSelection }) => {
       >
         Document
       </button>
+      <button
+        data-test-id="attach-audio-button"
+        onClick={() => handleFileTypeSelection('audio')}
+        className="text-left text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-600"
+      >
+        Audio
+      </button>
     </div>
   );
 };

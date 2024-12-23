@@ -17,6 +17,7 @@ import {
   FaBullseye,
   FaSignOutAlt,
 } from 'react-icons/fa';
+import { setOpenedChat } from '../../../slices/chatsSlice';
 
 import { MdCall } from 'react-icons/md';
 
@@ -74,6 +75,7 @@ function Menu() {
 
       if (response.ok) {
         console.log('Logout Success');
+        dispatch(setOpenedChat(null));
         dispatch(logout());
         navigate('/');
       }

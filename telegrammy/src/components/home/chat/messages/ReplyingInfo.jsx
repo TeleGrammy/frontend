@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const ReplyingInfo = ({ message, messages, idx }) => {
-  const repliedMessage = messages?.find((msg) => msg.id === message.replyTo);
+  const [repliedMessage, setRepliedMessage] = useState(null);
+
+  useEffect(() => {
+    const foundMessage = messages?.find(
+      (msg) => msg._id === message.replyOn._id,
+    );
+    setRepliedMessage(foundMessage);
+  }, [messages, message.replyOn]);
 
   return (
     <div className="mb-2 border-l-4 border-blue-500 p-2">

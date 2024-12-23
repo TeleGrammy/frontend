@@ -1,23 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  openedChat: {
-    id: '2',
-    name: 'user2',
-    type: 'User',
-    description: 'hello',
-    lastMessage: {
-      sender: 'youssef',
-      content: 'Hi',
-      timeStamp: '8:33 PM',
-    },
-    unreadCount: 0,
-    picture: 'https://picsum.photos/seed/sports/50/50',
-    isMuted: true,
-  },
-  chats: [],
+  openedChat: null,
   searchVisible: false,
   searchText: '',
+  chats: [],
 };
 
 const chatsSlice = createSlice({
@@ -34,6 +21,7 @@ const chatsSlice = createSlice({
       state.searchText = action.payload;
     },
     setChats(state, action) {
+      console.log(state.chats, action.payload);
       state.chats = action.payload;
     },
   },

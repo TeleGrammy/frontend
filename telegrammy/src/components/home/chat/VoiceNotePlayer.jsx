@@ -1,16 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import PauseIcon from '../../icons/PauseIcon';
 import PlayIcon from '../../icons/PlayIcon';
+import ReplyingInfo from './messages/ReplyingInfo';
+import { FaShare } from 'react-icons/fa';
+const username = JSON.parse(localStorage.getItem('user'))?.username;
+const formatDate = (date) => {
+  const options = {
+    hour: '2-digit',
+    minute: '2-digit',
+  };
+  return new Date(date).toLocaleTimeString('en-US', options);
+};
 
-const VoiceNotePlayer = ({ src, time, type }) => {
+const VoiceNotePlayer = ({ message, messages, idx }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audio] = useState(new Audio(src));
+  const [audio] = useState(() => {
+    const audioInstance = new Audio(message.mediaUrl);
+    audioInstance.preload = 'metadata';
+    return audioInstance;
+  });
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-
   useEffect(() => {
     // Set audio duration when metadata is loaded
     const handleLoadedMetadata = () => {
+      // if (duration === Infinity) console.log('a7a');
+      console.log(duration);
       setDuration(audio.duration || 0);
     };
 
@@ -51,9 +66,26 @@ const VoiceNotePlayer = ({ src, time, type }) => {
 
   return (
     <div
-      className={`flex flex-col items-start rounded-3xl ${type === 'sent' ? 'bg-bg-message-sender' : 'bg-gray-700'} max-w-sm p-4 text-white shadow-md`}
+      className={`flex flex-col items-start rounded-3xl ${message.type === 'sent' ? 'bg-bg-message-sender' : 'bg-bg-message-receiver'} max-w-sm p-4 text-white shadow-md`}
       data-test-id="voice-note-player"
     >
+      {message.isForwarded && (
+        <div
+          className="mb-2 text-xs text-gray-400"
+          data-test-id="forwarded-indicator"
+        >
+          <FaShare className="mr-1 inline" />
+          Forwarded
+        </div>
+      )}
+      <p
+        className={`${message.type === 'received' ? 'text-bg-message-sender' : 'text-bg-message-receiver'} mb-2 font-bold`}
+      >
+        {message.type === 'received' ? message.senderId.username : username}
+      </p>
+      {message.replyOn && (
+        <ReplyingInfo message={message} messages={messages} idx={idx} />
+      )}
       <div className="flex w-full items-center space-x-4">
         {/* Play/Pause Button */}
         <button
@@ -90,14 +122,14 @@ const VoiceNotePlayer = ({ src, time, type }) => {
             </span>
             <span className="ml-1">•</span>
             <span className="ml-1" data-test-id="duration-time">
-              {formatTime(audio.duration)}
+              {audio.duration !== Infinity && formatTime(audio.duration)}
             </span>
           </div>
         </div>
       </div>
 
       <div className="mt-2 flex w-full justify-between text-sm text-white/80">
-        <span data-test-id="message-time">{time}</span>
+        <span data-test-id="message-time">{formatDate(message.timestamp)}</span>
         <span data-test-id="read-receipt">✔✔</span>
       </div>
     </div>

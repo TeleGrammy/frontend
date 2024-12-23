@@ -41,6 +41,8 @@ function Home() {
     showedOtherUserIndex,
   } = useSelector((state) => state.stories);
 
+  const { user } = useSelector((state) => state.auth);
+
   const { isDarkTheme } = useSelector((state) => state.darkMode);
 
   const { isCallOverlayOpen, callState, callTime, intervalId } = useSelector(
@@ -98,12 +100,14 @@ function Home() {
       {showedMyStoryIndex !== null && (
         <MediaShower
           medias={myStories}
+          profile={user}
           initialStoryIndex={showedMyStoryIndex}
         />
       )}
       {showedOtherStoryIndex !== null && (
         <MediaShower
           medias={otherStories[showedOtherUserIndex].stories}
+          profile={otherStories[showedOtherStoryIndex].profile}
           initialStoryIndex={showedOtherStoryIndex}
         />
       )}

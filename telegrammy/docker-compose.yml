@@ -1,10 +1,16 @@
 services:
   backend:
-    image: telegrammy/backend:group_calls # telegrammy/backend:[module_name] (check with the backend repo)
+    image: telegrammy/backend:18 # telegrammy/backend:[module_name] (check with the backend repo)
     ports:
       - '${PORT}:${PORT}'
     env_file:
       - .env
+    networks:
+      my-network:
+  redisq:
+    image: redis:7.4
+    ports:
+      - '6379:6379'
     networks:
       my-network:
 networks:

@@ -46,6 +46,7 @@ function CallsLog() {
         }
         const data = await response.json();
         const calls = data.calls;
+        console.log(calls);
         setCalls(calls);
       } catch (error) {
         setError(error.message);

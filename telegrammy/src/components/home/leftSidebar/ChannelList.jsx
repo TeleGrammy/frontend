@@ -3,79 +3,185 @@ import { setcurrentMenu } from '../../../slices/sidebarSlice';
 import { useState, useEffect } from 'react';
 import AddUsersList from './AddUsersList';
 import { FaAngleRight } from 'react-icons/fa';
-import socket from '../chat/utils/Socket';
+import { useSocket } from '../../../contexts/SocketContext';
+import { use } from 'react';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function ChannelList({ channelOrGroup }) {
+  const { socketGroupRef, socketChannelRef } = useSocket();
   const [view, setView] = useState('newChannel');
   const [channelName, setChannelName] = useState('');
+  const [channelId, setChannelId] = useState(null);
+  const [groupId,setGroupId] = useState(null);
   const [description, setDescription] = useState('');
   const [addedMembers, setAddedMembers] = useState([]);
   const dispatch = useDispatch();
 
   const [image, setImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file); // Create a preview URL
+      setImageFile(file);
       setImage(imageUrl);
+      console.log(imageUrl);
     }
   };
 
   useEffect(() => {
-    socket.connect();
-    socket.on('group:created', (message) => {
+    socketGroupRef.current.on('group:created', (message) => {
       console.log('Group created message received:', message);
+      setGroupId(message.groupId);
     });
 
-    // Cleanup function to remove the listener when the component unmounts
-    return () => {
-      socket.disconnect();
-      console.log("Disconnected");
-    };
-  }, []); // Empty dependency array means this runs once on mount and cleanup on unmount
+    socketChannelRef.current.on('error', (message) => {
+      console.log('error in channel: ', message);
+    });
+  }, [socketGroupRef, socketChannelRef]); // Empty dependency array means this runs once on mount and cleanup on unmount
 
-  function handleCreateGroupOrChannel() {
+  async function handleAddSubsribers() {
+    if(channelId){
+    try {
+      const payload = {
+        channelId: channelId,
+        subscriberIds: addedMembers,
+      };
+      console.log('Emitting channel adding subscribers:', payload);
+
+      // Emit the correct message type for creating a group
+      socketChannelRef.current.emit(
+        'addingChannelSubscriper',
+        payload,
+        (ackMessage) => {
+          console.log('subsriber added successfully', ackMessage);
+        },
+      );
+    } catch (error) {
+      console.error('Error in createGroup:', error.message);
+    }
+  }
+  else if(groupId){
+    const payload = {
+      groupId: groupId,
+      userIds:addedMembers
+    }
+    socketGroupRef.current.emit('addingGroupMember',payload);
+  }
+  }
+
+  async function handleCreateGroupOrChannel() {
+    let mediaUrl = null;
     const createChannel = async () => {
       try {
-        const response = await fetch(
-          `${apiUrl}/v1/channels/`,
+        const response = await fetch(`${apiUrl}/v1/channels/`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: channelName,
+            description: description,
+            image: imageFile ? mediaUrl : null,
+          }),
+          credentials: 'include',
+        });
+        const data = await response.json();
+        console.log(data);
+        setChannelId(data.channelId);
+      } catch (error) {
+        console.error('Error creating channel:', error.message);
+      }
+    };
+
+    const uploadChannelImage = async () => {
+      try {
+        if (!imageFile) {
+          console.error('No image selected.');
+          return;
+        }
+        console.log(imageFile);
+        const formData = new FormData();
+        formData.append('media', imageFile);
+        const mediaResponse = await fetch(
+          `${apiUrl}/v1/messaging/upload/media`,
           {
             method: 'POST',
             headers: {
               Accept: 'application/json',
-              "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              name: channelName,
-              description: description,
-            }),
             credentials: 'include',
+            body: formData,
           },
         );
-        const data = await response.json();
-        console.log(data);
+        if (!mediaResponse.ok) {
+          console.error(
+            `Error uploading channel image: ${mediaResponse.status} ${mediaResponse.statusText}`,
+          );
+          return;
+        }
+
+        const mediaResponseData = await mediaResponse.json();
+        console.log(mediaResponseData);
+        mediaUrl = mediaResponseData.signedUrl;
       } catch (error) {
-        console.error('Error creating group or channel:', error.message);
+        console.error('Error uploading channel image:', error.message);
       }
     };
+    /******  5254d4e3-8f9d-41ed-ad7b-fe9815e54b42  *******/
 
-    function createGroup() {
+    const createGroup = async () => {
+      let mediaUrl;
+      if(imageFile)
+      {try {
+        console.log(imageFile);
+        const formData = new FormData();
+        formData.append('media', imageFile);
+        const mediaResponse = await fetch(
+          `${apiUrl}/v1/messaging/upload/media`,
+          {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+            },
+            credentials: 'include',
+            body: formData,
+          },
+        );
+        if (!mediaResponse.ok) {
+          console.error(
+            `Error uploading channel image: ${mediaResponse.status} ${mediaResponse.statusText}`,
+          );
+          return;
+        }
+
+        const mediaResponseData = await mediaResponse.json();
+        console.log(mediaResponseData);
+        mediaUrl = mediaResponseData.signedUrl;
+      } catch (error) {
+        console.error('Error uploading channel image:', error.message);
+      }}
       try {
         const groupData = {
           name: channelName,
+          image: imageFile ? mediaUrl : null,
         };
         console.log('Emitting group creation:', groupData);
 
         // Emit the correct message type for creating a group
-        socket.emit('creatingGroup', groupData);
+        socketGroupRef.current.emit('creatingGroup', groupData);
       } catch (error) {
         console.error('Error in createGroup:', error.message);
       }
     }
-    createGroup();
+    if (channelOrGroup === 'group') createGroup();
+    else {
+      if (image) uploadChannelImage().then(createChannel);
+      else createChannel();
+    }
   }
 
   return (
@@ -175,23 +281,25 @@ function ChannelList({ channelOrGroup }) {
                 />
               </div>
 
-              <div>
-                <label
-                  className="block text-sm text-text-primary"
-                  htmlFor="description"
-                >
-                  Description (Optional)
-                </label>
-                <input
-                  data-test-id="description-input"
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="mt-2 w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
-                  placeholder="Description"
-                  aria-label="Description"
-                />
-              </div>
+              {channelOrGroup === 'channel' && (
+                <div>
+                  <label
+                    className="block text-sm text-text-primary"
+                    htmlFor="description"
+                  >
+                    Description (Optional)
+                  </label>
+                  <input
+                    data-test-id="description-input"
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="mt-2 w-full rounded-lg bg-bg-secondary px-3 py-2 text-text-primary sm:px-4 sm:py-2"
+                    placeholder="Description"
+                    aria-label="Description"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -249,8 +357,10 @@ function ChannelList({ channelOrGroup }) {
             if (view === 'newChannel') {
               handleCreateGroupOrChannel();
               setView('addMembers');
-            } else if (view === 'addMembers')
+            } else if (view === 'addMembers') {
+              handleAddSubsribers();
               dispatch(setcurrentMenu('ChatList'));
+            }
           }}
         >
           <FaAngleRight className="text-text-primary opacity-70" />

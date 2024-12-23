@@ -19,7 +19,7 @@ function GroupSettings({
   isOwner,
   toggleView,
 }) {
-  const socket = useSocket();
+  const { socketGroupRef } = useSocket();
   const { openedChat } = useSelector((state) => state.chats);
   const [privacy, setPrivacy] = useState('');
   const [sizeLimit, setSizeLimit] = useState(0);
@@ -30,17 +30,13 @@ function GroupSettings({
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    socket.current.on('group:deleted', (message) => {
+    socketGroupRef.current.on('group:deleted', (message) => {
       console.log('Group deleted', message);
     });
     setPrivacy(groupPrivacy);
     setSizeLimit(groupSizeLimit);
     setDescription(groupDescription);
-    return () => {
-      socket.disconnect();
-      console.log("Disconnected");
-    };
-  }, [groupPrivacy, groupSizeLimit,socket]);
+  }, [groupPrivacy, groupSizeLimit]);
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
@@ -68,10 +64,6 @@ function GroupSettings({
 
   const handleSizeLimitChange = (e) => {
     setSizeLimit(e.target.value);
-  };
-
-  const handleMuteChange = (e) => {
-    setMuteDuration(e.target.value);
   };
 
   const saveChanges = async () => {
@@ -199,12 +191,12 @@ function GroupSettings({
     const data = {
       groupId: openedChat.groupId
     }
-    socket.current.emit('removingGroup',data);
+    socketGroupRef.current.emit('removingGroup',data);
   };
 
   return (
     <div
-      className="flex flex-col items-center bg-bg-primary p-4"
+      className="flex flex-col items-center bg-bg-primary p-4 overflow-y-auto h-full max-h-[80vh] no-scrollbar"
       data-test-id="group-settings"
     >
       <h2 className="mb-4 text-center text-text-primary">
@@ -319,23 +311,6 @@ function GroupSettings({
             {sizeLimit}
           </p>
         )}
-      </div>
-      <div className="mb-4 flex w-full flex-col items-center">
-        <label className="mb-2 block text-sm text-text-primary">
-          Mute Notifications
-        </label>
-        <select
-          value={muteDuration}
-          onChange={handleMuteChange}
-          className="w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary"
-          data-test-id="mute-duration-select"
-        >
-          <option value="None">None</option>
-          <option value="1 Hour">1 Hour</option>
-          <option value="8 Hours">8 Hours</option>
-          <option value="1 Day">1 Day</option>
-          <option value="Permanent">Permanent</option>
-        </select>
       </div>
       {isAdmin && (
         <button

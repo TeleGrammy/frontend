@@ -14,7 +14,9 @@ const VoiceNoteButton = ({ onSendVoice }) => {
       recorder.ondataavailable = (event) => chunks.push(event.data);
       recorder.onstop = () => {
         const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-        onSendVoice(audioBlob);
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'voiceNote.webm');
+        onSendVoice(formData);
       };
 
       recorder.start();

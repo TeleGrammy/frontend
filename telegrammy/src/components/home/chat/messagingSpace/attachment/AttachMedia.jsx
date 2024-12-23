@@ -65,10 +65,18 @@ const AttachMedia = ({
       <input
         data-test-id="attach-document-input"
         type="file"
-        onChange={handleFileChange}
+        onChange={(event) => handleFileChange(event, 'document_document')}
         className="hidden"
         id="file-input-document"
         accept=".pdf,.doc,.docx,.txt"
+      />
+      <input
+        data-test-id="attach-audio-input"
+        type="file"
+        onChange={(event) => handleFileChange(event, 'audio_audio')}
+        className="hidden"
+        id="file-input-audio"
+        accept="audio/*"
       />
     </>
   );
