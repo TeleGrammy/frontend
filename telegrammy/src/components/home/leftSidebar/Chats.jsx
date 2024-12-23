@@ -261,7 +261,7 @@ const Chats = ({ searchValue }) => {
                         className="ml-2 rounded-full bg-blue-500 px-2 py-1 text-xs text-white"
                         data-test-id={`chat-unread-${chat.id}`}
                       >
-                        {/* {chat.unreadCount} */}3
+                        {chat.unreadCount}
                       </span>
                     )}
                   </div>

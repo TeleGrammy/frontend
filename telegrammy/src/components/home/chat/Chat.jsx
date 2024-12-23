@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import VoiceNoteButton from './VoiceNoteButton';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import CryptoJS from 'crypto-js';
 import Trie from './Trie';
 import ChatHeader from './ChatHeader';
@@ -75,6 +75,7 @@ function Chat() {
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
   const { generateToken, messaging } = useFirebase();
+
   let it = 0;
   let it1 = 0;
 
@@ -103,16 +104,31 @@ function Chat() {
     return bytes.toString(CryptoJS.enc.Utf8);
   };
 
-  const showToast = (message, success) => {
-    if (success) {
-      toast.success(message, {
-        position: 'top-right',
-      });
-    } else {
-      toast.error(message, {
-        position: 'top-right',
-      });
-    }
+  const showToast = (message) => {
+    toast.info(
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <img
+          src="/logo.png"
+          alt="Toast"
+          style={{
+            width: '40px',
+            height: '40px',
+            marginRight: '10px',
+            borderRadius: '50%',
+          }}
+        />
+        <span>{message}</span>
+      </div>,
+      {
+        position: 'bottom-right', // Use the string directly
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      },
+    );
   };
 
   // useEffects for socketGeneralRef.current
@@ -159,11 +175,20 @@ function Chat() {
         );
       });
 
+      socketGeneralRef.current.on('message:seen', (payload) => {
+        console.log('seen', payload);
+        
+      });
+
       socketGeneralRef.current.on('message:sent', (message) => {
         socketGeneralRef.current.on('message:sent', (message) => {
           trie.insert(message.content, message._id);
           console.log(message.senderId);
           if (message.senderId._id !== userId && openedChat) {
+            socketGeneralRef.current.emit('message:seen', {
+              chatId: openedChat?.id,
+              messageId: message._id,
+            });
             console.log(socketGeneralRef.current);
             console.log('Message received:', message);
             message['type'] = 'received';
@@ -271,6 +296,10 @@ function Chat() {
         let tempPinned = [];
         let tempUsers = [];
         tempMessages.map((msg) => {
+          socketGeneralRef.current.emit('message:seen', {
+            chatId: openedChat?.id,
+            messageId: msg._id,
+          });
           if (msg.isPinned) tempPinned.push(msg._id);
           if (msg.senderId._id === userId) {
             msg['type'] = 'sent';
@@ -298,6 +327,8 @@ function Chat() {
 
     onMessage(messaging, (payload) => {
       console.log('Message received 23. ', payload);
+      const title = payload.notification.title;
+      showToast(title);
     });
 
     const fetchChannelMessages = async () => {
