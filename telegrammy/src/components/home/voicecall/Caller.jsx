@@ -326,10 +326,14 @@ function Caller() {
 
     return () => {
       // Clean up socketGeneralRef listeners
-      socketGeneralRef.current.off('call:incomingAnswer', handleIncomingAnswer);
-      socketGeneralRef.current.off('call:rejectedCall', handleRejectCall);
-      socketGeneralRef.current.off('call:addedICE', handleIncomingICE);
-      socketGeneralRef.current.off('call:endedCall', handleEndCallFromCallee);
+
+      socketGeneralRef.current?.off(
+        'call:incomingAnswer',
+        handleIncomingAnswer,
+      );
+      socketGeneralRef.current?.off('call:rejectedCall', handleRejectCall);
+      socketGeneralRef.current?.off('call:addedICE', handleIncomingICE);
+      socketGeneralRef.current?.off('call:endedCall', handleEndCallFromCallee);
 
       cleanup();
     };

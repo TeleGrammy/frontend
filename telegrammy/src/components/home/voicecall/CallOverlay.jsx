@@ -394,11 +394,15 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
 
     return () => {
       // Cleanup socketGeneralRef listeners
-      socketGeneralRef.current.off('call:incomingCall', handleIncomingCall);
-      socketGeneralRef.current.off('call:incomingOffer', handleIncomingOffer);
-      socketGeneralRef.current.off('call:incomingAnswer', handleIncomingAnswer);
-      socketGeneralRef.current.off('call:addedICE', handleIncomingICE);
-      socketGeneralRef.current.off('call:endedCall', handleEndCallFromCaller);
+
+      socketGeneralRef.current?.off('call:incomingCall', handleIncomingCall);
+      socketGeneralRef.current?.off('call:incomingOffer', handleIncomingOffer);
+      socketGeneralRef.current?.off(
+        'call:incomingAnswer',
+        handleIncomingAnswer,
+      );
+      socketGeneralRef.current?.off('call:addedICE', handleIncomingICE);
+      socketGeneralRef.current?.off('call:endedCall', handleEndCallFromCaller);
 
       // Cleanup PeerConnection
 
