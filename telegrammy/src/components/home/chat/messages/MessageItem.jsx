@@ -76,7 +76,7 @@ export const MessageItem = ({
                   {message.isPinned ? 'UnPin' : 'Pin'}
                 </button>
                 {/* comment button */}
-                {openedChat.isChannel && (
+                {openedChat?.isChannel && (
                   <button
                     data-test-id={`${idx}-message-comment-button`}
                     onClick={() => handleComment(message._id)}
@@ -99,7 +99,7 @@ export const MessageItem = ({
                   Forward
                 </button>
                 {/* Reply button */}
-                {!openedChat.isChannel && (
+                {!openedChat?.isChannel && (
                   <button
                     data-test-id={`${idx}-recieved-reply-button`}
                     onClick={() => handleReplyToMessage(message._id)}
@@ -120,7 +120,7 @@ export const MessageItem = ({
                   {message.isPinned ? 'UnPin' : 'Pin'}
                 </button>
                 {/* comment button */}
-                {openedChat.isChannel && (
+                {openedChat?.isChannel && (
                   <button
                     data-test-id={`${idx}-message-comment-button`}
                     onClick={() => handleComment(message._id)}
@@ -177,7 +177,7 @@ export const MessageItem = ({
                   {message.isPinned ? 'UnPin' : 'Pin'}
                 </button>
                 {/* comment button */}
-                {openedChat.isChannel && (
+                {openedChat?.isChannel && (
                   <button
                     data-test-id={`${idx}-message-comment-button`}
                     onClick={() => handleComment(message._id)}
@@ -205,7 +205,7 @@ export const MessageItem = ({
                   Forward
                 </button>
                 {/* Reply button */}
-                {!openedChat.isChannel && (
+                {!openedChat?.isChannel && (
                   <button
                     data-test-id={`${idx}-recieved-reply-button`}
                     onClick={() => handleReplyToMessage(message._id)}
@@ -224,7 +224,7 @@ export const MessageItem = ({
                 >
                   {message.isPinned ? 'UnPin' : 'Pin'}
                 </button>
-                {openedChat.isChannel && (
+                {openedChat?.isChannel && (
                   <button
                     data-test-id={`${idx}-message-comment-button`}
                     onClick={() => handleComment(message._id)}

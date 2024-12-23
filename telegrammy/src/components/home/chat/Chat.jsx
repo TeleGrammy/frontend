@@ -69,7 +69,7 @@ function Chat() {
   const [prevChat, setPrevChat] = useState(null);
   const [ack, setAck] = useState(null);
   const [mentionUsers, setMentionUsers] = useState([]);
-  const [canMessage,setCanMessage] = useState(true);
+  const [canMessage, setCanMessage] = useState(true);
   const secretKey = 'our-secret-key';
   const dispatch = useDispatch();
   const { chats, setChats } = useChats();
@@ -81,12 +81,12 @@ function Chat() {
 
     if (!isPinned) {
       socketGeneralRef.current.emit('message:pin', {
-        chatId: openedChat.id,
+        chatId: openedChat?.id,
         messageId: messageId,
       });
     } else {
       socketGeneralRef.current.emit('message:unpin', {
-        chatId: openedChat.id,
+        chatId: openedChat?.id,
         messageId: messageId,
       });
     }
@@ -104,9 +104,9 @@ function Chat() {
   // useEffects for socketGeneralRef.current
 
   useEffect(() => {
-    console.log(openedChat.draft);
+    console.log(openedChat?.draft);
 
-    setInputValue(openedChat.draft || '');
+    setInputValue(openedChat?.draft || '');
     try {
       socketGeneralRef.current.on('error', (err) => {
         console.log(err);
@@ -153,7 +153,7 @@ function Chat() {
           console.log('Message received:', message);
           message['type'] = 'received';
           const ackPayload = {
-            chatId: openedChat.id,
+            chatId: openedChat?.id,
             eventIndex: message.eventIndex, // Required
           };
           socketGeneralRef.current.emit('ack_event', ackPayload);
@@ -200,12 +200,11 @@ function Chat() {
   }, [messages]);
 
   useEffect(() => {
-
-    if(openedChat.isGroup){
+    if (openedChat?.isGroup) {
       const getPermissions = async () => {
         try {
           const response = await fetch(
-            `${apiUrl}/v1/groups/${openedChat.groupId}/user-info/`,
+            `${apiUrl}/v1/groups/${openedChat?.groupId}/user-info/`,
             {
               method: 'GET',
               headers: {
@@ -215,24 +214,28 @@ function Chat() {
             },
           );
           const data = await response.json();
-          setCanMessage((data.data.user.customTitle === 'Owner') || (data.data.user.customTitle === 'Admin') || (data.data.user.permissions.sendMessages));
+          setCanMessage(
+            data.data.user.customTitle === 'Owner' ||
+              data.data.user.customTitle === 'Admin' ||
+              data.data.user.permissions.sendMessages,
+          );
           console.log(data.data.user);
           // console.log(response);
         } catch (error) {
           console.error('Error fetching user permissions:', error);
         }
-      }
+      };
       getPermissions();
     }
     setCommentToMessageId(null);
     setReplyToMessageId(null);
     const fetchMessages = async () => {
       try {
-        if (!openedChat.id) {
+        if (!openedChat?.id) {
           return;
         }
         const response = await fetch(
-          `${apiUrl}/v1/chats/chat/${openedChat.id}`,
+          `${apiUrl}/v1/chats/chat/${openedChat?.id}`,
           {
             method: 'GET',
             headers: {
@@ -260,7 +263,6 @@ function Chat() {
           }
         });
 
-
         data.chat.participants.forEach((participant) => {
           tempUsers.push(participant.userId.username);
         });
@@ -280,11 +282,11 @@ function Chat() {
 
     const fetchChannelMessages = async () => {
       try {
-        if (!openedChat.channelId) {
+        if (!openedChat?.channelId) {
           return;
         }
         const response = await fetch(
-          `${apiUrl}/v1/channels/${openedChat.channelId}/chat`,
+          `${apiUrl}/v1/channels/${openedChat?.channelId}/chat`,
           {
             method: 'GET',
             headers: {
@@ -328,7 +330,7 @@ function Chat() {
     const fetchChannelInfo = async () => {
       try {
         const response = await fetch(
-          `${apiUrl}/v1/channels/${openedChat.channelId}`,
+          `${apiUrl}/v1/channels/${openedChat?.channelId}`,
           {
             method: 'GET',
             headers: {
@@ -351,7 +353,7 @@ function Chat() {
       }
     };
 
-    if (openedChat.isChannel) {
+    if (openedChat?.isChannel) {
       fetchChannelInfo();
       fetchChannelMessages();
     } else {
@@ -390,7 +392,7 @@ function Chat() {
     setInputValue(value);
     socketGeneralRef.current.emit(
       'draft',
-      { chatId: openedChat.id, draft: value },
+      { chatId: openedChat?.id, draft: value },
       (res) => {
         console.log(res);
       },
@@ -425,10 +427,10 @@ function Chat() {
       if (selectedFile) setLoading(true);
 
       const newMessage = {
-        chatId: openedChat.id,
+        chatId: openedChat?.id,
         content: inputValue,
         messageType: 'text',
-        isPost: openedChat.isChannel && !commentToMessageId, // and not comment
+        isPost: openedChat?.isChannel && !commentToMessageId, // and not comment
         timestamp: new Date().toISOString(),
         date: new Date().toISOString().slice(0, 10),
         replyOn: replyToMessageId ? { _id: replyToMessageId } : null, // Link the reply if there's any
@@ -479,7 +481,7 @@ function Chat() {
               if (response.status === 'ok') {
                 console.log('Server acknowledgment:', response);
                 const newRenderedMessage = {
-                  chatId: openedChat.id,
+                  chatId: openedChat?.id,
                   _id: response.data.id,
                   content: newMessage.content,
                   type: newMessage.type,
@@ -601,7 +603,7 @@ function Chat() {
         body: audioFormData,
       });
       const newMessage = {
-        chatId: openedChat.id,
+        chatId: openedChat?.id,
         messageType: 'audio',
         timestamp: new Date().toISOString(),
         date: new Date().toISOString().slice(0, 10),
@@ -618,7 +620,7 @@ function Chat() {
         if (response.status === 'ok') {
           console.log('Server acknowledgment:', response);
           const newRenderedMessage = {
-            chatId: openedChat.id,
+            chatId: openedChat?.id,
             _id: response.data.id,
             content: newMessage.content,
             type: newMessage.type,
@@ -669,7 +671,7 @@ function Chat() {
       // }),
       // date: new Date().toISOString().slice(0, 10),
       // replyOn: replyToMessageId ? { _id: replyToMessageId } : null,
-      chatId: openedChat.id,
+      chatId: openedChat?.id,
       messageType: 'text',
       isSticker: true,
       timestamp: new Date().toISOString(),
@@ -686,7 +688,7 @@ function Chat() {
         if (response.status === 'ok') {
           console.log('Server acknowledgment:', response);
           const newRenderedMessage = {
-            chatId: openedChat.id,
+            chatId: openedChat?.id,
             _id: response.data.id,
             content: newMessage.content,
             type: newMessage.type,
@@ -820,9 +822,10 @@ function Chat() {
             setCommentToMessageId={setCommentToMessageId}
           />
         )}
-        {(openedChat.isChannel && isAdmin) ||
-        (openedChat.isChannel && !isAdmin && commentToMessageId) ||
-        (!openedChat.isChannel && !openedChat.isGroup) || (canMessage) ? (
+        {(openedChat?.isChannel && isAdmin) ||
+        (openedChat?.isChannel && !isAdmin && commentToMessageId) ||
+        (!openedChat?.isChannel && !openedChat?.isGroup) ||
+        canMessage ? (
           <div className="flex items-center space-x-2">
             {/* Emoji/Sticker/GIF Picker Button */}
             <ReactionPicker
@@ -861,7 +864,7 @@ function Chat() {
               onKeyDown={handleKeyDown}
               className="flex-grow rounded-lg border border-gray-300 px-4 py-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             />
-            {!(openedChat.isChannel && commentToMessageId) && (
+            {!(openedChat?.isChannel && commentToMessageId) && (
               <>
                 <AttachMedia
                   setErrorMessage={setErrorMessage}
@@ -892,7 +895,9 @@ function Chat() {
             )}
           </div>
         ) : (
-          <p className="text-center text-text-primary">You are not allowed to send messages in this chat!</p>
+          <p className="text-center text-text-primary">
+            You are not allowed to send messages in this chat!
+          </p>
         )}
       </div>
       {viewingImage && (
