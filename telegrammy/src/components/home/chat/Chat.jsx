@@ -13,6 +13,8 @@ import ReactionPicker from './messagingSpace/pickerReaction/ReactionPicker';
 import LoadingScreen from './messagingSpace/LoadingScreen';
 import PinnedMessagesBar from './PinnedMessagesBar';
 import { useSocket } from '../../../contexts/SocketContext';
+import { GiConsoleController } from 'react-icons/gi';
+import { setOpenedChat } from '../../../slices/chatsSlice';
 import { useDispatch } from 'react-redux';
 import CommentToSpace from './messagingSpace/CommentToSpace';
 import Comments from './messages/Comments';
@@ -157,6 +159,7 @@ function Chat() {
         );
       });
 
+      socketGeneralRef.current.on('message:sent', (message) => {
       socketGeneralRef.current.on('message:sent', (message) => {
         trie.insert(message.content, message._id);
         console.log(message.senderId);
@@ -497,7 +500,7 @@ function Chat() {
               if (response.status === 'ok') {
                 console.log('Server acknowledgment:', response);
                 const newRenderedMessage = {
-                  chatId: openedChat?.id,
+                  chatId: openedChat.id,
                   _id: response.data.id,
                   content: newMessage.content,
                   type: newMessage.type,
@@ -506,7 +509,6 @@ function Chat() {
                   mediaUrl: newMessage.mediaUrl,
                   messageType: newMessage.messageType,
                   isPinned: false,
-                  replyOn: newMessage.replyOn || null,
                 };
                 console.log(newRenderedMessage);
                 setMessages((prevMessages) => [
@@ -514,7 +516,7 @@ function Chat() {
                   newRenderedMessage,
                 ]);
 
-                setInputValue('');
+                setInputValue(''); // Clear the input field
               } else {
                 console.log(response);
                 console.error('Error:', response.message || 'Unknown error');

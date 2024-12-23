@@ -132,7 +132,7 @@ function MediaShower({ medias, initialStoryIndex, profile }) {
 
   return (
     <div
-      className="fixed z-10 flex h-screen w-screen items-center justify-around bg-bg-primary opacity-90"
+      className="fixed z-[100] flex h-screen w-screen items-center justify-around bg-bg-primary opacity-90"
       onClick={handleCloseStory}
     >
       <div

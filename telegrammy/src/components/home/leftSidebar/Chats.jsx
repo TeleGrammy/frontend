@@ -244,7 +244,7 @@ const Chats = ({ searchValue }) => {
                       className="text-sm text-gray-400"
                       data-test-id={`chat-timestamp-${chat.id}`}
                     >
-                      Last Seen {formatTimeStamp(chat.lastSeen)}
+                      Last Seen {chat.lastSeen}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -252,11 +252,9 @@ const Chats = ({ searchValue }) => {
                       className="truncate text-sm text-gray-400"
                       data-test-id={`chat-message-${chat.id}`}
                     >
-                      {chat.draftMessage
-                        ? `Draft: ${chat.draftMessage}`
-                        : chat.lastMessage
-                          ? chat.lastMessage.content
-                          : 'Hey there! Are you using Telegrammy?'}
+                      {chat.lastMessage
+                        ? chat.lastMessage.content
+                        : 'Hey there! Are you using Telegrammy?'}
                     </p>
                     {chat.unreadCount > 0 && (
                       <span

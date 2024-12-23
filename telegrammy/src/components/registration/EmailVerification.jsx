@@ -239,7 +239,7 @@ const EmailVerification = ({ email }) => {
                 value={digit}
                 onChange={(e) => handleCodeChange(e.target, index)}
                 className="h-12 w-12 rounded-lg border border-blue-300 text-center text-lg focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 sm:h-14 sm:w-14"
-                data-test-id={`${index}-code-input`} // Added data-test-id
+                data-testid={`${index}-code-input`} // Added data-testid
               />
             ))}
           </div>
@@ -252,7 +252,7 @@ const EmailVerification = ({ email }) => {
                 : 'cursor-not-allowed bg-gray-400'
             }`} // Change background color based on button state
             disabled={!isCodeComplete()} // Disable button if code is not complete
-            data-test-id="submit-button" // Added data-test-id
+            data-testid="submit-button" // Added data-testid
           >
             Submit
           </button>
@@ -268,7 +268,7 @@ const EmailVerification = ({ email }) => {
             }`}
             onClick={handleResendCode}
             disabled={state.isResendDisabled}
-            data-test-id="resend-code-button" // Added data-test-id
+            data-testid="resend-code-button" // Added data-testid
           >
             {state.isResendDisabled
               ? `Resend Code (${state.timer}s)`

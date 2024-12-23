@@ -93,6 +93,10 @@
   @apply w-[10px];
 }
 
+.noScrollable::-webkit-scrollbar {
+  @apply h-[0px]; /* Scrollbar width */
+}
+
 .scrollable::-webkit-scrollbar-track {
   @apply bg-bg-primary; /* Track color */
 }

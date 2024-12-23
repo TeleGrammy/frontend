@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Header from '../leftSidebar/Header';
 import CloseButton from './CloseButton';
@@ -12,6 +12,8 @@ import {
   setMyStories,
 } from '../../../slices/storiesSlice';
 import { BeatLoader } from 'react-spinners';
+
+const apiUrl = import.meta.env.VITE_API_URL;
 
 function MyStories() {
   const { myStories } = useSelector((state) => state.stories);
@@ -29,16 +31,13 @@ function MyStories() {
       setLoading(true);
       setError('');
       try {
-        const response = await fetch(
-          'http://localhost:8080/api/v1/user/stories/',
-          {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json', // Specify JSON response expected
-            },
-            credentials: 'include', // Include credentials (cookies)
+        const response = await fetch(`${apiUrl}/v1/user/stories/`, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json', // Specify JSON response expected
           },
-        );
+          credentials: 'include', // Include credentials (cookies)
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch stories');
         }

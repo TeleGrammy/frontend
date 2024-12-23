@@ -10,6 +10,7 @@ import Auth from './pages/Auth';
 
 import { SocketProvider } from './contexts/SocketContext';
 import { useFirebase } from './contexts/FirebaseContext';
+import { CallProvider } from './contexts/CallContext';
 
 export default function App() {
   const { generateToken, messaging } = useFirebase();
@@ -48,7 +49,9 @@ export default function App() {
             ) : (
               <ProtectedRoute>
                 <SocketProvider>
-                  <Home />
+                  <CallProvider>
+                    <Home />
+                  </CallProvider>
                 </SocketProvider>
               </ProtectedRoute>
             )

@@ -7,6 +7,7 @@ import darkReducer from './slices/darkModeSlice';
 import sidebarReducer from './slices/sidebarSlice';
 import storiesReducer from './slices/storiesSlice';
 import chatsReducer from './slices/chatsSlice';
+import callReducer from './slices/callSlice';
 
 const store = configureStore({
   reducer: {
@@ -17,6 +18,7 @@ const store = configureStore({
     sidebar: sidebarReducer,
     stories: storiesReducer,
     chats: chatsReducer,
+    call: callReducer,
   },
 });
 

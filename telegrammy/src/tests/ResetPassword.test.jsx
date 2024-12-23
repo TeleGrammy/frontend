@@ -1,123 +1,140 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import ResetPassword from '../pages/ResetPassword';
 
-jest.mock('react-router-dom', () => {
-  const actualRouter = jest.requireActual('react-router-dom');
-  return {
-    ...actualRouter,
-    useNavigate: jest.fn(), // Mock the useNavigate hook
-  };
-});
+// Mock navigate and fetch
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+  useParams: () => ({ token: 'test-token' }),
+}));
 
-// Mock the fetch function
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    json: () => Promise.resolve({ success: true }),
-  }),
-);
+global.fetch = jest.fn();
 
 describe('ResetPassword Component', () => {
-  const mockNavigate = jest.fn();
-
-  function renderWithRouter(
-    component,
-    { route = '/reset-password/sample-token' } = {},
-  ) {
-    window.history.pushState({}, 'Test page', route); // Set the route explicitly
-    return render(
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<div>Home Page</div>} />{' '}
-          {/* Root route for completeness */}
-          <Route path="/reset-password/:token" element={component} />
-        </Routes>
-      </BrowserRouter>,
-    );
-  }
-
   beforeEach(() => {
-    jest.clearAllMocks(); // Clear mock data before each test
+    jest.clearAllMocks();
+    // Suppress warnings in the console
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
-  test('renders the ResetPassword component', () => {
-    renderWithRouter(<ResetPassword />, {
-      route: '/reset-password/sample-token',
-    });
-
-    expect(screen.getByText(/Set Your New Password/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/New Password/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Confirm Password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Submit/i })).toBeInTheDocument();
-  });
-
-  test('handles password input change', () => {
-    renderWithRouter(<ResetPassword />, {
-      route: '/reset-password/sample-token',
-    });
-
-    const passwordInput = screen.getByLabelText(/New Password/i);
-    fireEvent.change(passwordInput, { target: { value: 'new-password' } });
-    expect(passwordInput).toHaveValue('new-password');
-  });
-
-  test('handles confirm password input change', () => {
-    renderWithRouter(<ResetPassword />, {
-      route: '/reset-password/sample-token',
-    });
-
-    const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
-    fireEvent.change(confirmPasswordInput, {
-      target: { value: 'new-password' },
-    });
-    expect(confirmPasswordInput).toHaveValue('new-password');
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   test('shows error message if passwords do not match', async () => {
-    renderWithRouter(<ResetPassword />, {
-      route: '/reset-password/sample-token',
-    });
+    render(
+      <MemoryRouter>
+        <ResetPassword />
+      </MemoryRouter>,
+    );
 
-    const passwordInput = screen.getByLabelText(/New Password/i);
-    const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
-    const submitButton = screen.getByRole('button', { name: /Submit/i });
+    const passwordInput = screen.getByTestId('password-input');
+    const confirmPasswordInput = screen.getByTestId('confirm-password-input');
+    const submitButton = screen.getByTestId('submit-button');
 
+    // Simulate entering mismatched passwords
     fireEvent.change(passwordInput, { target: { value: 'password1' } });
     fireEvent.change(confirmPasswordInput, { target: { value: 'password2' } });
     fireEvent.click(submitButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Passwords do not match/i)).toBeInTheDocument();
-    });
+    // Check for error message
+    await waitFor(() =>
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'Passwords do not match.',
+      ),
+    );
   });
 
-  test('submits the form successfully if passwords match', async () => {
-    const { useNavigate } = require('react-router-dom'); // Get the mocked useNavigate
-    useNavigate.mockImplementation(() => mockNavigate); // Implement the mocked navigation
-
-    renderWithRouter(<ResetPassword />, {
-      route: '/reset-password/sample-token',
+  test('submits the form and navigates successfully if passwords match', async () => {
+    // Mock successful fetch response
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({}),
     });
 
-    const passwordInput = screen.getByLabelText(/New Password/i);
-    const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
-    const submitButton = screen.getByRole('button', { name: /Submit/i });
+    render(
+      <MemoryRouter>
+        <ResetPassword />
+      </MemoryRouter>,
+    );
 
-    fireEvent.change(passwordInput, { target: { value: 'matching-password' } });
-    fireEvent.change(confirmPasswordInput, {
-      target: { value: 'matching-password' },
-    });
+    const passwordInput = screen.getByTestId('password-input');
+    const confirmPasswordInput = screen.getByTestId('confirm-password-input');
+    const submitButton = screen.getByTestId('submit-button');
+
+    // Simulate entering matching passwords
+    fireEvent.change(passwordInput, { target: { value: 'password1' } });
+    fireEvent.change(confirmPasswordInput, { target: { value: 'password1' } });
     fireEvent.click(submitButton);
 
+    // Check navigation
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/'); // Check navigation
+      expect(mockNavigate).toHaveBeenCalledWith('/');
     });
   });
 
-  afterAll(() => {
-    // Cleanup fetch mock
-    global.fetch.mockRestore();
+  test('shows error message if the backend returns an error', async () => {
+    // Mock failed fetch response
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      json: jest.fn().mockResolvedValue({
+        message: 'Invalid token or request.',
+      }),
+    });
+
+    render(
+      <MemoryRouter>
+        <ResetPassword />
+      </MemoryRouter>,
+    );
+
+    const passwordInput = screen.getByTestId('password-input');
+    const confirmPasswordInput = screen.getByTestId('confirm-password-input');
+    const submitButton = screen.getByTestId('submit-button');
+
+    // Simulate entering matching passwords
+    fireEvent.change(passwordInput, { target: { value: 'password1' } });
+    fireEvent.change(confirmPasswordInput, { target: { value: 'password1' } });
+    fireEvent.click(submitButton);
+
+    // Check for backend error message
+    await waitFor(() =>
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'Invalid token or request.',
+      ),
+    );
+  });
+
+  test('displays "An error occurred" if a network error occurs', async () => {
+    // Mock network error
+    fetch.mockRejectedValueOnce(new Error('Network error'));
+
+    render(
+      <MemoryRouter>
+        <ResetPassword />
+      </MemoryRouter>,
+    );
+
+    const passwordInput = screen.getByTestId('password-input');
+    const confirmPasswordInput = screen.getByTestId('confirm-password-input');
+    const submitButton = screen.getByTestId('submit-button');
+
+    // Simulate entering matching passwords
+    fireEvent.change(passwordInput, { target: { value: 'password1' } });
+    fireEvent.change(confirmPasswordInput, { target: { value: 'password1' } });
+    fireEvent.click(submitButton);
+
+    // Check for generic error message
+    await waitFor(() =>
+      expect(screen.getByTestId('error-message')).toHaveTextContent(
+        'An error occurred. Please try again later.',
+      ),
+    );
   });
 });

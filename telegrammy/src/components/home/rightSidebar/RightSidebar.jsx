@@ -5,6 +5,7 @@ import GroupOrChannelInfo from '../chat/GroupOrChannelInfo';
 import ChannelInfo from '../chat/ChannelInfo';
 import { useEffect } from 'react';
 import { closeRightSidebar } from '../../../slices/sidebarSlice';
+import CallsLog from './CallsLog';
 
 function RightSidebar() {
   const { currentRightSidebar } = useSelector((state) => state.sidebar);
@@ -31,6 +32,8 @@ function RightSidebar() {
       {currentRightSidebar === 'My Stories' && <MyStories />}
       {currentRightSidebar === 'Group Info' && <GroupOrChannelInfo />}
       {currentRightSidebar === 'Channel Info' && <ChannelInfo />}
+
+      {currentRightSidebar === 'Calls' && <CallsLog />}
 
       {/** setting component */}
       {/* {currentRightSidebar === '' && < />} */}

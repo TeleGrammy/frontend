@@ -37,7 +37,7 @@ const Settings = () => {
           credentials: 'include',
         });
         const data = await response.json();
-        console.log(data);
+        // console.log(data);
         setName(data.data.user.screenName);
         setBio(data.data.user.bio || '');
         setUsername(data.data.user.username);
@@ -71,7 +71,10 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div
+        data-testid="loading"
+        className="flex min-h-screen items-center justify-center"
+      >
         <ClipLoader color="#ffffff" size={50} />
       </div>
     );
@@ -84,7 +87,7 @@ const Settings = () => {
           {/* Header */}
           <div className="flex items-center justify-between sm:py-4">
             <button
-              data-test-id="settings"
+              data-testid="settings"
               onClick={() => handleClick()}
               className="text-[#A9A9A9] hover:text-gray-300"
               aria-label="Go Back"
@@ -108,7 +111,7 @@ const Settings = () => {
               Settings
             </h2>
             <button
-              data-test-id="edit-settings"
+              data-testid="edit-settings"
               className="flex items-center text-[#FF6347] hover:text-[#FF4500]"
               onClick={() => setView('edit')}
               title="Edit Profile"
@@ -168,7 +171,7 @@ const Settings = () => {
           {/* Settings Options */}
           <div className="space-y-3 sm:space-y-4">
             <button
-              data-test-id="privacy"
+              data-testid="privacy"
               className="flex w-full items-center rounded-lg bg-bg-secondary px-3 py-2 text-left text-text-primary transition duration-200 hover:bg-bg-hover sm:px-4 sm:py-3"
               onClick={() => setView('privacy')}
             >
@@ -190,6 +193,7 @@ const Settings = () => {
 
             <div className="flex w-full items-center rounded-lg bg-bg-secondary px-3 py-2 text-left text-text-primary transition duration-200 hover:bg-bg-hover sm:px-4 sm:py-3">
               <input
+                data-testid="auto-download"
                 id="autoDownloadCheckbox"
                 type="checkbox"
                 checked={autoDownload}

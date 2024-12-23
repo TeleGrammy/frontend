@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 const apiUrl = import.meta.env.VITE_API_URL;
 
+// access user id by JSON.parse(localStorage.getItem('user'))._id
+
 // Define the initial state
 const initialState = {
   user: localStorage.getItem('user')
