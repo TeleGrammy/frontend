@@ -55,7 +55,7 @@ pipeline{
                             }
                         } else if(env.BRANCH_NAME== 'main'){
                             tag = env.BUILD_NUMBER
-                            sh 'docker build -t telegrammy/frontend --build-arg VITE_API_URL=https://telegrammy.tech/api --build-arg VITE_WS_URL=https://telegrammy.tech .'
+                            sh 'docker build -t telegrammy/frontend --build-arg VITE_API_URL=https://telegrammy.tech/api --build-arg VITE_WS_URL=https://sockets.telegrammy.tech .'
                             docker.withRegistry('https://index.docker.io/v1/','dockerhub-cred'){
                                 docker.image('telegrammy/frontend').push("${tag}")
                             }
