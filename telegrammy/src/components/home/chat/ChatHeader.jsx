@@ -41,17 +41,19 @@ function ChatHeader({ handleKey }) {
     <>
       <div>
         <div className="flex items-center bg-bg-primary p-4">
-          <img
-            data-test-id="chat-image"
-            src={
-              openedChat?.photo
-                ? openedChat?.photo
-                : 'https://ui-avatars.com/api/?name=' + openedChat?.name
-            }
-            alt=""
-            className="h-10 w-10 cursor-pointer rounded-full"
-            onClick={toggleExpand}
-          />
+          {openedChat && (
+            <img
+              data-test-id="chat-image"
+              src={
+                openedChat?.photo
+                  ? openedChat?.photo
+                  : 'https://ui-avatars.com/api/?name=' + openedChat?.name
+              }
+              alt=""
+              className="h-10 w-10 cursor-pointer rounded-full"
+              onClick={toggleExpand}
+            />
+          )}
           <h1 className="mb-1 ml-5 text-xl font-semibold text-text-primary">
             {openedChat?.name}
           </h1>

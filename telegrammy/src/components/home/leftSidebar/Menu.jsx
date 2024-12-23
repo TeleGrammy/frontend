@@ -17,6 +17,7 @@ import {
   FaBullseye,
   FaSignOutAlt,
 } from 'react-icons/fa';
+import { setOpenedChat } from '../../../slices/chatsSlice';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -66,6 +67,7 @@ function Menu() {
 
       if (response.ok) {
         console.log('Logout Success');
+        dispatch(setOpenedChat(null));
         dispatch(logout());
         navigate('/');
       }

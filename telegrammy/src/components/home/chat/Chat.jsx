@@ -160,7 +160,7 @@ function Chat() {
       socketGeneralRef.current.on('message:sent', (message) => {
         trie.insert(message.content, message._id);
         console.log(message.senderId);
-        if (message.senderId._id !== userId) {
+        if (message.senderId._id !== userId && openedChat) {
           console.log(socketGeneralRef.current);
           console.log('Message received:', message);
           message['type'] = 'received';
@@ -205,7 +205,7 @@ function Chat() {
     } catch (err) {
       console.log(err);
     }
-  }, [socketGeneralRef]);
+  }, [socketGeneralRef, openedChat]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
