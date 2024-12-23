@@ -21,8 +21,8 @@ function ChatHeader({ handleKey }) {
     if (isRightSidebarOpen) {
       dispatch(closeRightSidebar());
     } else {
-      if (openedChat.isGroup) dispatch(setRightSidebar(`Group Info`));
-      else if (openedChat.isChannel) dispatch(setRightSidebar('Channel Info'));
+      if (openedChat?.isGroup) dispatch(setRightSidebar(`Group Info`));
+      else if (openedChat?.isChannel) dispatch(setRightSidebar('Channel Info'));
     }
   };
 
@@ -44,16 +44,16 @@ function ChatHeader({ handleKey }) {
           <img
             data-test-id="chat-image"
             src={
-              openedChat.photo
-                ? openedChat.photo
-                : 'https://ui-avatars.com/api/?name=' + openedChat.name
+              openedChat?.photo
+                ? openedChat?.photo
+                : 'https://ui-avatars.com/api/?name=' + openedChat?.name
             }
             alt=""
             className="h-10 w-10 cursor-pointer rounded-full"
             onClick={toggleExpand}
           />
           <h1 className="mb-1 ml-5 text-xl font-semibold text-text-primary">
-            {openedChat.name}
+            {openedChat?.name}
           </h1>
           {searchVisible ? (
             <div className="ml-auto flex items-center">

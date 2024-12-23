@@ -90,6 +90,7 @@
 
 .scrollable::-webkit-scrollbar {
   @apply h-[5px]; /* Scrollbar width */
+  @apply w-[10px];
 }
 
 .scrollable::-webkit-scrollbar-track {

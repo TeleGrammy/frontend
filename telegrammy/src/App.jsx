@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 import Home from './pages/Home';
 import AuthCallback from './components/registration/AuthCallback';
@@ -29,23 +29,32 @@ export default function App() {
     // });
   }, []);
 
+  const [isAdmin, setIsAdmin] = useState(
+    JSON.parse(localStorage.getItem('user')).isAdmin,
+  );
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route index element={<AuthCallback />} />
-        <Route path="/auth/*" element={<Auth />} />
+        <Route index element={<AuthCallback setIsAdmin={setIsAdmin} />} />
+        <Route path="/auth/*" element={<Auth setIsAdmin={setIsAdmin} />} />
         <Route
           path="/home"
           element={
-            <ProtectedRoute>
-              <SocketProvider>
-                <Home />
-              </SocketProvider>
-            </ProtectedRoute>
+            isAdmin ? (
+              <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            ) : (
+              <ProtectedRoute>
+                <SocketProvider>
+                  <Home />
+                </SocketProvider>
+              </ProtectedRoute>
+            )
           }
         />
       </Routes>
-      {/* <AdminDashboard/> */}
     </BrowserRouter>
   );
 }

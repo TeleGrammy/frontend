@@ -19,15 +19,14 @@ function GroupSettings({
   isOwner,
   toggleView,
 }) {
-  const {socketGroupRef} = useSocket();
-
+  const { socketGroupRef } = useSocket();
   const { openedChat } = useSelector((state) => state.chats);
   const [privacy, setPrivacy] = useState('');
   const [sizeLimit, setSizeLimit] = useState(0);
   const [newDescription, setDescription] = useState('');
   const [newName, setName] = useState(groupName);
   const [muteDuration, setMuteDuration] = useState('None');
-  const [selectedFile, setSelectedFile] = useState();
+  const [selectedFile,setSelectedFile] = useState();
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -37,7 +36,7 @@ function GroupSettings({
     setPrivacy(groupPrivacy);
     setSizeLimit(groupSizeLimit);
     setDescription(groupDescription);
-  }, [groupPrivacy, groupSizeLimit, socketGroupRef]);
+  }, [groupPrivacy, groupSizeLimit]);
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
@@ -67,12 +66,8 @@ function GroupSettings({
     setSizeLimit(e.target.value);
   };
 
-  const handleMuteChange = (e) => {
-    setMuteDuration(e.target.value);
-  };
-
   const saveChanges = async () => {
-    if (selectedFile) {
+    if(selectedFile){
       try {
         console.log(selectedFile);
         const formData = new FormData();
@@ -104,7 +99,7 @@ function GroupSettings({
     try {
       const updatedData = {
         name: newName,
-        image: groupPhoto,
+        image: groupPhoto, 
         description: newDescription,
       };
 
@@ -113,7 +108,7 @@ function GroupSettings({
         {
           method: 'PATCH',
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json"
           },
           credentials: 'include',
           body: JSON.stringify(updatedData),
@@ -131,24 +126,24 @@ function GroupSettings({
     } catch (error) {
       console.error('Error updating group settings:', error);
     }
-    if (sizeLimit != groupSizeLimit) {
+    if(sizeLimit != groupSizeLimit){
       try {
         const updatedData = {
-          groupSize: sizeLimit,
+          groupSize: sizeLimit
         };
-
+  
         const res = await fetch(
           `${apiUrl}/v1/groups/${openedChat.groupId}/size`,
           {
             method: 'PATCH',
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json"
             },
             credentials: 'include',
             body: JSON.stringify(updatedData),
           },
         );
-
+  
         if (!res.ok) {
           console.error('Failed to update group size.');
         } else {
@@ -160,24 +155,24 @@ function GroupSettings({
         console.error('Error updating group size limit:', error);
       }
     }
-    if (groupPrivacy != privacy) {
+    if(groupPrivacy != privacy){
       try {
         const updatedData = {
-          groupType: privacy,
+          groupType: privacy
         };
-
+  
         const res = await fetch(
           `${apiUrl}/v1/groups/${openedChat.groupId}/group-type`,
           {
             method: 'PATCH',
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json"
             },
             credentials: 'include',
             body: JSON.stringify(updatedData),
           },
         );
-
+  
         if (!res.ok) {
           console.error('Failed to update group.');
         } else {
@@ -191,16 +186,17 @@ function GroupSettings({
     }
   };
 
+
   const deleteGroup = () => {
     const data = {
-      groupId: openedChat.groupId,
-    };
-    socketGroupRef.current.emit('removingGroup', data);
+      groupId: openedChat.groupId
+    }
+    socketGroupRef.current.emit('removingGroup',data);
   };
 
   return (
     <div
-      className="flex flex-col items-center bg-bg-primary p-4"
+      className="flex flex-col items-center bg-bg-primary p-4 overflow-y-auto h-full max-h-[80vh] no-scrollbar"
       data-test-id="group-settings"
     >
       <h2 className="mb-4 text-center text-text-primary">
@@ -315,23 +311,6 @@ function GroupSettings({
             {sizeLimit}
           </p>
         )}
-      </div>
-      <div className="mb-4 flex w-full flex-col items-center">
-        <label className="mb-2 block text-sm text-text-primary">
-          Mute Notifications
-        </label>
-        <select
-          value={muteDuration}
-          onChange={handleMuteChange}
-          className="w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary"
-          data-test-id="mute-duration-select"
-        >
-          <option value="None">None</option>
-          <option value="1 Hour">1 Hour</option>
-          <option value="8 Hours">8 Hours</option>
-          <option value="1 Day">1 Day</option>
-          <option value="Permanent">Permanent</option>
-        </select>
       </div>
       {isAdmin && (
         <button

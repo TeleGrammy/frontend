@@ -18,7 +18,7 @@ const Settings = () => {
   const [maxFileSize, setMaxFileSize] = useState(512);
   const [autoDownload, setAutoDownload] = useState(false);
 
-  // Function to format file size
+  // Function to format file sizeg
   const formatFileSize = (sizeInKB) => {
     return sizeInKB > 1024
       ? `${(sizeInKB / 1024).toFixed(2)} MB`
