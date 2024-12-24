@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ChannelSettings from './ChannelSettings'; // Import the ChannelSettings component
-import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   FaAngleRight,
   FaCreativeCommonsShare,
@@ -15,6 +16,11 @@ import Header from '../leftSidebar/Header';
 import { useSocket } from '../../../contexts/SocketContext';
 import { use } from 'react';
 import { ClipLoader } from 'react-spinners';
+import { setChats } from '../../../slices/chatsSlice';
+import {
+  closeRightSidebar,
+  setRightSidebar,
+} from '../../../slices/sidebarSlice';
 const apiUrl = import.meta.env.VITE_API_URL;
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 
@@ -24,8 +30,8 @@ const initialChannelPhoto = 'https://picsum.photos/50/50';
 
 function ChannelInfo() {
   const { socketChannelRef } = useSocket();
-
-  const { openedChat } = useSelector((state) => state.chats);
+  const dispatch = useDispatch();
+  const { openedChat, chats } = useSelector((state) => state.chats);
   const [isAdmin, setIsAdmin] = useState(true); // Assume the current user is an admin for demonstration
   const [isOwner, setIsOwner] = useState(false);
   const [channelMembers, setChannelMembers] = useState(initialChannelMembers);
@@ -151,6 +157,11 @@ function ChannelInfo() {
 
   const leaveChannel = async () => {
     try {
+      const newChats = chats.filter(
+        (chat) => chat.channelId !== openedChat.channelId,
+      );
+      dispatch(setChats(newChats));
+      dispatch(closeRightSidebar());
       const response = await fetch(
         `${apiUrl}/v1/channels/${openedChat.channelId}`,
         {
@@ -171,6 +182,11 @@ function ChannelInfo() {
 
   const deleteChannel = async () => {
     try {
+      const newChats = chats.filter(
+        (chat) => chat.channelId !== openedChat.channelId,
+      );
+      dispatch(setChats(newChats));
+      dispatch(closeRightSidebar());
       const payload = {
         channelId: openedChat.channelId,
       };
@@ -199,7 +215,11 @@ function ChannelInfo() {
     setView(view === 'info' ? 'edit' : 'info');
   };
 
-  const GenerateInviteLink = () => {};
+  const GenerateInviteLink = () => {
+    toast.success('Link Copied', {
+      position: 'top-right',
+    });
+  };
 
   const handleSubmitAddedUsers = () => {
     const payload = {
@@ -260,8 +280,8 @@ function ChannelInfo() {
             <h1 className="text-lg font-bold text-text-primary">
               {channelName}
             </h1>
-            <div className="ml-auto flex flex-row gap-2">
-              {openedChat.isChannel && (
+            {openedChat.isChannel && isOwner && (
+              <div className="ml-auto flex flex-row gap-2">
                 <div
                   data-testid="invite-link-button"
                   className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-bg-secondary text-3xl hover:bg-bg-button-hover"
@@ -448,14 +468,15 @@ function ChannelInfo() {
                     </li>
                   ))}
                 </ul>
-
-                <div
-                  className="fixed bottom-10 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
-                  onClick={() => setView('addUsers')}
-                  data-test-id="add-memebers-button"
-                >
-                  <FaPlus className="text-text-primary opacity-70" />
-                </div>
+                {isOwner && (
+                  <div
+                    className="fixed bottom-10 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
+                    onClick={() => setView('addUsers')}
+                    data-test-id="add-memebers-button"
+                  >
+                    <FaPlus className="text-text-primary opacity-70" />
+                  </div>
+                )}
 
                 {isOwner ? (
                   <div

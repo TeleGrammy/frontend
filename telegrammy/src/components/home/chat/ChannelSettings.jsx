@@ -1,14 +1,18 @@
 import React, { useState, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { closeRightSidebar } from '../../../slices/sidebarSlice';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function ChannelSettings({ toggleView, isAdmin }) {
+  const dispatch = useDispatch();
   const { openedChat } = useSelector((state) => state.chats);
-  const [channelPhoto, setChannelPhoto] = useState(openedChat.picture);
+  const [channelPhoto, setChannelPhoto] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [channelDescription, setChannelDescription] = useState(
     openedChat.description,
   );
+  const [channelName, setChannelName] = useState(openedChat.name);
   const [privacy, setPrivacy] = useState('Public');
   const [allowDownload, setAllowDownload] = useState(false); // New state for allow download
   const [allowComments, setAllowComments] = useState(false); // New state for allow comments
@@ -19,8 +23,13 @@ function ChannelSettings({ toggleView, isAdmin }) {
     setChannelDescription(e.target.value);
   };
 
+  const handleNameChange = (e) => {
+    setChannelName(e.target.value);
+  };
+
   const handlePhotoChange = (e) => {
     if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
       const file = e.target.files[0];
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -35,52 +44,118 @@ function ChannelSettings({ toggleView, isAdmin }) {
   };
 
   const saveChanges = async () => {
-    if (isAdmin) {
-      console.log('Channel description:', channelDescription);
-      console.log('Channel photo URL:', channelPhoto);
-      console.log('Channel privacy:', privacy);
-      console.log(openedChat);
+    let mediaUrl = null;
+    const uploadChannelImage = async () => {
       try {
-        const response = await fetch(
-          `${apiUrl}/v1/channels/${openedChat.channelId}/privacy`,
+        if (!imageFile) {
+          console.error('No image selected.');
+          return;
+        }
+        console.log(imageFile);
+        const formData = new FormData();
+        formData.append('media', imageFile);
+        const mediaResponse = await fetch(
+          `${apiUrl}/v1/messaging/upload/media`,
           {
-            method: 'PATCH',
+            method: 'POST',
             headers: {
               Accept: 'application/json',
-              'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              privacy: privacy === 'Public',
-              comments: allowComments,
-              download: allowDownload,
-            }),
             credentials: 'include',
+            body: formData,
           },
         );
-        const data = await response.json();
-        console.log(data);
-        toggleView('info');
-      } catch (error) {
-        console.error('Error creating channel:', error.message);
-      }
+        if (!mediaResponse.ok) {
+          console.error(
+            `Error uploading channel image: ${mediaResponse.status} ${mediaResponse.statusText}`,
+          );
+          return;
+        }
 
-      // Logic to save changes to the server or state
-    } else {
-      console.log('Only admins can save changes.');
+        const mediaResponseData = await mediaResponse.json();
+        console.log(mediaResponseData);
+        mediaUrl = mediaResponseData.signedUrl;
+      } catch (error) {
+        console.error('Error uploading channel image:', error.message);
+      }
+    };
+
+    const updateAll = async () => {
+      if (isAdmin) {
+        console.log('Channel description:', channelDescription);
+        console.log('Channel photo URL:', channelPhoto);
+        console.log('Channel privacy:', privacy);
+        console.log(openedChat);
+        try {
+          const privacyResponse = await fetch(
+            `${apiUrl}/v1/channels/${openedChat.channelId}/privacy`,
+            {
+              method: 'PATCH',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                privacy: privacy === 'Public',
+                comments: allowComments,
+                download: allowDownload,
+              }),
+              credentials: 'include',
+            },
+          );
+          const privacyData = await privacyResponse.json();
+          console.log(privacyData);
+
+          const updateResponse = await fetch(
+            `${apiUrl}/v1/channels/${openedChat.channelId}`,
+            {
+              method: 'PATCH',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                name: channelName,
+                description: channelDescription,
+                image: mediaUrl,
+              }),
+              credentials: 'include',
+            },
+          );
+          const updateData = await updateResponse.json();
+          console.log(updateData);
+          dispatch(closeRightSidebar());
+        } catch (error) {
+          console.error('Error creating channel:', error.message);
+        }
+
+        // Logic to save changes to the server or state
+      } else {
+        console.log('Only admins can save changes.');
+      }
+    };
+
+    if (channelPhoto) {
+      uploadChannelImage().then(updateAll);
     }
   };
 
-  const leaveChannel = () => {
-    console.log('Leaving the Channel...');
-    // Logic to leave the Channel
-  };
+  const deleteChannel = async () => {
+    try {
+      const newChats = chats.filter(
+        (chat) => chat.channelId !== openedChat.channelId,
+      );
+      dispatch(setChats(newChats));
+      dispatch(closeRightSidebar());
+      const payload = {
+        channelId: openedChat.channelId,
+      };
 
-  const deleteChannel = () => {
-    if (isAdmin) {
-      console.log('Deleting the Channel...');
-      // Logic to delete the Channel
-    } else {
-      console.log('Only admins can delete the Channel.');
+      socketChannelRef.current.emit('removingChannel', payload, (response) => {
+        console.log('removingChannel: ', response);
+      });
+    } catch (error) {
+      console.error('Error leaving channel:', error);
     }
   };
 
@@ -120,14 +195,24 @@ function ChannelSettings({ toggleView, isAdmin }) {
       </div>
       <div className="mb-4 flex w-full flex-col items-center">
         {isAdmin ? (
-          <input
-            data-test-id="description-input"
-            type="text"
-            value={channelDescription}
-            onChange={handleDescriptionChange}
-            className="mb-2 w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-center text-text-primary"
-            placeholder="Enter new Channel description"
-          />
+          <>
+            <input
+              data-test-id="description-input"
+              type="text"
+              value={channelName}
+              onChange={handleNameChange}
+              className="mb-2 w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-center text-text-primary"
+              placeholder="Enter new Name"
+            />
+            <input
+              data-test-id="description-input"
+              type="text"
+              value={channelDescription}
+              onChange={handleDescriptionChange}
+              className="mb-2 w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-center text-text-primary"
+              placeholder="Enter new Description"
+            />
+          </>
         ) : (
           <p className="mb-2 text-center text-text-primary">
             {channelDescription}
@@ -183,13 +268,6 @@ function ChannelSettings({ toggleView, isAdmin }) {
           Save Changes
         </button>
       )}
-      <button
-        data-test-id="leave-channel-button"
-        className="mb-4 w-3/4 rounded-lg bg-red-500 px-2 py-1 text-white hover:bg-red-600"
-        onClick={leaveChannel}
-      >
-        Leave Channel
-      </button>
       {isAdmin && (
         <button
           data-test-id="delete-channel-button"
