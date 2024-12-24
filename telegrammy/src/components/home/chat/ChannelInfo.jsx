@@ -289,15 +289,16 @@ function ChannelInfo() {
                 >
                   <FaCreativeCommonsShare className="text-text-primary opacity-70" />
                 </div>
-              )}
-              <button
-                data-testid="toggle-edit-info-button"
-                className="rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
-                onClick={toggleView}
-              >
-                {view === 'info' ? 'Edit' : 'Back'}
-              </button>
-            </div>
+
+                <button
+                  data-testid="toggle-edit-info-button"
+                  className="rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
+                  onClick={toggleView}
+                >
+                  {view === 'info' ? 'Edit' : 'Back'}
+                </button>
+              </div>
+            )}
           </Header>
 
           <div className="relative h-[80%] w-[90%] bg-bg-primary">
