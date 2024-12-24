@@ -37,6 +37,7 @@ function ContactList() {
         );
         const data = response.data;
         console.log(data);
+        dispatch(setcurrentMenu('ChatList'));
       } catch (error) {
         console.error('Error addind to contacts:', error.message);
       }
@@ -57,6 +58,7 @@ function ContactList() {
         },
       );
       console.log('Successfully joined the channel:', response.data);
+      dispatch(setcurrentMenu('ChatList'));
     } catch (error) {
       console.error('Error joining channel:', error.message);
     }
@@ -82,6 +84,7 @@ function ContactList() {
         type: searchType,
         ...{ uuid: input },
         ...(searchType !== 'user' && { name: input }),
+        limit: 50,
       });
 
       const response = await fetch(
