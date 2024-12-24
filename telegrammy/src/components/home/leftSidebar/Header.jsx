@@ -1,3 +1,5 @@
+import react from 'react';
+
 function Header({ className, children }) {
   return (
     <header

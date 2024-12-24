@@ -34,6 +34,7 @@ function CallButtons({
         <>
           {callState === 'in call' && (
             <button
+              data-testid="mute-button"
               onClick={toggleMute}
               className={`rounded-full p-2 ${
                 isMute ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'

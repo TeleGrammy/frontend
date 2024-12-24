@@ -6,7 +6,7 @@ function JoinCall({ activeCall, setActiveCall }) {
   const handleclick = async () => {
     try {
       const response = await fetch(`${apiUrl}/v1/call/join/${activeCall._id}`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           Accept: 'application/json', // Specify JSON response expected
         },

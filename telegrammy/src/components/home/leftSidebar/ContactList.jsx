@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { setcurrentMenu } from '../../../slices/sidebarSlice';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaAngleRight, FaGhost } from 'react-icons/fa';
 import axios from 'axios';
 
@@ -37,6 +37,7 @@ function ContactList() {
         );
         const data = response.data;
         console.log(data);
+        dispatch(setcurrentMenu('ChatList'));
       } catch (error) {
         console.error('Error addind to contacts:', error.message);
       }
@@ -57,6 +58,7 @@ function ContactList() {
         },
       );
       console.log('Successfully joined the channel:', response.data);
+      dispatch(setcurrentMenu('ChatList'));
     } catch (error) {
       console.error('Error joining channel:', error.message);
     }
@@ -82,6 +84,7 @@ function ContactList() {
         type: searchType,
         ...{ uuid: input },
         ...(searchType !== 'user' && { name: input }),
+        limit: 50,
       });
 
       const response = await fetch(
@@ -139,7 +142,7 @@ function ContactList() {
         <div className="w-full bg-bg-primary">
           <div className="mb-4 flex w-full items-center justify-between sm:mb-6">
             <button
-              data-test-id="go-back-button"
+              data-testid="go-back-button"
               onClick={() => dispatch(setcurrentMenu('ChatList'))}
               className="text-text-primary hover:text-gray-300"
               aria-label="Go Back"
@@ -160,7 +163,7 @@ function ContactList() {
               </svg>
             </button>
             <h2
-              data-test-id="new-contact-header"
+              data-testid="new-contact-header"
               className="m-auto text-xl font-semibold text-text-primary"
             >
               Search
@@ -215,7 +218,7 @@ function ContactList() {
                 Enter {choice}
               </label>
               <input
-                data-test-id="search-input"
+                data-testid="search-input"
                 type={
                   choice === 'User Name' || choice === 'Phone Number'
                     ? 'text'
@@ -233,7 +236,7 @@ function ContactList() {
       </div>
       {input.length > 0 && (
         <button
-          data-test-id="search-button"
+          data-testid="search-button"
           className="mt-4 rounded-lg bg-bg-button px-4 py-2 text-text-primary hover:bg-bg-button-hover"
           onClick={handleSearch}
         >

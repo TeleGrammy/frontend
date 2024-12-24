@@ -1,7 +1,10 @@
+// GroupSettings.jsx
+
 import React, { useState, useRef, useEffect } from 'react';
-const apiUrl = import.meta.env.VITE_API_URL;
 import { useSocket } from '../../../contexts/SocketContext';
 import { useSelector } from 'react-redux';
+
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost';
 
 function GroupSettings({
   groupId,
@@ -25,18 +28,19 @@ function GroupSettings({
   const [sizeLimit, setSizeLimit] = useState(0);
   const [newDescription, setDescription] = useState('');
   const [newName, setName] = useState(groupName);
-  const [muteDuration, setMuteDuration] = useState('None');
-  const [selectedFile,setSelectedFile] = useState();
+  const [selectedFile, setSelectedFile] = useState();
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    socketGroupRef.current.on('group:deleted', (message) => {
-      console.log('Group deleted', message);
-    });
+    if (socketGroupRef && socketGroupRef.current) {
+      socketGroupRef.current.on('group:deleted', (message) => {
+        console.log('Group deleted', message);
+      });
+    }
     setPrivacy(groupPrivacy);
     setSizeLimit(groupSizeLimit);
     setDescription(groupDescription);
-  }, [groupPrivacy, groupSizeLimit]);
+  }, [groupPrivacy, groupSizeLimit, groupDescription, socketGroupRef]);
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
@@ -67,14 +71,11 @@ function GroupSettings({
   };
 
   const saveChanges = async () => {
-    if(selectedFile){
+    if (selectedFile) {
       try {
         console.log(selectedFile);
         const formData = new FormData();
-        const dataUrl = URL.createObjectURL(selectedFile);
-        const response = await fetch(dataUrl);
-        const blob = await response.blob();
-        formData.append('media', blob, selectedFile.name);
+        formData.append('media', selectedFile);
 
         const pictureResponse = await fetch(
           `${apiUrl}/v1/messaging/upload/media`,
@@ -99,7 +100,7 @@ function GroupSettings({
     try {
       const updatedData = {
         name: newName,
-        image: groupPhoto, 
+        image: groupPhoto,
         description: newDescription,
       };
 
@@ -108,7 +109,7 @@ function GroupSettings({
         {
           method: 'PATCH',
           headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json',
           },
           credentials: 'include',
           body: JSON.stringify(updatedData),
@@ -126,58 +127,58 @@ function GroupSettings({
     } catch (error) {
       console.error('Error updating group settings:', error);
     }
-    if(sizeLimit != groupSizeLimit){
+    if (sizeLimit !== groupSizeLimit) {
       try {
         const updatedData = {
-          groupSize: sizeLimit
+          groupSize: sizeLimit,
         };
-  
+
         const res = await fetch(
           `${apiUrl}/v1/groups/${openedChat.groupId}/size`,
           {
             method: 'PATCH',
             headers: {
-              "Content-Type": "application/json"
+              'Content-Type': 'application/json',
             },
             credentials: 'include',
             body: JSON.stringify(updatedData),
           },
         );
-  
+
         if (!res.ok) {
           console.error('Failed to update group size.');
         } else {
           const result = await res.json();
-          console.log('Info updated successfully', result);
+          console.log('Size updated successfully', result);
           setGroupSizeLimit(sizeLimit);
         }
       } catch (error) {
         console.error('Error updating group size limit:', error);
       }
     }
-    if(groupPrivacy != privacy){
+    if (groupPrivacy !== privacy) {
       try {
         const updatedData = {
-          groupType: privacy
+          groupType: privacy,
         };
-  
+
         const res = await fetch(
           `${apiUrl}/v1/groups/${openedChat.groupId}/group-type`,
           {
             method: 'PATCH',
             headers: {
-              "Content-Type": "application/json"
+              'Content-Type': 'application/json',
             },
             credentials: 'include',
             body: JSON.stringify(updatedData),
           },
         );
-  
+
         if (!res.ok) {
           console.error('Failed to update group.');
         } else {
           const result = await res.json();
-          console.log('Info updated successfully', result);
+          console.log('Privacy updated successfully', result);
           setGroupPrivacy(privacy);
         }
       } catch (error) {
@@ -186,35 +187,34 @@ function GroupSettings({
     }
   };
 
-
   const deleteGroup = () => {
     const data = {
-      groupId: openedChat.groupId
+      groupId: openedChat.groupId,
+    };
+    if (socketGroupRef && socketGroupRef.current) {
+      socketGroupRef.current.emit('removingGroup', data);
     }
-    socketGroupRef.current.emit('removingGroup',data);
   };
 
   return (
     <div
       className="flex flex-col items-center bg-bg-primary p-4 overflow-y-auto h-full max-h-[80vh] no-scrollbar"
-      data-test-id="group-settings"
+      data-testid="group-settings"
     >
-      <h2 className="mb-4 text-center text-text-primary">
-        Edit Group Settings
-      </h2>
+      <h2 className="mb-4 text-center text-text-primary">Edit Group Settings</h2>
       <div className="mb-4 flex flex-col items-center">
         <img
           src={groupPhoto}
           alt="Group"
           className="mb-2 h-16 w-16 rounded-full"
-          data-test-id="group-photo"
+          data-testid="group-photo"
         />
         {isAdmin && (
           <>
             <button
               onClick={() => fileInputRef.current.click()}
               className="mb-2 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary"
-              data-test-id="select-photo-button"
+              data-testid="select-photo-button"
             >
               Select Photo
             </button>
@@ -224,7 +224,7 @@ function GroupSettings({
               style={{ display: 'none' }}
               onChange={handlePhotoChange}
               accept="image/*"
-              data-test-id="photo-input"
+              data-testid="photo-input"
             />
           </>
         )}
@@ -237,12 +237,12 @@ function GroupSettings({
             onChange={handleNameChange}
             className="mb-2 w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-center text-text-primary"
             placeholder="Enter new group name"
-            data-test-id="name-input"
+            data-testid="name-input"
           />
         ) : (
           <p
             className="mb-2 text-center text-text-primary"
-            data-test-id="group-name"
+            data-testid="group-name"
           >
             {groupName}
           </p>
@@ -256,12 +256,12 @@ function GroupSettings({
             onChange={handleDescriptionChange}
             className="mb-2 w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-center text-text-primary"
             placeholder="Enter new group description"
-            data-test-id="description-input"
+            data-testid="description-input"
           />
         ) : (
           <p
             className="mb-2 text-center text-text-primary"
-            data-test-id="group-description"
+            data-testid="group-description"
           >
             {groupDescription}
           </p>
@@ -276,7 +276,7 @@ function GroupSettings({
             value={privacy}
             onChange={handlePrivacyChange}
             className="w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary"
-            data-test-id="privacy-select"
+            data-testid="privacy-select"
           >
             <option value="Public">Public</option>
             <option value="Private">Private</option>
@@ -284,7 +284,7 @@ function GroupSettings({
         ) : (
           <p
             className="mb-2 text-center text-text-primary"
-            data-test-id="privacy-value"
+            data-testid="privacy-value"
           >
             {privacy}
           </p>
@@ -301,12 +301,12 @@ function GroupSettings({
             onChange={handleSizeLimitChange}
             className="w-3/4 rounded-lg bg-bg-secondary px-2 py-1 text-text-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             placeholder="Enter group size limit"
-            data-test-id="size-limit-input"
+            data-testid="size-limit-input"
           />
         ) : (
           <p
             className="mb-2 text-center text-text-primary"
-            data-test-id="size-limit-value"
+            data-testid="size-limit-value"
           >
             {sizeLimit}
           </p>
@@ -316,7 +316,7 @@ function GroupSettings({
         <button
           className="mb-4 w-3/4 rounded-lg bg-green-500 px-2 py-1 text-white hover:bg-green-600"
           onClick={saveChanges}
-          data-test-id="save-changes-button"
+          data-testid="save-changes-button"
         >
           Save Changes
         </button>
@@ -326,7 +326,7 @@ function GroupSettings({
         <button
           className="w-3/4 rounded-lg bg-red-700 px-2 py-1 text-white hover:bg-red-800"
           onClick={deleteGroup}
-          data-test-id="delete-group-button"
+          data-testid="delete-group-button"
         >
           Delete Group
         </button>

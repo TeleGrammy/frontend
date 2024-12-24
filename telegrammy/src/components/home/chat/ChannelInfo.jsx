@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ChannelSettings from './ChannelSettings'; // Import the ChannelSettings component
-import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   FaAngleRight,
   FaCreativeCommonsShare,
@@ -15,6 +16,11 @@ import Header from '../leftSidebar/Header';
 import { useSocket } from '../../../contexts/SocketContext';
 import { use } from 'react';
 import { ClipLoader } from 'react-spinners';
+import { setChats } from '../../../slices/chatsSlice';
+import {
+  closeRightSidebar,
+  setRightSidebar,
+} from '../../../slices/sidebarSlice';
 const apiUrl = import.meta.env.VITE_API_URL;
 const userId = JSON.parse(localStorage.getItem('user'))?._id;
 
@@ -24,8 +30,8 @@ const initialChannelPhoto = 'https://picsum.photos/50/50';
 
 function ChannelInfo() {
   const { socketChannelRef } = useSocket();
-
-  const { openedChat } = useSelector((state) => state.chats);
+  const dispatch = useDispatch();
+  const { openedChat, chats } = useSelector((state) => state.chats);
   const [isAdmin, setIsAdmin] = useState(true); // Assume the current user is an admin for demonstration
   const [isOwner, setIsOwner] = useState(false);
   const [channelMembers, setChannelMembers] = useState(initialChannelMembers);
@@ -151,6 +157,11 @@ function ChannelInfo() {
 
   const leaveChannel = async () => {
     try {
+      const newChats = chats.filter(
+        (chat) => chat.channelId !== openedChat.channelId,
+      );
+      dispatch(setChats(newChats));
+      dispatch(closeRightSidebar());
       const response = await fetch(
         `${apiUrl}/v1/channels/${openedChat.channelId}`,
         {
@@ -171,6 +182,11 @@ function ChannelInfo() {
 
   const deleteChannel = async () => {
     try {
+      const newChats = chats.filter(
+        (chat) => chat.channelId !== openedChat.channelId,
+      );
+      dispatch(setChats(newChats));
+      dispatch(closeRightSidebar());
       const payload = {
         channelId: openedChat.channelId,
       };
@@ -199,7 +215,11 @@ function ChannelInfo() {
     setView(view === 'info' ? 'edit' : 'info');
   };
 
-  const GenerateInviteLink = () => {};
+  const GenerateInviteLink = () => {
+    toast.success('Link Copied', {
+      position: 'top-right',
+    });
+  };
 
   const handleSubmitAddedUsers = () => {
     const payload = {
@@ -247,6 +267,7 @@ function ChannelInfo() {
 
   return (
     <>
+      <button data-testid="7a7a" className="hidden" />
       {loading ? ( // Render ClipLoader while loading
         <div className="flex h-full items-center justify-center">
           <ClipLoader color="#ffffff" loading={loading} size={50} />
@@ -259,24 +280,25 @@ function ChannelInfo() {
             <h1 className="text-lg font-bold text-text-primary">
               {channelName}
             </h1>
-            <div className="ml-auto flex flex-row gap-2">
-              {openedChat.isChannel && (
+            {openedChat.isChannel && isOwner && (
+              <div className="ml-auto flex flex-row gap-2">
                 <div
-                  data-test-id="invite-link-button"
+                  data-testid="invite-link-button"
                   className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-bg-secondary text-3xl hover:bg-bg-button-hover"
                   onClick={GenerateInviteLink}
                 >
                   <FaCreativeCommonsShare className="text-text-primary opacity-70" />
                 </div>
-              )}
-              <button
-                data-test-id="toggle-edit-info-button"
-                className="rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
-                onClick={toggleView}
-              >
-                {view === 'info' ? 'Edit' : 'Back'}
-              </button>
-            </div>
+
+                <button
+                  data-testid="toggle-edit-info-button"
+                  className="rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
+                  onClick={toggleView}
+                >
+                  {view === 'info' ? 'Edit' : 'Back'}
+                </button>
+              </div>
+            )}
           </Header>
 
           <div className="relative h-[80%] w-[90%] bg-bg-primary">
@@ -291,7 +313,7 @@ function ChannelInfo() {
                 <div
                   className="fixed bottom-8 right-8 flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-full bg-bg-button text-2xl hover:bg-bg-button-hover"
                   onClick={handleSubmitAddedUsers}
-                  data-test-id="submit-add-users-button"
+                  data-testid="submit-add-users-button"
                 >
                   <FaAngleRight className="text-text-primary opacity-70" />
                 </div>
@@ -317,7 +339,7 @@ function ChannelInfo() {
                 {/* Search bar */}
                 <div className="p-4">
                   <input
-                    data-test-id="search-in-members-input"
+                    data-testid="search-in-members-input"
                     type="text"
                     placeholder="Search users..."
                     value={searchQuery}
@@ -334,7 +356,7 @@ function ChannelInfo() {
                       className="mb-2 flex flex-col items-start rounded p-2 hover:bg-bg-secondary"
                     >
                       <div
-                        data-test-id={`${member.userData.name}-toggle-options-button`}
+                        data-testid={`${member.userData.name}-toggle-options-button`}
                         className="flex cursor-pointer items-center justify-center"
                         onClick={() => toggleUserOptions(member.userData.name)}
                       >
@@ -363,7 +385,7 @@ function ChannelInfo() {
                         >
                           {member.userData.id === userId ? (
                             <button
-                              data-test-id={`${member.userData.name}-leave-channel-button`}
+                              data-testid={`${member.userData.name}-leave-channel-button`}
                               className="text-red-500"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -378,7 +400,7 @@ function ChannelInfo() {
                               {!admins.includes(member.userData.id) ? (
                                 <>
                                   <button
-                                    data-test-id={`${member.userData.name}-make-admin-button`}
+                                    data-testid={`make-admin-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -388,7 +410,7 @@ function ChannelInfo() {
                                     Make Admin
                                   </button>
                                   <button
-                                    data-test-id={`${member.userData.name}-allow-messages-button`}
+                                    data-testid={`${member.userData.name}-allow-messages-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -403,7 +425,7 @@ function ChannelInfo() {
                                       : 'Allow Messages'}
                                   </button>
                                   <button
-                                    data-test-id={`${member.userData.name}-allow-download-button`}
+                                    data-testid={`${member.userData.name}-allow-download-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -420,7 +442,7 @@ function ChannelInfo() {
                                 </>
                               ) : (
                                 <button
-                                  data-test-id={`${member.userData.name}-remove-admin-button`}
+                                  data-testid={`${member.userData.name}-remove-admin-button`}
                                   className="text-red-500"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -431,7 +453,7 @@ function ChannelInfo() {
                                 </button>
                               )}
                               <button
-                                data-test-id={`${member.userData.name}-remove-member-button`}
+                                data-testid={`${member.userData.name}-remove-member-button`}
                                 className="text-red-500"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -447,20 +469,21 @@ function ChannelInfo() {
                     </li>
                   ))}
                 </ul>
-
-                <div
-                  className="fixed bottom-10 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
-                  onClick={() => setView('addUsers')}
-                  data-test-id="add-memebers-button"
-                >
-                  <FaPlus className="text-text-primary opacity-70" />
-                </div>
+                {isOwner && (
+                  <div
+                    className="fixed bottom-10 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
+                    onClick={() => setView('addUsers')}
+                    data-test-id="add-memebers-button"
+                  >
+                    <FaPlus className="text-text-primary opacity-70" />
+                  </div>
+                )}
 
                 {isOwner ? (
                   <div
                     className="fixed bottom-10 right-20 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
                     onClick={() => deleteChannel()}
-                    data-test-id="add-memebers-button"
+                    data-testid="add-memebers-button"
                   >
                     <FaTrash className="text-text-primary opacity-70" />
                   </div>
@@ -468,7 +491,7 @@ function ChannelInfo() {
                   <div
                     className="fixed bottom-10 right-20 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
                     onClick={() => leaveChannel()}
-                    data-test-id="add-memebers-button"
+                    data-testid="add-memebers-button"
                   >
                     <FaDoorOpen className="text-text-primary opacity-70" />
                   </div>

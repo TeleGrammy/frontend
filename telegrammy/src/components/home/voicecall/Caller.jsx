@@ -342,6 +342,7 @@ function Caller() {
   return (
     <>
       <IoMdCall
+        data-testid="call-button"
         size={24}
         onClick={createCall}
         className="cursor-pointer text-gray-600 hover:text-gray-900"
