@@ -19,6 +19,8 @@ import {
 } from 'react-icons/fa';
 import { setOpenedChat } from '../../../slices/chatsSlice';
 
+import { endCall } from '../../../slices/callSlice';
+
 import { MdCall } from 'react-icons/md';
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -76,6 +78,7 @@ function Menu() {
       if (response.ok) {
         console.log('Logout Success');
         dispatch(setOpenedChat(null));
+        dispatch(endCall());
         dispatch(logout());
         navigate('/');
       }
