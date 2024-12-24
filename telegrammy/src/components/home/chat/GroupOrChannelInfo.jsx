@@ -287,7 +287,6 @@ function GroupOrChannelInfo() {
             <div className="ml-auto flex flex-row gap-2">
               {openedChat.isChannel && (
                 <div
-                  data-test-id="invite-link-button"
                   className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-bg-secondary text-3xl hover:bg-bg-button-hover"
                   onClick={GenerateInviteLink}
                 >
@@ -295,7 +294,6 @@ function GroupOrChannelInfo() {
                 </div>
               )}
               <button
-                data-test-id="toggle-edit-info-button"
                 className="rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
                 onClick={toggleView}
               >
@@ -324,7 +322,8 @@ function GroupOrChannelInfo() {
             ) : view === 'edit' && openedChat.isChannel ? (
               <ChannelSettings toggleView={toggleView} isAdmin={isAdmin} />
             ) : view === 'addUsers' ? (
-              <div className="relative h-full w-full">
+              <div data-testid = "add-users-list-component"
+              className="relative h-full w-full">
                 <AddUsersList
                   addedMembers={addedMembers}
                   setAddedMembers={setAddedMembers}
@@ -332,7 +331,6 @@ function GroupOrChannelInfo() {
                 <div
                   className="fixed bottom-8 right-8 flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-full bg-bg-button text-2xl hover:bg-bg-button-hover"
                   onClick={handleSubmitAddedUsers}
-                  data-test-id="submit-add-users-button"
                 >
                   <FaAngleRight className="text-text-primary opacity-70" />
                 </div>
@@ -358,7 +356,6 @@ function GroupOrChannelInfo() {
                 {/* Search bar */}
                 <div className="p-4">
                   <input
-                    data-test-id="search-in-members-input"
                     type="text"
                     placeholder="Search users..."
                     value={searchQuery}
@@ -375,7 +372,6 @@ function GroupOrChannelInfo() {
                       className="mb-2 flex flex-col items-start rounded p-2 hover:bg-bg-secondary"
                     >
                       <div
-                        data-test-id={`${member.username}-toggle-options-button`}
                         className="flex cursor-pointer items-center justify-center"
                         onClick={() => toggleUserOptions(member.username)}
                       >
@@ -402,7 +398,6 @@ function GroupOrChannelInfo() {
                         >
                           {member.id === userId ? (
                             <button
-                              data-test-id={`${member.username}-leave-group-button`}
                               className="text-red-500"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -416,7 +411,6 @@ function GroupOrChannelInfo() {
                               {!admins.includes(member.id) ? (
                                 <>
                                   <button
-                                    data-test-id={`${member.username}-make-admin-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -426,7 +420,6 @@ function GroupOrChannelInfo() {
                                     Make Admin
                                   </button>
                                   <button
-                                    data-test-id={`${member}-allow-messages-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -439,7 +432,6 @@ function GroupOrChannelInfo() {
                                     {member.permissions.sendMessages ? 'Revoke Messages' : 'Allow Messages'}
                                   </button>
                                   <button
-                                    data-test-id={`${member}-allow-download-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -454,7 +446,6 @@ function GroupOrChannelInfo() {
                                 </>
                               ) : (
                                 <button
-                                  data-test-id={`${member.username}-remove-admin-button`}
                                   className="text-red-500"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -465,7 +456,6 @@ function GroupOrChannelInfo() {
                                 </button>
                               )}
                               <button
-                                data-test-id={`${member.username}-remove-member-button`}
                                 className="text-red-500"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -484,7 +474,6 @@ function GroupOrChannelInfo() {
 
                 <div className="fixed bottom-10 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
                   onClick={() => setView('addUsers')}
-                  data-test-id="add-memebers-button"
                 >
                   <FaPlus className="text-text-primary opacity-70" />
                 </div>

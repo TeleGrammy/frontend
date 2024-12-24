@@ -5,7 +5,6 @@ import { logout } from '../slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { CiLogout } from "react-icons/ci";
 
-
 const apiUrl = import.meta.env.VITE_API_URL;
 const isAdmin = JSON.parse(localStorage.getItem('user'))?.isAdmin;
 
@@ -28,7 +27,7 @@ function AdminDashboard() {
           credentials: 'include',
         });
         const data = await response.json();
-        setRegisteredUsers(data.data);
+        setRegisteredUsers(data.data || []); // Ensure it's an array
       } catch (error) {
         console.error('Error fetching users:', error);
       } finally {
@@ -44,7 +43,7 @@ function AdminDashboard() {
           credentials: 'include',
         });
         const data = await response.json();
-        setAvailableGroups(data.data);
+        setAvailableGroups(data.data || []); // Ensure it's an array
       } catch (error) {
         console.error('Error fetching groups:', error);
       } finally {
@@ -148,7 +147,7 @@ function AdminDashboard() {
         <div className="w-1/2 pr-5">
           <h1 className="text-gray-700 text-2xl mb-5">Registered Users</h1>
           {loadingUsers ? (
-            <ClipLoader color="#000" loading={loadingUsers} size={35} />
+            <ClipLoader color="#000" loading={loadingUsers} size={35} aria-label="Loading users" />
           ) : (
             <ul className="list-none p-0 overflow-y-auto h-96 bg-white rounded shadow no-scrollbar">
               {registeredUsers.map((user) => (
@@ -186,7 +185,7 @@ function AdminDashboard() {
         <div className="w-1/2 pl-5">
           <h1 className="text-gray-700 text-2xl mb-5">Available Groups</h1>
           {loadingGroups ? (
-            <ClipLoader color="#000" loading={loadingGroups} size={35} />
+            <ClipLoader color="#000" loading={loadingGroups} size={35} aria-label="Loading groups" />
           ) : (
             <ul className="list-none p-0 overflow-y-auto h-96 bg-white rounded shadow no-scrollbar">
               {availableGroups.map((group) => (
@@ -215,7 +214,6 @@ function AdminDashboard() {
       </div>
     </div>
   );
-  
 }
 
 export default AdminDashboard;
