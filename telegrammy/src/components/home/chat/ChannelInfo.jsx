@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ChannelSettings from './ChannelSettings'; // Import the ChannelSettings component
+import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   FaAngleRight,
@@ -214,7 +215,11 @@ function ChannelInfo() {
     setView(view === 'info' ? 'edit' : 'info');
   };
 
-  const GenerateInviteLink = () => {};
+  const GenerateInviteLink = () => {
+    toast.success('Link Copied', {
+      position: 'top-right',
+    });
+  };
 
   const handleSubmitAddedUsers = () => {
     const payload = {
