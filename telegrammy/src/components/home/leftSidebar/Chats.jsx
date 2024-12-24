@@ -244,7 +244,8 @@ const Chats = ({ searchValue }) => {
                       className="text-sm text-gray-400"
                       data-test-id={`chat-timestamp-${chat.id}`}
                     >
-                      Last Seen {chat.lastSeen}
+                      {chat.lastSeen &&
+                        `Last Seen ${formatTimeStamp(chat.lastSeen)}`}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">

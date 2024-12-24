@@ -14,7 +14,7 @@ import LoadingScreen from './messagingSpace/LoadingScreen';
 import PinnedMessagesBar from './PinnedMessagesBar';
 import { useSocket } from '../../../contexts/SocketContext';
 import { GiConsoleController } from 'react-icons/gi';
-import { setOpenedChat } from '../../../slices/chatsSlice';
+import { setOpenedChat, setChats } from '../../../slices/chatsSlice';
 import { useDispatch } from 'react-redux';
 import CommentToSpace from './messagingSpace/CommentToSpace';
 import Comments from './messages/Comments';
@@ -176,13 +176,30 @@ function Chat() {
       });
 
       socketGeneralRef.current.on('message:seen', (payload) => {
-        // console.log('seen', payload);
+        console.log('Message seen:', payload);
+        const tempChats = chats;
+        dispatch(
+          setChats(
+            tempChats.map((chat, idx) => {
+              idx === 0 && console.log(chat);
+              if (chat.id === payload.chatId) {
+                console.log('a7a');
+                chat.unreadCount = 0;
+              }
+              return chat;
+            }),
+          ),
+        );
       });
 
       socketGeneralRef.current.on('message:sent', (message) => {
         trie.insert(message.content, message._id);
         console.log(message.senderId);
-        if (message.senderId._id !== userId && openedChat) {
+        if (
+          message.senderId._id !== userId &&
+          openedChat &&
+          openedChat.id === message.chatId._id
+        ) {
           socketGeneralRef.current.emit('message:seen', {
             chatId: openedChat?.id,
             messageId: message._id,
@@ -293,10 +310,6 @@ function Chat() {
         let tempPinned = [];
         let tempUsers = [];
         tempMessages.map((msg) => {
-          socketGeneralRef.current.emit('message:seen', {
-            chatId: openedChat?.id,
-            messageId: msg._id,
-          });
           if (msg.isPinned) tempPinned.push(msg._id);
           if (msg.senderId._id === userId) {
             msg['type'] = 'sent';
@@ -315,6 +328,15 @@ function Chat() {
         tempMessages.sort(
           (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
         );
+        const lastMessage =
+          tempMessages &&
+          tempMessages.length > 0 &&
+          tempMessages[tempMessages.length - 1];
+        socketGeneralRef.current.emit('message:seen', {
+          chatId: openedChat?.id,
+          messageId: lastMessage._id,
+        });
+
         tempMessages.map((msg) => trie.insert(msg.content, msg._id));
         setMessages(tempMessages);
       } catch (error) {
@@ -327,8 +349,7 @@ function Chat() {
       const title = payload.notification.title;
       const senderId = payload.data.senderId;
       console.log('THIS IS SENDER', senderId, userId);
-      if (senderId !== userId)
-      showToast(title);
+      if (senderId !== userId) showToast(title);
     });
 
     const fetchChannelMessages = async () => {
@@ -522,7 +543,7 @@ function Chat() {
         setInputValue('');
       } else {
         try {
-          console.log(newMessage);
+          console.log('Emitting from send', newMessage);
           socketGeneralRef.current.emit(
             'message:send',
             newMessage,
@@ -541,6 +562,7 @@ function Chat() {
                   mediaUrl: newMessage.mediaUrl,
                   messageType: newMessage.messageType,
                   isPinned: false,
+                  replyOn: newMessage.replyOn || null,
                 };
                 console.log(newRenderedMessage);
                 setMessages((prevMessages) => [
@@ -980,7 +1002,7 @@ function Chat() {
       )}
       {loading && <LoadingScreen />}
       {forwardingMessageId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center space-y-0 bg-black bg-opacity-40">
+        <div className="scrollable fixed inset-0 z-50 flex items-center justify-center space-y-0 bg-black bg-opacity-40">
           <div className="relative flex flex-row items-center justify-center">
             {/* Center this image */}
             <div className="z-50 w-64 rounded-lg bg-white shadow-lg dark:bg-gray-800">
@@ -988,27 +1010,32 @@ function Chat() {
                 <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
                   Forward to:
                 </h3>
-                {chats.map((chat) => (
-                  <div
-                    data-test-id={`${chat.id}-forward-to-div`}
-                    key={chat.id}
-                    className="flex cursor-pointer flex-row p-2 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => {
-                      handleForwardMessage(chat);
-                    }}
-                  >
-                    <img
-                      src={
-                        chat.photo
-                          ? chat.photo
-                          : 'https://ui-avatars.com/api/?name=' + chat.name
-                      }
-                      alt={chat.name}
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                    <span className="ml-2">{chat.name}</span>
-                  </div>
-                ))}
+                <div
+                  className="max-h-64 overflow-y-auto"
+                  style={{ maxHeight: '256px' }} // Fixed height of 256px (64 * 4)
+                >
+                  {chats.map((chat) => (
+                    <div
+                      data-test-id={`${chat.id}-forward-to-div`}
+                      key={chat.id}
+                      className="flex cursor-pointer flex-row p-2 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      onClick={() => {
+                        handleForwardMessage(chat);
+                      }}
+                    >
+                      <img
+                        src={
+                          chat.photo
+                            ? chat.photo
+                            : 'https://ui-avatars.com/api/?name=' + chat.name
+                        }
+                        alt={chat.name}
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                      <span className="ml-2">{chat.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
             <button
