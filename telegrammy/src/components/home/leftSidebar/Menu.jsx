@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { ToggleDarkMode } from '../../../slices/darkModeSlice';
 import { logout } from '../../../slices/authSlice';
-
+import { AiOutlineLogout } from 'react-icons/ai';
 import MenuItem from './MenuItem';
 
 import { ClipLoader } from 'react-spinners';
@@ -55,6 +55,7 @@ const Menuitems = [
 function Menu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isloggingOut, setIsloggingOut] = useState(false);
+  const [isloggingOutFromAll, setIsloggingOutFromAll] = useState(false);
 
   const menuRef = useRef(null);
   const barsRef = useRef(null);
@@ -86,6 +87,34 @@ function Menu() {
       console.log(error);
     } finally {
       setIsloggingOut(false);
+    }
+  };
+
+  const LogoutFromAll = async () => {
+    try {
+      setIsloggingOutFromAll(true);
+      const response = await fetch(
+        `${apiUrl}/v1/auth/logout-from-all-devices`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        },
+      );
+
+      if (response.ok) {
+        console.log('Logout Success');
+        dispatch(setOpenedChat(null));
+        dispatch(endCall());
+        dispatch(logout());
+        navigate('/');
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsloggingOutFromAll(false);
     }
   };
 
@@ -160,6 +189,19 @@ function Menu() {
                 <FaSignOutAlt />
               )}
               <span className="ml-4">Log Out</span>
+            </li>
+
+            <li
+              onClick={LogoutFromAll}
+              className="mx-2 flex w-full cursor-pointer flex-row items-center rounded-2xl px-2 text-text-primary hover:bg-bg-hover"
+              data-test-id="logout-button"
+            >
+              {isloggingOutFromAll ? (
+                <ClipLoader size={17} color={'text-text-primary'} />
+              ) : (
+                <AiOutlineLogout />
+              )}
+              <span className="ml-4">Log Out From All</span>
             </li>
           </ul>
           <p
