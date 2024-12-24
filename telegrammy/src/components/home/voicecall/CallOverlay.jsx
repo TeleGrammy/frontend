@@ -133,6 +133,8 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
             }
           };
 
+          console.log('sending offer');
+
           const offer = await peerConnection.createOffer();
 
           socketGeneralRef.current.emit(
@@ -150,6 +152,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
               } else if (response.status === 'offerExists') {
                 console.log('offer already exists');
                 const answer = await peerConnection.createAnswer();
+                console.log('sending answer');
                 socketGeneralRef.current.emit(
                   'call:answer',
                   {
