@@ -247,6 +247,7 @@ function ChannelInfo() {
 
   return (
     <>
+      <button data-testid="7a7a" className="hidden" />
       {loading ? ( // Render ClipLoader while loading
         <div className="flex h-full items-center justify-center">
           <ClipLoader color="#ffffff" loading={loading} size={50} />
@@ -262,7 +263,7 @@ function ChannelInfo() {
             <div className="ml-auto flex flex-row gap-2">
               {openedChat.isChannel && (
                 <div
-                  data-test-id="invite-link-button"
+                  data-testid="invite-link-button"
                   className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-bg-secondary text-3xl hover:bg-bg-button-hover"
                   onClick={GenerateInviteLink}
                 >
@@ -270,7 +271,7 @@ function ChannelInfo() {
                 </div>
               )}
               <button
-                data-test-id="toggle-edit-info-button"
+                data-testid="toggle-edit-info-button"
                 className="rounded-lg bg-bg-secondary px-4 py-2 text-text-primary"
                 onClick={toggleView}
               >
@@ -291,7 +292,7 @@ function ChannelInfo() {
                 <div
                   className="fixed bottom-8 right-8 flex min-h-14 min-w-14 cursor-pointer items-center justify-center rounded-full bg-bg-button text-2xl hover:bg-bg-button-hover"
                   onClick={handleSubmitAddedUsers}
-                  data-test-id="submit-add-users-button"
+                  data-testid="submit-add-users-button"
                 >
                   <FaAngleRight className="text-text-primary opacity-70" />
                 </div>
@@ -317,7 +318,7 @@ function ChannelInfo() {
                 {/* Search bar */}
                 <div className="p-4">
                   <input
-                    data-test-id="search-in-members-input"
+                    data-testid="search-in-members-input"
                     type="text"
                     placeholder="Search users..."
                     value={searchQuery}
@@ -334,7 +335,7 @@ function ChannelInfo() {
                       className="mb-2 flex flex-col items-start rounded p-2 hover:bg-bg-secondary"
                     >
                       <div
-                        data-test-id={`${member.userData.name}-toggle-options-button`}
+                        data-testid={`${member.userData.name}-toggle-options-button`}
                         className="flex cursor-pointer items-center justify-center"
                         onClick={() => toggleUserOptions(member.userData.name)}
                       >
@@ -363,7 +364,7 @@ function ChannelInfo() {
                         >
                           {member.userData.id === userId ? (
                             <button
-                              data-test-id={`${member.userData.name}-leave-channel-button`}
+                              data-testid={`${member.userData.name}-leave-channel-button`}
                               className="text-red-500"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -378,7 +379,7 @@ function ChannelInfo() {
                               {!admins.includes(member.userData.id) ? (
                                 <>
                                   <button
-                                    data-test-id={`${member.userData.name}-make-admin-button`}
+                                    data-testid={`make-admin-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -388,7 +389,7 @@ function ChannelInfo() {
                                     Make Admin
                                   </button>
                                   <button
-                                    data-test-id={`${member.userData.name}-allow-messages-button`}
+                                    data-testid={`${member.userData.name}-allow-messages-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -403,7 +404,7 @@ function ChannelInfo() {
                                       : 'Allow Messages'}
                                   </button>
                                   <button
-                                    data-test-id={`${member.userData.name}-allow-download-button`}
+                                    data-testid={`${member.userData.name}-allow-download-button`}
                                     className="text-text-primary"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -420,7 +421,7 @@ function ChannelInfo() {
                                 </>
                               ) : (
                                 <button
-                                  data-test-id={`${member.userData.name}-remove-admin-button`}
+                                  data-testid={`${member.userData.name}-remove-admin-button`}
                                   className="text-red-500"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -431,7 +432,7 @@ function ChannelInfo() {
                                 </button>
                               )}
                               <button
-                                data-test-id={`${member.userData.name}-remove-member-button`}
+                                data-testid={`${member.userData.name}-remove-member-button`}
                                 className="text-red-500"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -460,7 +461,7 @@ function ChannelInfo() {
                   <div
                     className="fixed bottom-10 right-20 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
                     onClick={() => deleteChannel()}
-                    data-test-id="add-memebers-button"
+                    data-testid="add-memebers-button"
                   >
                     <FaTrash className="text-text-primary opacity-70" />
                   </div>
@@ -468,7 +469,7 @@ function ChannelInfo() {
                   <div
                     className="fixed bottom-10 right-20 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-bg-button text-xl hover:bg-bg-button-hover"
                     onClick={() => leaveChannel()}
-                    data-test-id="add-memebers-button"
+                    data-testid="add-memebers-button"
                   >
                     <FaDoorOpen className="text-text-primary opacity-70" />
                   </div>

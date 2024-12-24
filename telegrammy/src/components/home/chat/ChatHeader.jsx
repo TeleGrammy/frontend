@@ -69,7 +69,7 @@ function ChatHeader({ handleKey }) {
       }
     };
 
-    //checkOnGoingCall();
+    checkOnGoingCall();
   }, [openedChat, setActiveCall]);
 
   return (
