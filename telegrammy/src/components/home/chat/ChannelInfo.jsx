@@ -103,7 +103,7 @@ function ChannelInfo() {
         const isUserAdmin = channelAdmins.includes(userId);
         const isUserOwner = channelData.channelOwner.id === userId;
         console.log('isUserOwner: ', isUserOwner);
-        setIsOwner(isUserOwner);
+        setIsOwner((prev) => isUserOwner);
         setIsAdmin(isUserAdmin);
         setChannelDescription(channelData.channelDescription);
         setChannelName(channelData.channelName);
