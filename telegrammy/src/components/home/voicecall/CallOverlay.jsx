@@ -420,7 +420,7 @@ const CallOverlay = ({ localAudioRef, remoteAudioRef }) => {
       <div className="relative flex h-[50%] w-[40%] flex-col justify-around rounded-lg bg-bg-secondary p-10 text-center shadow-lg">
         <button
           onClick={handleCloseOverlay}
-          data-test-id="close-call-overlay-button"
+          data-testid="close-call-overlay-button"
           className="absolute right-4 top-4 text-text-primary"
         >
           <IoClose size={24} />
