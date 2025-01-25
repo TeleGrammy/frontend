@@ -6,14 +6,15 @@ import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const FirebaseContext = createContext(null);
 
+// Firebase configuration using environment variables
 const firebaseConfig = {
-  apiKey: 'AIzaSyC0zLXiBij35Gc7XAj7pTWqFZNQldpIJc8',
-  authDomain: 'telegrammy-sw.firebaseapp.com',
-  projectId: 'telegrammy-sw',
-  storageBucket: 'telegrammy-sw.firebasestorage.app',
-  messagingSenderId: '49270575708',
-  appId: '1:49270575708:web:6347dae0eed5f547510c99',
-  measurementId: 'G-YK1QJ7MXT4',
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
@@ -22,13 +23,13 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const messaging = getMessaging(app);
 
+// Function to generate token
 const generateToken = async () => {
   const permission = await Notification.requestPermission();
   if (permission === 'granted') {
     console.log('Notification permission granted.');
     const token = await getToken(messaging, {
-      vapidKey:
-        'BB0pB51JmPRBvCxCBEP7Bfgo95lRqgOAZpgSJXKX98d-pUKQ4y0M8LvAOKsBuhazp2RPLGKdXp5crDISSgbKZ5A',
+      vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
     });
 
     console.log('Token: ', token);
